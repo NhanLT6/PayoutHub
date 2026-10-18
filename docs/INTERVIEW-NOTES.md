@@ -105,3 +105,15 @@ src/PayoutHub.Api/
   3. Gom vào service có nghiệp vụ thật (`PayoutApprovalService`), không phải class "bao tải" chứa service.
 - **Không** dùng `HttpContext.RequestServices` trong action (service locator).
 - Minimal API chỉ **giấu triệu chứng**: feature cần 10 dependency vẫn là thiết kế có vấn đề.
+
+---
+
+## Logging
+
+### Vì sao dùng message template thay vì string interpolation? (7.7)
+
+- Template giữ giá trị thành **field riêng** (`State.MinAmount`). Hệ thống log (Seq, Elastic, App Insights) index field đó → lọc `MinAmount > 500`, group/count theo `PayoutId`. Interpolation chỉ còn một chuỗi phẳng → chỉ full-text search hoặc regex, không so sánh số được.
+- Bẫy: placeholder bind theo **vị trí**, không theo tên. Tên chỉ là tên field trong log → đảo thứ tự tham số là log sai âm thầm. `{0}` thì field tên là `0`, vô dụng khi query. Analyzer CA2017 báo lệch số lượng.
+- Kiểu dữ liệu giữ nguyên: truyền `decimal` thì field là số; truyền chuỗi từ `IConfiguration` thì là string, so sánh số có thể sai.
+- Hiệu năng: interpolation luôn ghép chuỗi kể cả khi level bị tắt. Mức senior: `[LoggerMessage]` source generator, sinh code lúc compile, check `IsEnabled`, không boxing, kiểm tra placeholder khớp tham số (CA1848 gợi ý).
+- `ILogger<T>`: `T` thành **category** (tên đầy đủ của class), dùng để lọc level theo tiền tố namespace trong `Logging:LogLevel`.

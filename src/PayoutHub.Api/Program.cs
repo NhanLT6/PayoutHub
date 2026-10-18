@@ -1,6 +1,7 @@
+using Microsoft.Extensions.Options;
 using PayoutHub.Core;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddOptions<PayoutOptions>()
@@ -11,17 +12,19 @@ builder.Services
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+builder.Logging.AddJsonConsole();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+WebApplication app = builder.Build();
+
+if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 app.UseHttpsRedirection();
 
 app.MapControllers();
 
 app.MapGet("/", () => "Hello World!");
+
+PayoutOptions payout = app.Services.GetRequiredService<IOptions<PayoutOptions>>().Value;
+app.Logger.LogInformation("Payout config: {MinAmount} {Currency}", payout.MinAmount, payout.DefaultCurrency);
 
 app.Run();
