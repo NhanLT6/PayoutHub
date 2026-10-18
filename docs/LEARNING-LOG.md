@@ -42,3 +42,16 @@ Mẫu:
 - **Câu phỏng vấn đáng nhớ:** Finance đổi `MinAmount` không restart khi `generate` đang chạy (đã ghi ở `INTERVIEW-NOTES.md`); Controllers vs Minimal API cho app lớn; controller nhiều dependency.
 - **Quiz / mock:** câu `MinAmount` không restart: Gần đúng.
 - **Tiếp theo:** xoá `TestController` + `/`, `/test2`; commit lần đầu; M1 bước 4 structured logging.
+
+## 2026-10-18 · M1
+- **Đã làm:** bước 4 structured logging: so sánh template vs interpolation qua `AddJsonConsole` (thấy `State.MinAmount`), cấu hình `Logging:LogLevel` theo namespace, lấy `IOptions<PayoutOptions>` từ `app.Services` để log config lúc start. Bước 5 mới có khung: `AddProblemDetails` + `AddExceptionHandler<GlobalExceptionHandler>` trong `Program.cs`, `GlobalExceptionHandler.cs` còn rỗng (chỉ có comment TODO). Sửa `handbook.html` thiếu `<meta charset="utf-8">`.
+- **Khái niệm đã chạm:** 2.8 (DIP, composition root), 7.7, 8.2 (root provider vs scope), 8.5 (service locator).
+- **Chỗ yếu:**
+  - Câu "Core lưu DB thế nào": đúng ý interface + DI, nhưng không biết **Api** là nơi nối interface với implement (composition root); không nêu được lợi ích chính là unit test Core bằng fake repository; coi circular reference là lý do thay vì hệ quả.
+  - Nghĩ placeholder trong template bind **theo tên**; thực tế bind theo **vị trí**, tên chỉ là tên field.
+  - Chưa biết cách hệ thống log (Seq/Elastic) lọc theo field.
+  - Đọc config thô `app.Configuration["Payout:MinAmount"]` (ra `string`) dù đã có `PayoutOptions`; không biết lấy options trong `Program.cs` qua `app.Services.GetRequiredService`.
+  - Đặt `"Payout": "Debug"` trong `appsettings.json` (production cũng Debug, key không khớp namespace `PayoutHub`).
+- **Câu phỏng vấn đáng nhớ:** vì sao message template thay vì interpolation (đã ghi `INTERVIEW-NOTES.md` › Logging, kèm `[LoggerMessage]`).
+- **Quiz / mock:** câu khởi động "Core lưu DB thế nào": Gần đúng.
+- **Tiếp theo:** (máy khác) tiếp bước 5: điền `GlobalExceptionHandler` (log kèm exception, status code, ProblemDetails không lộ message, `TryWriteAsync`, ý nghĩa `return true/false`), đặt `app.UseExceptionHandler()` đúng chỗ, test bằng `/boom`; nhớ bẫy .NET 10 handler trả `true` thì middleware không tự log. Sau đó lab 1 của M1.

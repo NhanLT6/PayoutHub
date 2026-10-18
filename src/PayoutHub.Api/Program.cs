@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using PayoutHub.Api;
 using PayoutHub.Core;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,9 @@ builder.Services
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Logging.AddJsonConsole();
 

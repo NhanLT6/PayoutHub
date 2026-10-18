@@ -48,7 +48,7 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming. 
   → Bước này hoàn thiện dần qua các bước dưới. Xong khi bạn giải thích được vì sao từng `Use...` đứng ở vị trí đó.
 - [x] Options pattern: `PayoutOptions` (`MinAmount`, `DefaultCurrency`) đọc từ `appsettings.json`, có validate khi khởi động
   → Thay cho `ConfigurationManager.AppSettings["..."]` kiểu Web.config: config thành class có kiểu, inject qua DI. Validate lúc start để config sai thì chết ngay khi deploy, không phải lúc chạy payout đầu tiên. Biết phân biệt `IOptions` / `IOptionsSnapshot` / `IOptionsMonitor`.
-- [ ] Structured logging với `ILogger<T>`
+- [x] Structured logging với `ILogger<T>`
   → Log dạng message template (`"Approved payout {PayoutId}"`), không dùng string interpolation, để log tìm/lọc được theo field. Cấu hình log level theo namespace trong `appsettings`.
 - [ ] Xử lý lỗi toàn cục: `IExceptionHandler` + ProblemDetails
   → Một chỗ duy nhất bắt exception chưa xử lý, log lại và trả JSON chuẩn (RFC 7807). Không lộ stack trace ra ngoài. Sau này map exception nghiệp vụ sang 404/409 cũng ở đây.
