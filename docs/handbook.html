@@ -1,0 +1,2420 @@
+<title>Sổ tay phỏng vấn .NET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky left sidebar (table of contents) + single reading column; sidebar collapses into a top bar on phones */
+:root {
+  --bg: #ECEFF2;
+  --surface: #F6F7F8;
+  --fg: #333B47;
+  --muted: #646E7C;
+  --line: #D5DBE2;
+  --accent: #345F96;
+  --accent-soft: #E2E9F2;
+  --ok: #33704F;
+  --ok-soft: #E2EEE6;
+  --warn: #93561A;
+  --warn-soft: #F4EADD;
+  --code-bg: #E5E9EE;
+  --code-c: #737E8E;
+  --code-type: #2E7A7A;
+  --code-kw: #7A4E96;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #181C23; --surface: #1E242C; --fg: #C5CCD6; --muted: #8C96A5; --line: #2E3743;
+    --accent: #84A6D3; --accent-soft: #232E3D; --ok: #74B394; --ok-soft: #1D2D25;
+    --warn: #CFA06A; --warn-soft: #30291F; --code-bg: #232A34; --code-c: #7E8999;
+    --code-type: #6FB8B3; --code-kw: #B79AD0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #181C23; --surface: #1E242C; --fg: #C5CCD6; --muted: #8C96A5; --line: #2E3743;
+  --accent: #84A6D3; --accent-soft: #232E3D; --ok: #74B394; --ok-soft: #1D2D25;
+  --warn: #CFA06A; --warn-soft: #30291F; --code-bg: #232A34; --code-c: #7E8999;
+  --code-type: #6FB8B3; --code-kw: #B79AD0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.72; }
+
+.shell { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: 100vh; }
+
+/* Sidebar */
+.side { position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; height: 100vh; overflow-y: auto; border-right: 1px solid var(--line); background: var(--surface); padding: 24px 18px 40px; }
+.brand { font-family: var(--font-display); font-weight: 600; font-size: 20px; line-height: 1.2; margin: 0 0 4px; }
+.brand-sub { color: var(--muted); font-size: 12.5px; margin: 0 0 20px; }
+.nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.nav a, .nav .soon { display: flex; gap: 10px; align-items: baseline; padding: 6px 8px; border-radius: 5px; color: var(--fg); text-decoration: none; font-size: 14px; line-height: 1.4; }
+.nav .num { font-family: var(--font-mono); font-size: 12px; color: var(--muted); min-width: 18px; font-variant-numeric: tabular-nums; }
+.nav a:hover { background: var(--accent-soft); }
+.nav a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav a.active .num { color: var(--accent); }
+.nav .soon { color: var(--muted); cursor: default; }
+.nav .soon em { font-style: normal; font-size: 11px; margin-left: auto; padding: 1px 6px; border: 1px solid var(--line); border-radius: 99px; white-space: nowrap; }
+/* Generated table of contents */
+.toc { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+.toc-row { display: flex; align-items: stretch; gap: 2px; }
+.toc-row a { flex: 1; min-width: 0; display: flex; gap: 10px; align-items: baseline; padding: 6px 8px; border-radius: 5px; color: var(--fg); text-decoration: none; font-size: 14px; line-height: 1.4; }
+.toc-row a:hover, .toc-sub a:hover { background: var(--accent-soft); }
+.toc-row a.active { color: var(--accent); font-weight: 600; background: var(--accent-soft); }
+.toc .num { font-family: var(--font-mono); font-size: 12px; color: var(--muted); min-width: 18px; font-variant-numeric: tabular-nums; flex: none; }
+.toc a.active .num { color: var(--accent); }
+.toc-tg { flex: none; width: 26px; border: 0; background: none; color: var(--muted); cursor: pointer; border-radius: 5px; font: 15px/1 var(--font-body); padding: 0; }
+.toc-tg:hover { background: var(--accent-soft); color: var(--accent); }
+.toc-tg span { display: inline-block; transition: transform .15s ease; }
+.toc-sec.open > .toc-row .toc-tg span { transform: rotate(90deg); }
+.toc-spacer { flex: none; width: 26px; }
+.toc-sub { list-style: none; margin: 2px 0 8px 28px; padding: 0 0 0 8px; border-left: 1px solid var(--line); display: none; }
+.toc-sec.open > .toc-sub { display: block; }
+.toc-sub a { display: flex; gap: 8px; align-items: baseline; padding: 4px 8px; font-size: 13px; line-height: 1.45; color: var(--muted); text-decoration: none; border-radius: 4px; }
+.toc-sub a .num { min-width: 30px; }
+.toc-sub a.active { color: var(--accent); font-weight: 600; }
+.toc a:focus-visible, .toc-tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) { .toc-tg span { transition: none; } }
+
+/* Item codes in content */
+.qn { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--accent); flex: none; font-variant-numeric: tabular-nums; }
+h3 .qn { margin-right: 10px; }
+
+.nav-group { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 14px 8px 4px; font-weight: 600; }
+
+.menu-btn { display: none; }
+
+/* Main */
+main { padding-inline: 40px; padding-block: 36px 96px; min-width: 0; overflow-x: clip; }
+.col { max-width: 780px; min-width: 0; }
+/* Long identifiers (HttpContext.RequestAborted...) must wrap instead of widening the page */
+p, li, dt, dd, summary, .lead, .note { overflow-wrap: anywhere; }
+code { overflow-wrap: anywhere; }
+details.q > summary { min-width: 0; }
+header.top h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 4vw, 38px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+header.top p { color: var(--muted); margin: 0 0 18px; max-width: 64ch; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.chip { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
+.chip.quick { background: var(--accent-soft); color: var(--accent); }
+.chip.why { border: 1px solid var(--line); color: var(--muted); }
+.chip.real { background: var(--ok-soft); color: var(--ok); }
+.chip.trap { background: var(--warn-soft); color: var(--warn); }
+
+.tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.btn { font: 500 13px var(--font-body); padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+
+section.part { padding-top: 40px; margin-top: 40px; border-top: 1px solid var(--line); }
+section.part > h2 { font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 1.2; margin: 0 0 8px; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+section.part > h2 .n { font-family: var(--font-mono); font-size: 15px; color: var(--accent); font-weight: 500; }
+.lead { color: var(--muted); margin: 0 0 20px; max-width: 66ch; }
+h3 { font-size: 17px; margin: 28px 0 10px; }
+
+p { margin: 0 0 10px; }
+ul, ol { margin: 0 0 10px; padding-left: 22px; }
+li { margin: 3px 0; }
+code { font-family: var(--font-mono); font-size: .88em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { font-family: var(--font-mono); font-size: 13px; line-height: 1.6; background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; margin: 8px 0 12px; }
+pre code { background: none; padding: 0; font-size: inherit; }
+.c { color: var(--code-c); }
+/* Syntax highlighting (Prism tokens) */
+.token.comment { color: var(--code-c); font-style: italic; }
+.token.keyword { color: var(--code-kw); }
+.token.string, .token.char, .token.interpolation-string { color: var(--ok); }
+.token.number, .token.boolean, .token.constant { color: var(--warn); }
+.token.class-name, .token.type-expression, .token.return-type, .token.namespace { color: var(--code-type); }
+.token.function { color: var(--accent); }
+.token.punctuation, .token.operator { color: var(--muted); }
+.token.interpolation .token.punctuation { color: var(--ok); }
+strong { font-weight: 600; }
+
+.tbl-wrap { overflow-x: auto; margin: 10px 0 16px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; overflow-wrap: normal; }
+
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin: 12px 0 18px; }
+.note h4 { margin: 0 0 6px; font-size: 14px; }
+
+/* Question cards */
+details.q { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin: 12px 0; }
+details.q > summary { list-style: none; cursor: pointer; padding: 14px 16px; font-weight: 600; font-size: 15.5px; display: flex; gap: 10px; align-items: baseline; }
+details.q > summary::-webkit-details-marker { display: none; }
+details.q > summary::before { content: "+"; font-family: var(--font-mono); color: var(--accent); width: 12px; flex: none; }
+details.q[open] > summary::before { content: "−"; }
+details.q > summary .qh { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: auto; white-space: nowrap; }
+.qbody { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.blk { padding: 10px 14px 4px; border-radius: 6px; min-width: 0; }
+.blk > .chip { display: inline-block; margin-bottom: 6px; }
+.blk.quick { background: var(--accent-soft); }
+.blk.why { border: 1px solid var(--line); }
+.blk.real { background: var(--ok-soft); }
+.blk.trap { background: var(--warn-soft); }
+.blk pre { background: var(--bg); }
+.blk.why pre { background: var(--code-bg); }
+.trap dt { font-weight: 600; margin-top: 4px; }
+.trap dd { margin: 2px 0 8px; }
+dl { margin: 0 0 6px; }
+
+.later { color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 16px; margin-top: 12px; }
+
+@media (max-width: 900px) {
+  html { scroll-padding-top: 64px; }
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .side { height: auto; max-height: none; border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 16px; z-index: 5; }
+  .side-head { display: flex; align-items: center; gap: 12px; }
+  .brand { font-size: 17px; margin: 0; }
+  .brand-sub { display: none; }
+  .menu-btn { display: inline-block; margin-left: auto; }
+  .side nav { display: none; padding-top: 10px; max-height: 70vh; overflow-y: auto; }
+  .side.open nav { display: block; }
+  main { padding-inline: 16px; padding-block: 24px 80px; }
+  section.part > h2 { font-size: 23px; }
+  details.q > summary .qh { display: none; }
+}
+</style>
+
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side-head">
+      <p class="brand">Sổ tay .NET</p>
+      <button class="btn menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav">Mục lục</button>
+    </div>
+    <p class="brand-sub">Backend · Senior · Framework → Core</p>
+    <nav id="nav" aria-label="Mục lục">
+      <ul class="toc" id="toc"></ul>
+      <div class="nav-group">Đợt sau</div>
+      <ul class="nav">
+        <li><span class="soon"><span class="num">9</span>AuthN / AuthZ<em>đợt 3</em></span></li>
+        <li><span class="soon"><span class="num">10</span>EF Core<em>đợt 3</em></span></li>
+        <li><span class="soon"><span class="num">11</span>Testing<em>đợt 3</em></span></li>
+        <li><span class="soon"><span class="num">12</span>Migration<em>đợt 4</em></span></li>
+        <li><span class="soon"><span class="num">13</span>Kiến trúc mức senior<em>đợt 4</em></span></li>
+        <li><span class="soon"><span class="num">14</span>Question bank<em>đợt 4</em></span></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+  <div class="col">
+
+  <header class="top" id="cach-dung">
+    <h1>Sổ tay phỏng vấn .NET Backend</h1>
+    <p>Ôn lại cho người đã làm .NET Core khoảng 2 năm rồi quay về Web Forms 4.8. Mục tiêu là trả lời trôi được câu hỏi lý thuyết, rồi kéo cuộc nói chuyện sang vấn đề thật và cách bạn giải quyết.</p>
+    <div class="legend" aria-label="Chú thích">
+      <span class="chip quick">Trả lời nhanh</span>
+      <span class="chip why">Bản chất</span>
+      <span class="chip real">Ở dự án thật</span>
+      <span class="chip trap">Bẫy &amp; follow-up</span>
+    </div>
+    <div class="note">
+      <h4>Công thức cho câu hỏi trả bài</h4>
+      <p>Nói định nghĩa trong 1 câu (block <strong>Trả lời nhanh</strong>), rồi nối ngay sang 1 case bạn từng làm (block <strong>Ở dự án thật</strong>), kết bằng 1 trade-off hoặc trường hợp không nên dùng. Interviewer gần như luôn đi theo hướng bạn mở ra, và phần thứ hai mới là chỗ senior được chấm điểm.</p>
+      <p style="margin:0">Tự kiểm tra: bấm <em>Thu gọn hết</em>, đọc câu hỏi, tự trả lời thành tiếng rồi mới mở ra so.</p>
+    </div>
+    <div class="tools">
+      <button class="btn" id="collapseAll">Thu gọn hết</button>
+      <button class="btn" id="expandAll">Mở hết</button>
+    </div>
+  </header>
+
+  <!-- ===================== 1 ===================== -->
+  <section class="part" id="s1">
+    <h2><span class="n">01</span>.NET Framework vs .NET (Core)</h2>
+    <p class="lead">CV của bạn là Web Forms 4.8, nên interviewer sẽ thử xem bạn còn bắt nhịp được .NET hiện đại không. Đây là phần cần nói trôi nhất.</p>
+
+    <h3>Bản đồ phiên bản</h3>
+    <ul>
+      <li><strong>.NET Framework 4.8.1</strong> là bản cuối. Chỉ còn sửa lỗi bảo mật, chỉ chạy Windows, cài chung toàn máy và đi theo OS.</li>
+      <li><strong>.NET Core 1.0 → 3.1</strong>, sau đó đổi tên thành <strong>.NET 5</strong> (2020) và bỏ chữ "Core". Riêng tên <em>ASP.NET Core</em> và <em>EF Core</em> vẫn giữ.</li>
+      <li>Mỗi tháng 11 ra một bản. Số chẵn là LTS (3 năm), số lẻ là STS (từ .NET 9 được kéo lên 2 năm).</li>
+      <li><strong>.NET 8</strong> LTS (11/2023, hết hỗ trợ 11/2026) và <strong>.NET 10</strong> LTS (11/2025). Khi phỏng vấn, nói theo .NET 8/10 là an toàn.</li>
+    </ul>
+
+    <h3>Bảng đối chiếu: thứ bạn dùng hằng ngày → thứ thay thế</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Web Forms / Framework 4.8</th><th>ASP.NET Core / .NET</th></tr></thead>
+      <tbody>
+        <tr><td><code>Web.config</code> + transforms</td><td><code>appsettings.json</code>, <code>appsettings.{Env}.json</code>, env vars, user secrets → <code>IConfiguration</code> / <code>IOptions&lt;T&gt;</code></td></tr>
+        <tr><td><code>Global.asax</code> (<code>Application_Start</code>, <code>BeginRequest</code>)</td><td><code>Program.cs</code>: đăng ký service + dựng middleware pipeline</td></tr>
+        <tr><td>HttpModule / HttpHandler</td><td>Middleware / endpoint</td></tr>
+        <tr><td><code>HttpContext.Current</code> (static)</td><td><code>HttpContext</code> được truyền vào; <code>IHttpContextAccessor</code> khi thật sự cần</td></tr>
+        <tr><td>Page lifecycle, ViewState, postback, server controls</td><td>Không có tương đương. Gần nhất về mô hình là Razor Pages; hoặc API + React/Vue</td></tr>
+        <tr><td>Session in-proc mặc định</td><td>Phải bật <code>AddSession()</code>, lưu qua <code>IDistributedCache</code>, chỉ lưu byte/string</td></tr>
+        <tr><td>Forms Authentication</td><td>Cookie authentication / ASP.NET Core Identity / JWT</td></tr>
+        <tr><td><code>System.Web.Caching.Cache</code></td><td><code>IMemoryCache</code>, <code>IDistributedCache</code>, <code>HybridCache</code> (.NET 9)</td></tr>
+        <tr><td>Unity / Autofac / tự <code>new</code></td><td>DI container dựng sẵn</td></tr>
+        <tr><td>log4net / NLog trực tiếp</td><td><code>ILogger&lt;T&gt;</code> (log4net/Serilog chỉ còn là provider phía sau)</td></tr>
+        <tr><td>IIS + <code>System.Web</code></td><td>Kestrel, có hoặc không có IIS/Nginx phía trước</td></tr>
+        <tr><td>ASMX / WCF service</td><td>Web API, gRPC, CoreWCF (bản cộng đồng)</td></tr>
+        <tr><td><code>packages.config</code>, csproj kiểu cũ</td><td>SDK-style csproj + <code>PackageReference</code></td></tr>
+        <tr><td>AppDomain, Remoting</td><td><code>AssemblyLoadContext</code>; Remoting bị bỏ hẳn</td></tr>
+      </tbody>
+    </table></div>
+
+    <details class="q" open>
+      <summary>.NET Framework và .NET (Core) khác nhau thế nào?<span class="qh">gần như chắc chắn bị hỏi</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>.NET Framework chỉ chạy Windows, cài chung toàn máy và gắn chặt với IIS qua <code>System.Web</code>. .NET là bản viết lại: cross-platform, mỗi app mang runtime và version riêng, modular qua NuGet, có sẵn DI, config, logging, và nhanh hơn đáng kể. Framework 4.8 vẫn được support nhưng không còn tính năng mới.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <ul>
+            <li><strong>Side-by-side</strong>: nhiều app trên cùng server có thể chạy .NET 8 và .NET 10 song song. Framework thì nâng lên là ảnh hưởng mọi app trên máy.</li>
+            <li><strong>Deploy</strong>: framework-dependent hoặc self-contained (đóng gói luôn runtime), chạy trên Docker/Linux được.</li>
+            <li><strong>Không còn <code>System.Web</code></strong>: đây là lý do gốc khiến Web Forms không port sang được.</li>
+            <li><strong>Hiệu năng</strong>: Kestrel, <code>Span&lt;T&gt;</code>, tiered JIT, Dynamic PGO; framework cũng được tối ưu lại từ đầu với async.</li>
+            <li>Open-source và phát hành mỗi năm một bản.</li>
+          </ul>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Có thể nói: "Ở dự án hiện tại, app chạy Framework 4.8 trên IIS. Muốn nâng runtime là phải tính tới Windows Server, và các app khác trên cùng máy. Với .NET hiện đại, app tự mang runtime, nâng version theo từng service và chạy trong container được. Khác biệt lớn nhất khi chuyển không nằm ở C#, mà ở chỗ phải bỏ những thứ dựa vào <code>System.Web</code>: <code>HttpContext.Current</code>, Session, page lifecycle."</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Web Forms có chạy trên .NET 8 được không?"</dt>
+            <dd>Không. <code>System.Web</code> không tồn tại trên .NET hiện đại. Phần UI phải viết lại; business logic tách ra được thì mang theo.</dd>
+            <dt>"Thư viện viết cho Framework có dùng lại được không?"</dt>
+            <dd>Nếu target <strong>.NET Standard 2.0</strong> thì dùng được ở cả hai bên, đây là cách chuẩn khi migrate từng bước. Thư viện target thẳng <code>net48</code> thì .NET có thể load nhờ compatibility shim, nhưng sẽ lỗi lúc chạy nếu nó gọi API không còn (System.Web, WCF server, AppDomain).</dd>
+            <dt>".NET Standard là gì, giờ còn cần không?"</dt>
+            <dd>Là một "hợp đồng API" chung để thư viện chạy được trên nhiều runtime. Từ .NET 5 thì không còn version mới. Nay chỉ còn dùng .NET Standard 2.0 cho thư viện phải chia sẻ với Framework; code mới thì target thẳng <code>net8.0</code>/<code>net10.0</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Kestrel là gì? Có còn cần IIS không?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Kestrel là web server cross-platform dựng sẵn trong ASP.NET Core. App luôn có server bên trong nó; IIS hoặc Nginx chỉ là reverse proxy tùy chọn đặt phía trước, lo TLS, load balancing, chia port 80/443 cho nhiều app và quản lý process.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <p>Trên IIS, ASP.NET Core chạy qua <strong>ASP.NET Core Module (ANCM)</strong> theo 2 kiểu:</p>
+          <ul>
+            <li><strong>In-process</strong> (mặc định): app chạy ngay trong <code>w3wp.exe</code>, dùng IIS HTTP Server thay cho Kestrel. Nhanh hơn vì không qua thêm một hop.</li>
+            <li><strong>Out-of-process</strong>: IIS chỉ forward request tới Kestrel đang chạy trong process riêng.</li>
+          </ul>
+          <p>Trên Linux/container: thường là Kestrel, đặt sau Nginx, load balancer hoặc ingress.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Expose Kestrel thẳng ra internet được không?"</dt>
+            <dd>Được, Kestrel đủ ổn định để làm edge server. Nhưng thực tế vẫn hay đặt sau proxy để terminate TLS tập trung, có WAF, và gom nhiều app về một port.</dd>
+            <dt>"Đặt sau proxy thì cần chú ý gì?"</dt>
+            <dd>Bật Forwarded Headers middleware để app biết scheme (https) và IP thật của client. Không có nó, redirect sang http sai và log IP toàn là IP của proxy.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Tại sao không còn <code>HttpContext.Current</code>?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Vì truy cập static ngầm như vậy khó test, che giấu dependency, và trong Framework nó phải dựa vào SynchronizationContext để "đi theo" request qua các thread. ASP.NET Core truyền <code>HttpContext</code> vào một cách tường minh: controller có sẵn property, middleware nhận làm tham số. Service ở tầng dưới mà thật sự cần thì dùng <code>IHttpContextAccessor</code>.</p>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Code Web Forms hay có helper static gọi <code>HttpContext.Current.Session["UserId"]</code> ở tầng business. Khi migrate đây là chỗ đau nhất. Cách xử lý sạch là đẩy thông tin cần (user id, tenant, culture) lên thành tham số, hoặc gom vào một service kiểu <code>ICurrentUser</code> được inject. Business logic như vậy cũng test được mà không cần web.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Dùng <code>IHttpContextAccessor</code> trong singleton có sao không?"</dt>
+            <dd>Inject accessor thì được, vì nó đọc qua <code>AsyncLocal</code> nên luôn ra đúng request hiện tại. Nhưng không được lưu <code>HttpContext</code> vào field, và không dùng ở background thread chạy sau khi request đã xong: lúc đó context là null hoặc đã bị tái sử dụng.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Config hoạt động thế nào? Thay <code>Web.config</code> bằng gì?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Config là nhiều nguồn chồng lên nhau theo thứ tự, nguồn sau ghi đè nguồn trước: <code>appsettings.json</code> → <code>appsettings.{Environment}.json</code> → user secrets (chỉ Development) → environment variables → command-line. Đọc qua <code>IConfiguration</code>, hoặc tốt hơn là bind vào class bằng Options pattern.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code><span class="c">// appsettings.json: { "Payout": { "MinAmount": 50, "Currency": "AUD" } }</span>
+public sealed class PayoutOptions { public decimal MinAmount { get; init; } public string Currency { get; init; } = ""; }
+
+builder.Services.Configure&lt;PayoutOptions&gt;(builder.Configuration.GetSection("Payout"));
+
+public class PayoutService(IOptions&lt;PayoutOptions&gt; options) { <span class="c">/* options.Value.MinAmount */</span> }</code></pre>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Interface</th><th>Lifetime</th><th>Reload khi file đổi</th></tr></thead>
+            <tbody>
+              <tr><td><code>IOptions&lt;T&gt;</code></td><td>Singleton</td><td>Không, đọc 1 lần</td></tr>
+              <tr><td><code>IOptionsSnapshot&lt;T&gt;</code></td><td>Scoped</td><td>Có, mỗi request đọc lại</td></tr>
+              <tr><td><code>IOptionsMonitor&lt;T&gt;</code></td><td>Singleton</td><td>Có, kèm callback <code>OnChange</code></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p><code>Web.Release.config</code> transform tương ứng với <code>appsettings.Production.json</code> cộng env vars được set trong pipeline deploy. Connection string và API key không commit vào repo: dev dùng user secrets, môi trường thật dùng env vars hoặc Key Vault.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Set key lồng nhau bằng environment variable thế nào?"</dt>
+            <dd>Dùng hai dấu gạch dưới: <code>Payout__MinAmount=100</code>, <code>ConnectionStrings__Default=...</code>.</dd>
+            <dt>"Inject <code>IOptionsSnapshot</code> vào singleton được không?"</dt>
+            <dd>Không: nó là scoped, sẽ lỗi scope validation. Singleton cần giá trị mới nhất thì dùng <code>IOptionsMonitor</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===================== 2 ===================== -->
+  <section class="part" id="s2">
+    <h2><span class="n">02</span>Câu hỏi trả bài kinh điển</h2>
+    <p class="lead">Loại câu "X là gì, khác Y thế nào". Đáp ngắn, đúng, rồi chuyển sang ví dụ. Ở đây ưu tiên những chỗ người ta hay trả lời sai.</p>
+
+    <details class="q" open>
+      <summary>4 tính chất của OOP</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <ul>
+            <li><strong>Encapsulation</strong>: giấu trạng thái bên trong, chỉ cho thay đổi qua method có kiểm soát, để object luôn ở trạng thái hợp lệ.</li>
+            <li><strong>Abstraction</strong>: chỉ lộ ra cái người dùng cần biết, giấu cách làm.</li>
+            <li><strong>Inheritance</strong>: class con kế thừa hành vi và dữ liệu của class cha (quan hệ "is-a").</li>
+            <li><strong>Polymorphism</strong>: cùng một lời gọi, hành vi khác nhau tùy kiểu thật của object.</li>
+          </ul>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <p>Encapsulation và abstraction hay bị nói lẫn. Encapsulation là <em>bảo vệ dữ liệu và invariant</em>; abstraction là <em>giấu độ phức tạp</em>. Polymorphism có 2 loại: compile-time (overloading) và runtime (<code>virtual</code>/<code>override</code>, gọi qua bảng virtual method).</p>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+<pre><code>public class Payout
+{
+    public PayoutStatus Status { get; private set; } = PayoutStatus.Pending;
+
+    public void Approve(string approvedBy)
+    {
+        if (Status != PayoutStatus.Pending)
+            throw new InvalidOperationException($"Cannot approve a {Status} payout");
+        Status = PayoutStatus.Approved;
+        ApprovedBy = approvedBy;
+    }
+}</code></pre>
+          <p>Không ai set thẳng <code>Status = Approved</code> được, nên không có chuyện duyệt một payout đã bị reject. Đây là encapsulation giữ đúng luồng business.</p>
+        </div>
+        <div class="blk real"><span class="chip real">Ví dụ có cả encapsulation và abstraction</span>
+          <p>Mở rộng ví dụ trên thành luồng trả tiền cho affiliate. Hai khái niệm nằm ở hai chỗ khác nhau trong cùng một luồng:</p>
+<pre><code>// ABSTRACTION: service chỉ cần biết "gửi tiền cho payout này",
+// không cần biết phía sau là bank API hay PayPal, ký request ra sao, retry thế nào
+public interface IPayoutGateway
+{
+    Task&lt;TransferResult&gt; SendAsync(Payout payout, CancellationToken ct);
+}
+
+public class BankTransferGateway(HttpClient http) : IPayoutGateway
+{
+    public async Task&lt;TransferResult&gt; SendAsync(Payout payout, CancellationToken ct)
+    {
+        // build request, ký HMAC, gọi API, dịch mã lỗi của ngân hàng...
+        // mọi chi tiết này bị giấu sau interface
+    }
+}
+
+// ENCAPSULATION: Payout tự bảo vệ trạng thái của nó
+public class Payout
+{
+    private readonly List&lt;PayoutEvent&gt; _history = [];
+
+    public decimal Amount { get; private set; }
+    public PayoutStatus Status { get; private set; } = PayoutStatus.Pending;
+    public string? BankReference { get; private set; }
+    public IReadOnlyList&lt;PayoutEvent&gt; History =&gt; _history;   // đọc được, không sửa được
+
+    public void Approve(string by)
+    {
+        EnsureStatus(PayoutStatus.Pending);
+        Status = PayoutStatus.Approved;
+        _history.Add(new PayoutEvent("Approved", by));
+    }
+
+    public void MarkPaid(string bankReference)
+    {
+        EnsureStatus(PayoutStatus.Approved);   // chưa duyệt thì không thể "đã trả"
+        Status = PayoutStatus.Paid;
+        BankReference = bankReference;
+        _history.Add(new PayoutEvent("Paid", "system"));
+    }
+
+    private void EnsureStatus(PayoutStatus expected)
+    {
+        if (Status != expected)
+            throw new InvalidOperationException($"Payout is {Status}, expected {expected}");
+    }
+}
+
+// Nơi hai thứ gặp nhau
+public class PayoutProcessor(IPayoutGateway gateway, IPayoutRepository repo)
+{
+    public async Task PayAsync(int payoutId, CancellationToken ct)
+    {
+        var payout = await repo.GetAsync(payoutId, ct);
+        var result = await gateway.SendAsync(payout, ct);  // abstraction: không biết gửi bằng cách nào
+        payout.MarkPaid(result.Reference);                 // encapsulation: không tự set Status
+        await repo.SaveAsync(payout, ct);
+    }
+}</code></pre>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th></th><th>Encapsulation</th><th>Abstraction</th></tr></thead>
+            <tbody>
+              <tr><td>Trả lời câu hỏi</td><td>Ai được sửa dữ liệu này, và sửa bằng cách nào?</td><td>Bên dùng cần biết gì để dùng được cái này?</td></tr>
+              <tr><td>Trong ví dụ</td><td><code>private set</code>, <code>EnsureStatus</code>, <code>History</code> chỉ đọc</td><td><code>IPayoutGateway</code> giấu toàn bộ chi tiết ngân hàng</td></tr>
+              <tr><td>Nếu thiếu</td><td>Code ở đâu đó set <code>Status = Paid</code> cho payout chưa được duyệt</td><td>Đổi từ chuyển khoản sang PayPal phải sửa <code>PayoutProcessor</code> và mọi chỗ gọi</td></tr>
+              <tr><td>Công cụ C#</td><td>Access modifier, <code>private set</code>, <code>init</code>, method có kiểm tra điều kiện</td><td>Interface, abstract class, API public gọn</td></tr>
+            </tbody>
+          </table></div>
+          <p><strong>Câu để nói khi phỏng vấn:</strong> "Encapsulation bảo vệ bên trong, abstraction đơn giản hóa bên ngoài. Payout tự giữ luật chuyển trạng thái của nó, nên không ai đánh dấu đã trả cho payout chưa duyệt. Còn service chỉ thấy <code>IPayoutGateway</code>, nên chuyển từ chuyển khoản sang PayPal không phải sửa luồng trả tiền."</p>
+          <p><strong>Phản ví dụ hay gặp ở Web Forms:</strong> nút "Pay" trong code-behind vừa gọi thẳng API ngân hàng, vừa chạy <code>UPDATE Payouts SET Status = 'Paid'</code>. Thiếu cả hai: luật chuyển trạng thái bị rải ở mọi page có thao tác với payout, và page biết quá nhiều chi tiết của ngân hàng.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Composition over inheritance nghĩa là gì?"</dt>
+            <dd>Inheritance tạo coupling chặt: đổi class cha là ảnh hưởng mọi class con, và C# chỉ cho kế thừa một class. Chỉ dùng khi thật sự là "is-a" và cần chia sẻ hành vi. Còn lại thì ghép các object nhỏ qua interface và DI.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Abstract class vs interface</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Interface là hợp đồng "làm được gì", một class implement được nhiều interface. Abstract class là class cha dở dang, có thể chứa state, constructor và code dùng chung, nhưng chỉ kế thừa được một.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th></th><th>Interface</th><th>Abstract class</th></tr></thead>
+            <tbody>
+              <tr><td>Instance field / state</td><td>Không</td><td>Có</td></tr>
+              <tr><td>Constructor</td><td>Không</td><td>Có</td></tr>
+              <tr><td>Số lượng kế thừa</td><td>Nhiều</td><td>Một</td></tr>
+              <tr><td>Code có sẵn</td><td>Default method (C# 8+), static abstract (C# 11)</td><td>Có</td></tr>
+              <tr><td>Access modifier member</td><td>Mặc định public</td><td>Tùy ý</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Interface: <code>IPaymentGateway</code> để đổi provider và mock khi test. Abstract class: <code>ReportBase</code> giữ luồng chung (lấy data, build header, xuất file) và để class con chỉ override phần tính toán riêng, chính là Template Method.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Interface có default method rồi thì khác gì abstract class?"</dt>
+            <dd>Vẫn không có instance state và constructor. Default method sinh ra chủ yếu để thêm member vào interface đã public mà không làm vỡ các class đang implement, không phải để thay abstract class.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Overriding vs overloading vs <code>new</code> (method hiding)</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><strong>Overloading</strong>: cùng tên, khác tham số, chọn lúc compile. <strong>Overriding</strong>: class con viết lại method <code>virtual</code> của cha, chọn lúc runtime theo kiểu thật. <strong>new</strong>: class con che method của cha, chọn theo kiểu của biến khai báo.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>class Base    { public virtual string A() =&gt; "Base.A";   public string B() =&gt; "Base.B"; }
+class Derived : Base
+              { public override string A() =&gt; "Derived.A"; public new string B() =&gt; "Derived.B"; }
+
+Base x = new Derived();
+x.A();   <span class="c">// "Derived.A": override đi theo kiểu runtime</span>
+x.B();   <span class="c">// "Base.B":    new đi theo kiểu khai báo của biến</span></code></pre>
+          <p><strong><code>new</code> làm gì:</strong> khai báo một method mới trùng tên chứ không thay thế method của cha, nên object có cả <code>Base.B</code> lẫn <code>Derived.B</code>. <code>override</code> ghi đè ô của method cha trong vtable nên được chọn lúc runtime theo object thật; method <code>new</code> được compiler chọn lúc compile theo kiểu biến. Vì vậy <code>((Base)d).B()</code> ra "Base.B" dù cùng một object. Chỉ nên dùng khi class cha (thường từ thư viện) thêm method trùng tên với method bạn đã có.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>Đây là câu "cho đoạn code, đoán output" rất hay gặp.</dt>
+            <dd>Nhớ quy tắc: <code>override</code> theo object thật, <code>new</code> theo kiểu biến. Quên ghi <code>override</code> thì compiler cảnh báo và mặc định coi như <code>new</code>.</dd>
+            <dt>"<code>sealed</code> dùng làm gì?"</dt>
+            <dd>Chặn kế thừa (class) hoặc chặn override tiếp (method). JIT có thể tối ưu gọi method trên class sealed. Nhiều team để mặc định sealed cho class không thiết kế để kế thừa.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>const</code> vs <code>readonly</code> vs <code>static readonly</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>const</code> là hằng lúc compile, chỉ cho kiểu primitive và string. <code>readonly</code> gán được trong constructor, mỗi instance một giá trị. <code>static readonly</code> gán một lần cho cả type, lúc runtime, dùng được với mọi kiểu.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất: gán lúc nào</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Loại</th><th>Gán lúc nào</th><th>Số lần</th></tr></thead>
+            <tbody>
+              <tr><td><code>const</code></td><td>Không gán lúc chạy: compiler chép giá trị vào chỗ dùng</td><td>0</td></tr>
+              <tr><td><code>static</code> / <code>static readonly</code></td><td>Ngay trước lần đầu dùng tới type (tạo instance hoặc truy cập static member): chạy static initializer rồi static constructor</td><td>1 lần mỗi process</td></tr>
+              <tr><td><code>readonly</code></td><td>Mỗi lần <code>new</code> object, trong initializer hoặc constructor</td><td>1 lần mỗi object</td></tr>
+            </tbody>
+          </table></div>
+          <p>Static dùng chung cho mọi request của mọi user trên process. Web Forms recycle app pool thì static khởi tạo lại; nhiều server thì mỗi server một bản.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Đổi <code>const</code> trong một library thì sao?"</dt>
+            <dd>Giá trị const được copy thẳng vào assembly gọi nó lúc compile. Assembly khác không build lại vẫn dùng giá trị cũ. Giá trị có thể đổi theo version thì dùng <code>static readonly</code>.</dd>
+            <dt>"<code>readonly List&lt;int&gt;</code> có thêm phần tử được không?"</dt>
+            <dd>Được. <code>readonly</code> chỉ khóa tham chiếu, không khóa object. Muốn bất biến thật thì dùng <code>IReadOnlyList</code> hoặc immutable collection.</dd>
+            <dt>"Static constructor ném exception thì sao?"</dt>
+            <dd><code>TypeInitializationException</code>, và CLR không thử lại: type hỏng tới khi process khởi động lại. Đừng gọi DB, file hay API trong static constructor.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>struct</code> vs <code>class</code> vs <code>record</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>struct</code> là value type: gán là copy, không kế thừa, hợp với dữ liệu nhỏ và bất biến (tọa độ, tiền tệ). <code>class</code> là reference type: gán là copy tham chiếu. <code>record</code> (C# 9) là class có so sánh theo giá trị, có <code>with</code> để tạo bản sao, hợp với DTO và value object. <code>record struct</code> (C# 10) là bản value type của nó.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>public record Money(decimal Amount, string Currency);
+
+var a = new Money(100, "AUD");
+var b = new Money(100, "AUD");
+a == b;                         <span class="c">// true: so sánh theo giá trị</span>
+var c = a with { Amount = 120 }; <span class="c">// bản sao mới, a không đổi</span></code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Struct mutable có vấn đề gì?"</dt>
+            <dd>Vì mỗi lần lấy ra là một bản copy: <code>list[0].X = 5</code> không compile với <code>List&lt;Point&gt;</code>, còn sửa qua biến tạm thì chỉ sửa bản copy. Quy tắc: struct nên <code>readonly struct</code>.</dd>
+            <dt>"Khi nào nên dùng struct?"</dt>
+            <dd>Nhỏ (khoảng 16 byte trở xuống), bất biến, tạo rất nhiều, và không bị boxing thường xuyên. Không chắc thì dùng class hoặc record.</dd>
+            <dt>"<code>Tuple</code> và <code>ValueTuple</code> khác nhau thế nào?"</dt>
+            <dd><code>System.Tuple</code> là class cũ, phần tử chỉ có tên <code>Item1</code>, <code>Item2</code>. <code>ValueTuple</code> <code>(int Id, string Name)</code> là struct, đặt tên được, nhưng tên chỉ tồn tại lúc compile và mất khi serialize. Dùng tuple cho giá trị trả về nội bộ; ở API public thì dùng record.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>String immutable nghĩa là gì? <code>==</code> vs <code>Equals</code> vs <code>ReferenceEquals</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>String không bao giờ bị sửa tại chỗ; mọi phép "sửa" đều tạo string mới. Nhờ vậy nó an toàn khi dùng chung giữa các thread và làm key cho Dictionary. Ghép string trong vòng lặp là O(n²) bộ nhớ, nên dùng <code>StringBuilder</code> hoặc <code>string.Join</code>.</p>
+          <p><code>ReferenceEquals</code> luôn so tham chiếu. <code>==</code> và <code>Equals</code> mặc định cũng so tham chiếu với class, nhưng string, record và các kiểu tự override sẽ so nội dung.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Tại sao string là reference type chứ không phải value type như <code>int</code>?"</dt>
+            <dd>Độ dài thay đổi nên không thể có kích thước cố định như value type, và copy toàn bộ nội dung mỗi lần gán thì quá đắt. Immutable cộng với overload <code>==</code> giúp nó dùng giống value type mà vẫn chỉ copy địa chỉ.</dd>
+            <dt>"String là reference type mà sao <code>==</code> lại so nội dung?"</dt>
+            <dd>Vì class <code>string</code> overload operator <code>==</code>.</dd>
+            <dt>"Override <code>Equals</code> cần làm gì thêm?"</dt>
+            <dd>Override cả <code>GetHashCode</code>: hai object bằng nhau phải có hash bằng nhau. Nếu hash dựa vào field có thể sửa, object sẽ "biến mất" khỏi Dictionary/HashSet sau khi sửa.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>ref</code> vs <code>out</code> vs <code>in</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Cả ba đều truyền theo tham chiếu. <code>ref</code>: phải gán trước khi truyền, method được đọc và sửa. <code>out</code>: không cần gán trước, method bắt buộc gán (như <code>int.TryParse</code>). <code>in</code>: chỉ đọc, dùng để truyền struct lớn mà không copy.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Truyền object (class) vào method rồi sửa property, bên ngoài có thấy không?"</dt>
+            <dd>Có, vì cả hai cùng trỏ tới một object. Nhưng gán <code>param = new Order()</code> thì bên ngoài không đổi, trừ khi dùng <code>ref</code>. Reference type được truyền bằng cách copy tham chiếu, không phải "truyền theo tham chiếu".</dd>
+            <dt>"Async method có dùng <code>ref</code>/<code>out</code> được không?"</dt>
+            <dd>Không. Trả về tuple hoặc object kết quả thay vào đó.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>SOLID<span class="qh">hay bị hỏi sâu</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>5 nguyên tắc để code dễ thay đổi và dễ test: <strong>S</strong>ingle Responsibility, <strong>O</strong>pen/Closed, <strong>L</strong>iskov Substitution, <strong>I</strong>nterface Segregation, <strong>D</strong>ependency Inversion. Đây là heuristic, không phải luật; áp quá tay thì sinh ra interface và tầng lớp thừa.</p>
+          <p>Interviewer hiếm khi dừng ở định nghĩa. Họ thường đào theo 3 hướng: <em>cho ví dụ thật của từng nguyên tắc</em>, <em>đọc đoạn code này và chỉ ra vi phạm</em>, <em>khi nào không nên áp dụng</em>. Các block dưới đây chuẩn bị cho cả ba, dùng chung một domain là luồng payout cho affiliate.</p>
+        </div>
+
+        <div class="blk why"><span class="chip why">S · Single Responsibility</span>
+          <p><strong>Định nghĩa chính xác:</strong> một class chỉ nên có <em>một lý do để thay đổi</em>, tức là chỉ phục vụ một bên hay yêu cầu sửa nó. Ví dụ: chỉ Finance (rule phí), hoặc chỉ Ops (layout báo cáo), không phải cả hai.</p>
+          <p>Số method không phải thước đo. <code>Payout</code> có <code>Approve</code>, <code>Reject</code>, <code>MarkPaid</code>, <code>Cancel</code> vẫn đúng SRP, vì tất cả đều là luật trạng thái payout. Ngược lại, một class chỉ có mỗi <code>Run()</code> nhưng vừa tính phí, vừa dựng HTML, vừa gửi email thì sai. Tự kiểm tra: mô tả class trong một câu mà phải nối nhiều việc không liên quan bằng chữ "và" là dấu hiệu nên tách.</p>
+          <p><strong>Dấu hiệu vi phạm:</strong> class tên <code>...Manager</code>/<code>...Helper</code> dài hàng nghìn dòng; một file bị sửa bởi các ticket từ nhiều phòng ban khác nhau; không unit test được vì logic dính DB, SMTP.</p>
+<pre><code>// Trước: Finance, Ops và Marketing đều phải sửa chung class này
+public class MonthlyStatementJob
+{
+    public void Run(int month)
+    {
+        var rows = _db.Query&lt;Txn&gt;("SELECT ... WHERE Month = @month", new { month });  // data
+        foreach (var g in rows.GroupBy(r =&gt; r.MerchantId))
+        {
+            var fee  = g.Sum(r =&gt; r.Amount) * (g.First().Tier == "Gold" ? 0.08m : 0.10m); // rule của Finance
+            var html = $"&lt;h1&gt;Statement {month}&lt;/h1&gt;...";                             // layout của Ops
+            _smtp.Send(g.First().Email, "Your monthly statement", html);                // nội dung của Marketing
+        }
+    }
+}
+
+// Sau: mỗi class một lý do để đổi, job chỉ điều phối
+public class CommissionCalculator { public decimal Calculate(IEnumerable&lt;Txn&gt; txns, Tier tier) { ... } }
+public class StatementRenderer    { public string Render(Statement s) { ... } }
+public interface INotifier        { Task SendAsync(string to, string subject, string body); }
+
+public class MonthlyStatementJob(ITxnRepository txns, CommissionCalculator calc,
+                                 StatementRenderer renderer, INotifier notifier) { ... }</code></pre>
+          <p><strong>Lợi ích nói được bằng nghiệp vụ:</strong> Finance đổi tỷ lệ phí thì chỉ sửa và test <code>CommissionCalculator</code>, không cần DB hay SMTP, và không có rủi ro làm hỏng email.</p>
+          <p><strong>Quá tay khi:</strong> chẻ một class 50 dòng thành 5 file, mỗi file một method. Nếu các phần luôn đổi cùng nhau thì để chung.</p>
+        </div>
+
+        <div class="blk why"><span class="chip why">O · Open/Closed</span>
+          <p><strong>Định nghĩa:</strong> thêm hành vi bằng cách viết code mới, không phải sửa code đang chạy ổn. "Đóng" với sửa đổi, "mở" để mở rộng.</p>
+          <p><strong>Tình huống:</strong> hệ thống đang trả tiền cho affiliate qua Bank và PayPal. Business báo sprint sau thêm Wise.</p>
+          <p><strong>Trước:</strong> hiểu biết về từng phương thức bị rải ra: mỗi việc một file, và trong mỗi file lại có một <code>switch</code> theo phương thức.</p>
+<pre><code>// FeeCalculator.cs
+public decimal Fee(Payout p) =&gt; p.Method switch
+{
+    "Bank"   =&gt; 1.5m,
+    "PayPal" =&gt; p.Amount * 0.02m,
+    _        =&gt; throw new NotSupportedException(p.Method)
+};
+
+// PayoutValidator.cs
+public void Validate(Payout p)
+{
+    switch (p.Method)
+    {
+        case "Bank":   if (string.IsNullOrEmpty(p.Bsb)) throw new ValidationException("BSB required"); break;
+        case "PayPal": if (!p.PayPalEmail.Contains('@')) throw new ValidationException("Invalid email"); break;
+    }
+}
+
+// PayoutSender.cs
+public Task&lt;TransferResult&gt; SendAsync(Payout p) =&gt; p.Method switch
+{
+    "Bank"   =&gt; _bankApi.TransferAsync(p.Bsb, p.AccountNo, p.Amount),
+    "PayPal" =&gt; _payPalApi.PayoutAsync(p.PayPalEmail, p.Amount),
+    _        =&gt; throw new NotSupportedException(p.Method)
+};</code></pre>
+          <p>Thêm Wise nghĩa là phải sửa cả 3 file. Quên một chỗ thì không có lỗi compile; nó nổ lúc chạy, ví dụ payout đã tính phí và validate xong, tới bước gửi tiền mới ném <code>NotSupportedException</code>. Mỗi lần mở 3 file này ra sửa cũng là một lần có nguy cơ làm hỏng luồng Bank và PayPal đang chạy tốt.</p>
+          <p><strong>Sau:</strong> gom mọi thứ về <em>một</em> phương thức vào <em>một</em> class. Interface đóng vai trò bản checklist mà phương thức nào cũng phải trả lời đủ.</p>
+<pre><code>// 1. Hợp đồng chung
+public interface IPayoutMethod
+{
+    string Code { get; }        // "Bank", "PayPal": khớp với giá trị lưu trong DB
+    decimal Fee(Payout p);
+    void Validate(Payout p);
+    Task&lt;TransferResult&gt; SendAsync(Payout p, CancellationToken ct);
+}
+
+// 2. Mỗi phương thức một class: mọi hiểu biết về Bank nằm ở đây
+public class BankTransferMethod(IBankApi bank) : IPayoutMethod
+{
+    public string Code =&gt; "Bank";
+    public decimal Fee(Payout p) =&gt; 1.5m;
+    public void Validate(Payout p)
+    {
+        if (string.IsNullOrEmpty(p.Bsb)) throw new ValidationException("BSB required");
+    }
+    public Task&lt;TransferResult&gt; SendAsync(Payout p, CancellationToken ct) =&gt;
+        bank.TransferAsync(p.Bsb, p.AccountNo, p.Amount, ct);
+}
+public class PayPalMethod(IPayPalApi payPal) : IPayoutMethod { public string Code =&gt; "PayPal"; /* ... */ }
+
+// 3. Tra cứu: đổi chuỗi "Bank" lấy từ DB thành đúng object xử lý
+public class PayoutMethods(IEnumerable&lt;IPayoutMethod&gt; all)   // DI đưa vào TẤT CẢ implementation đã đăng ký
+{
+    private readonly Dictionary&lt;string, IPayoutMethod&gt; _byCode = all.ToDictionary(m =&gt; m.Code);
+
+    public IPayoutMethod For(Payout p) =&gt;
+        _byCode.TryGetValue(p.Method, out var m) ? m : throw new NotSupportedException(p.Method);
+}
+
+// 4. Nơi dùng: không còn if/switch nào theo phương thức
+public class PayoutProcessor(PayoutMethods methods, IPayoutRepository repo)
+{
+    public async Task PayAsync(int payoutId, CancellationToken ct)
+    {
+        var payout = await repo.GetAsync(payoutId, ct);
+        var method = methods.For(payout);              // Bank hay PayPal, không cần biết
+        method.Validate(payout);
+        payout.SetFee(method.Fee(payout));
+        var result = await method.SendAsync(payout, ct);
+        payout.MarkPaid(result.Reference);
+        await repo.SaveAsync(payout, ct);
+    }
+}
+
+// 5. Đăng ký trong Program.cs
+builder.Services.AddScoped&lt;IPayoutMethod, BankTransferMethod&gt;();
+builder.Services.AddScoped&lt;IPayoutMethod, PayPalMethod&gt;();
+builder.Services.AddScoped&lt;PayoutMethods&gt;();</code></pre>
+          <p><strong>Sprint sau thêm Wise thì phải làm gì:</strong></p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th></th><th>Trước</th><th>Sau</th></tr></thead>
+            <tbody>
+              <tr><td>File cũ phải sửa</td><td><code>FeeCalculator</code>, <code>PayoutValidator</code>, <code>PayoutSender</code>, và mọi chỗ khác có switch</td><td>Không file nào</td></tr>
+              <tr><td>File thêm mới</td><td>Không</td><td><code>WiseMethod.cs</code></td></tr>
+              <tr><td>Chỗ khác</td><td>Không</td><td>Thêm 1 dòng <code>AddScoped</code></td></tr>
+              <tr><td>Quên một phần</td><td>Nổ lúc chạy, giữa luồng trả tiền</td><td>Lỗi compile: class chưa implement đủ interface</td></tr>
+              <tr><td>Phải test lại</td><td>Cả Bank lẫn PayPal</td><td>Chỉ <code>WiseMethod</code></td></tr>
+            </tbody>
+          </table></div>
+          <p>"Đóng" là <code>PayoutProcessor</code>, <code>PayoutMethods</code>, <code>BankTransferMethod</code> và <code>PayPalMethod</code> không bị đụng tới. "Mở" là hệ thống vẫn nhận thêm phương thức mới. Về mặt pattern, đây chính là Strategy (2.9) kết hợp với DI.</p>
+          <p><strong>Quá tay khi:</strong> switch chỉ ở một chỗ, 2–3 giá trị, gần như không đổi. Khi đó một switch expression rõ ràng hơn. Không có code nào "đóng" với mọi kiểu thay đổi; OCP là chọn đúng hướng mà nghiệp vụ hay thay đổi để mở. Ở đây hướng đó là "thêm phương thức thanh toán".</p>
+        </div>
+        <div class="blk why"><span class="chip why">L · Liskov Substitution</span>
+          <p><strong>Định nghĩa:</strong> chỗ nào dùng được kiểu cha thì thay kiểu con vào mà caller không bị bất ngờ. Cụ thể, class con không được: đòi điều kiện đầu vào chặt hơn, trả về ít hơn những gì đã hứa, hoặc ném loại exception mà cha không ném.</p>
+          <p><strong>Dấu hiệu vi phạm:</strong> class con ném <code>NotSupportedException</code> hoặc override rỗng; caller phải viết <code>if (x is LoaiConDacBiet)</code> để né.</p>
+<pre><code>// Trước: interface hứa mọi gateway đều refund được
+public interface IPayoutGateway
+{
+    Task SendAsync(Payout p);
+    Task RefundAsync(Payout p);
+}
+public class CryptoGateway : IPayoutGateway
+{
+    public Task RefundAsync(Payout p) =&gt; throw new NotSupportedException();  // phá hợp đồng
+}
+// Job refund hàng loạt chạy được nửa chừng thì nổ, nửa batch đã refund, nửa chưa
+
+// Sau: chỉ hứa điều thật sự làm được (tách interface, cũng chính là ISP)
+public interface IPayoutGateway     { Task SendAsync(Payout p); }
+public interface IRefundableGateway : IPayoutGateway { Task RefundAsync(Payout p); }
+// Luồng refund chỉ nhận IRefundableGateway, compiler chặn CryptoGateway từ đầu</code></pre>
+          <p><strong>Ví dụ có sẵn trong .NET:</strong> <code>ReadOnlyCollection&lt;T&gt;</code> implement <code>ICollection&lt;T&gt;.Add</code> rồi ném lỗi. Ví dụ kinh điển Square/Rectangle cũng nên biết, nhưng ví dụ từ nghiệp vụ ghi điểm hơn.</p>
+        </div>
+
+        <div class="blk why"><span class="chip why">I · Interface Segregation</span>
+          <p><strong>Định nghĩa:</strong> bên dùng không nên bị buộc phụ thuộc vào method nó không dùng. Thiết kế interface theo <em>vai trò của bên gọi</em>, không theo mọi thứ class làm được.</p>
+<pre><code>// Trước: màn hình báo cáo chỉ đọc nhưng nhận cả interface 15 method, có cả Delete
+public interface IMerchantRepository { GetById, Search, GetActive, Add, Update, Delete, UpdateBalance, ... }
+
+// Sau: một class implement cả hai, mỗi bên gọi chỉ thấy phần nó cần
+public interface IMerchantReader { Task&lt;Merchant?&gt; GetByIdAsync(int id); Task&lt;IReadOnlyList&lt;Merchant&gt;&gt; SearchAsync(MerchantQuery q); }
+public interface IMerchantWriter { Task AddAsync(Merchant m); Task UpdateBalanceAsync(int id, decimal delta); }
+public class MerchantRepository : IMerchantReader, IMerchantWriter { ... }</code></pre>
+          <p><strong>Lợi ích:</strong> mock trong test chỉ cần 2 method thay vì 15; code báo cáo không thể vô tình ghi dữ liệu. <strong>Quá tay khi:</strong> mỗi method một interface.</p>
+        </div>
+
+        <div class="blk why"><span class="chip why">D · Dependency Inversion</span>
+          <p><strong>Định nghĩa đủ hai ý:</strong> (1) tầng nghiệp vụ không phụ thuộc trực tiếp vào hạ tầng; cả hai phụ thuộc abstraction. (2) <strong>Abstraction do tầng nghiệp vụ định nghĩa</strong>, theo ngôn ngữ của nghiệp vụ. Ý thứ hai là chỗ phân biệt người hiểu sâu.</p>
+<pre><code>// Sai 1: business gọi thẳng SDK
+public class PayoutService { private readonly StripeClient _stripe = new(...); }
+
+// Sai 2: có interface nhưng là bản sao của SDK, vẫn bị hạ tầng định hình
+public interface IStripeClient { Task&lt;StripeTransfer&gt; CreateTransferAsync(StripeTransferOptions o); }
+
+// Đúng: interface nằm trong project Core, nói ngôn ngữ nghiệp vụ
+namespace Payouts.Core;
+public interface IPayoutGateway { Task&lt;TransferResult&gt; SendAsync(Payout payout, CancellationToken ct); }
+
+// Implementation nằm trong project Infrastructure, phụ thuộc NGƯỢC vào Core
+namespace Payouts.Infrastructure;
+public class StripePayoutGateway(StripeClient stripe) : IPayoutGateway { ... }</code></pre>
+          <p>Mũi tên reference giữa các project: <code>Infrastructure → Core</code>, không bao giờ ngược lại. Đổi Stripe sang nhà cung cấp khác không chạm vào Core; test dùng <code>FakePayoutGateway</code>.</p>
+          <p><strong>Quá tay khi:</strong> tạo interface cho mọi class. Class tính toán thuần, không I/O như <code>CommissionCalculator</code>, cứ <code>new</code> và test trực tiếp.</p>
+        </div>
+
+        <div class="blk real"><span class="chip real">Bài tập kiểu phỏng vấn: chỉ ra vi phạm rồi refactor</span>
+<pre><code>// Web Forms code-behind
+protected void btnApprove_Click(object sender, EventArgs e)
+{
+    var id = int.Parse(hfPayoutId.Value);
+    using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["Main"].ConnectionString))
+    {
+        var p = conn.QuerySingle&lt;Payout&gt;("SELECT * FROM Payouts WHERE Id = @id", new { id });
+        if (p.Status != "Pending") { lblError.Text = "Payout is not pending"; return; }
+
+        if (p.Method == "Bank")        { /* gọi API ngân hàng */ }
+        else if (p.Method == "PayPal") { /* gọi API PayPal */ }
+
+        conn.Execute("UPDATE Payouts SET Status = 'Approved', ApprovedBy = @u WHERE Id = @id",
+                     new { id, u = User.Identity.Name });
+        new SmtpClient().Send("noreply@...", p.MerchantEmail, "Payout approved", "...");
+    }
+}</code></pre>
+          <p><strong>Bước 1, gọi tên vi phạm:</strong></p>
+          <ul>
+            <li><strong>SRP:</strong> một event handler làm 5 việc: đọc input UI, truy cập DB, rule nghiệp vụ, gọi cổng thanh toán, gửi email.</li>
+            <li><strong>OCP:</strong> <code>if/else</code> theo <code>Method</code>, chắc chắn lặp lại ở các màn hình khác.</li>
+            <li><strong>DIP:</strong> <code>new SqlConnection</code>, <code>new SmtpClient</code> ngay trong UI, nên không test được nếu không có DB và mail server thật.</li>
+            <li>Bonus: rule "chỉ duyệt khi Pending" nằm ở UI, nên màn hình hoặc API khác có thể duyệt sai.</li>
+          </ul>
+          <p><strong>Bước 2, refactor theo thứ tự rủi ro thấp lên cao, không làm một lần:</strong></p>
+          <ol>
+            <li>Viết vài test bao quanh hành vi hiện tại (characterization test) để biết mình không làm hỏng gì.</li>
+            <li>Đưa rule vào domain: <code>payout.Approve(user)</code> tự kiểm tra trạng thái (xem ví dụ 2.1).</li>
+            <li>Tách data access ra <code>IPayoutRepository</code>, email ra <code>INotifier</code>.</li>
+            <li>Thay <code>if/else</code> bằng <code>IPayoutMethod</code> theo từng phương thức.</li>
+            <li>Gom luồng vào một use case <code>ApprovePayout</code>; Web Forms nhận nó qua DI (4.7.2+ có <code>WebObjectActivator</code>).</li>
+          </ol>
+<pre><code>protected void btnApprove_Click(object sender, EventArgs e)
+{
+    var result = _approvePayout.Execute(int.Parse(hfPayoutId.Value), User.Identity.Name);
+    lblError.Text = result.Error;   // UI chỉ còn việc của UI
+}</code></pre>
+          <p><strong>Bước 3, nói trade-off:</strong> không refactor toàn bộ codebase một lần. Làm dần theo các ticket có chạm vào chỗ đó. Phần <code>ApprovePayout</code> tách ra cũng chính là phần mang sang .NET mới được nguyên vẹn khi migrate.</p>
+        </div>
+
+        <div class="blk real"><span class="chip real">Cách nói của senior</span>
+          <p>"Mình không ngồi check từng chữ cái khi code. Mình để ý xem khi requirement đổi thì phải sửa bao nhiêu chỗ, và có test được phần logic không. SOLID là tên gọi cho những thói quen đó. Ví dụ ở dự án cũ, logic tính phí nằm trong code-behind nên mỗi lần đổi rule phải test tay cả màn hình; tách ra một class riêng thì viết unit test được."</p>
+        </div>
+
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"SOLID có mâu thuẫn với KISS/YAGNI không?"</dt>
+            <dd>Có thể, nếu áp trước khi có lý do. Thực tế: viết đơn giản trước; khi thay đổi thứ hai hoặc thứ ba cùng loại xuất hiện (rule of three) thì mới tách abstraction. Abstraction đúng sinh ra từ thay đổi thật, không từ phỏng đoán.</dd>
+            <dt>"SOLID liên quan gì tới testability?"</dt>
+            <dd>SRP làm unit nhỏ, dễ test. DIP cho phép thay hạ tầng bằng fake. Code khó viết test gần như luôn vi phạm DIP: nó tự <code>new</code> DB, HTTP, clock (<code>DateTime.Now</code>) bên trong.</dd>
+            <dt>"Nguyên tắc nào quan trọng nhất với bạn?"</dt>
+            <dd>Không có đáp án đúng, nên trả lời có lý do. Ví dụ: "SRP và DIP, vì hai cái đó quyết định code có test được và có sửa được an toàn không. OCP thì mình chỉ áp khi thấy một trục thay đổi lặp lại."</dd>
+            <dt>"DIP, DI và IoC khác nhau thế nào?"</dt>
+            <dd><strong>IoC</strong> là ý tưởng chung: framework gọi code của bạn chứ không phải ngược lại. <strong>DIP</strong> là nguyên tắc thiết kế: phụ thuộc abstraction do tầng nghiệp vụ định nghĩa. <strong>DI</strong> là kỹ thuật: dependency được truyền từ ngoài vào (thường qua constructor). DI container chỉ là công cụ tự động hóa DI.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Design pattern hay bị hỏi (và chỗ chúng có sẵn trong .NET)</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Ba nhóm: <strong>Creational</strong> (tạo object), <strong>Structural</strong> (ghép object), <strong>Behavioral</strong> (cách object phối hợp). Mẹo trả lời: mỗi pattern nêu 1 ví dụ ngay trong .NET mà bạn đã dùng, nghe thực tế hơn nhiều so với ví dụ Pizza.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Pattern</th><th>Dùng khi</th><th>Có sẵn trong .NET</th></tr></thead>
+            <tbody>
+              <tr><td>Singleton</td><td>Cả app chỉ cần 1 instance</td><td><code>AddSingleton</code>, <code>ArrayPool&lt;T&gt;.Shared</code></td></tr>
+              <tr><td>Factory</td><td>Ẩn logic chọn và tạo object</td><td><code>IHttpClientFactory</code>, <code>ILoggerFactory</code></td></tr>
+              <tr><td>Builder</td><td>Dựng object nhiều bước, nhiều tùy chọn</td><td><code>WebApplication.CreateBuilder</code>, <code>StringBuilder</code>, <code>UriBuilder</code></td></tr>
+              <tr><td>Strategy</td><td>Đổi thuật toán lúc runtime</td><td><code>IComparer&lt;T&gt;</code>, inject nhiều implementation của cùng interface</td></tr>
+              <tr><td>Decorator</td><td>Bọc thêm hành vi mà không sửa class gốc</td><td><code>BufferedStream</code>, <code>GZipStream</code> bọc <code>Stream</code>; <code>DelegatingHandler</code> của HttpClient</td></tr>
+              <tr><td>Adapter</td><td>Đổi interface bên thứ ba cho khớp code mình</td><td>Wrapper quanh SDK của provider</td></tr>
+              <tr><td>Chain of Responsibility</td><td>Request đi qua chuỗi handler, mỗi handler xử lý hoặc chuyển tiếp</td><td><strong>Middleware pipeline</strong> của ASP.NET Core</td></tr>
+              <tr><td>Observer</td><td>Thông báo cho nhiều bên khi có sự kiện</td><td>C# <code>event</code>, <code>IObservable&lt;T&gt;</code></td></tr>
+              <tr><td>Template Method</td><td>Luồng cố định, các bước con cho override</td><td><code>BackgroundService.ExecuteAsync</code></td></tr>
+              <tr><td>Repository / Unit of Work</td><td>Tách data access khỏi business</td><td><code>DbSet&lt;T&gt;</code> ≈ repository, <code>DbContext</code> ≈ unit of work</td></tr>
+            </tbody>
+          </table></div>
+<pre><code><span class="c">// Singleton thread-safe khi không dùng DI</span>
+public sealed class AppClock
+{
+    private static readonly Lazy&lt;AppClock&gt; _instance = new(() =&gt; new AppClock());
+    public static AppClock Instance =&gt; _instance.Value;
+    private AppClock() { }
+}</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Tại sao dùng Strategy thay vì if/else?"</dt>
+            <dd>Khi số nhánh tăng dần, mỗi nhánh có logic riêng cần test riêng, và muốn thêm nhánh mà không sửa code cũ. Còn 2–3 nhánh ổn định thì if/switch đơn giản hơn: đó là KISS.</dd>
+            <dt>"Singleton có nhược điểm gì?"</dt>
+            <dd>Là global state: khó mock, ẩn dependency, phải thread-safe nếu có state thay đổi. Trong ASP.NET Core dùng <code>AddSingleton</code> thay cho static Instance để vẫn inject và test được.</dd>
+            <dt>"Có nên viết Repository trên EF Core không?"</dt>
+            <dd>Đây là câu tranh luận, trả lời theo trade-off: DbContext đã là UoW + repository, bọc thêm một lớp generic thường chỉ làm mất tính năng (<code>Include</code>, projection). Nên viết repository theo nghiệp vụ (<code>GetPendingPayouts</code>) khi cần gom query hoặc tách khỏi EF để test. Sẽ nói kỹ ở mục EF Core.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>DRY, KISS, YAGNI</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><strong>DRY</strong>: mỗi kiến thức nghiệp vụ chỉ nằm ở một chỗ. <strong>KISS</strong>: chọn cách đơn giản nhất mà đủ đúng. <strong>YAGNI</strong>: không làm trước thứ chưa ai cần.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"DRY có lúc nào sai không?"</dt>
+            <dd>Có. Hai đoạn code giống nhau nhưng thay đổi vì hai lý do khác nhau mà bị gộp làm một, thì sau này mỗi bên đổi một kiểu, abstraction chung đầy cờ <code>if</code>. Lặp lại một chút rẻ hơn một abstraction sai. DRY là về kiến thức, không phải về ký tự trùng nhau.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===================== 3 ===================== -->
+  <section class="part" id="s3">
+    <h2><span class="n">03</span>Runtime &amp; Memory</h2>
+    <p class="lead">Phần "đánh đố" nhiều nhất. Phân biệt mid với senior nằm ở chỗ biết những câu trả lời phổ biến bị đơn giản hóa sai ở đâu.</p>
+
+    <details class="q" open>
+      <summary>Code C# chạy như thế nào? CLR, IL, JIT</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Compiler (Roslyn) dịch C# ra <strong>IL</strong> kèm metadata trong file .dll. Lúc chạy, <strong>CLR</strong> load assembly, và <strong>JIT</strong> dịch IL ra mã máy ở lần đầu một method được gọi. CLR còn lo GC, type safety, exception handling và thread pool.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <ul>
+            <li><strong>Tiered compilation</strong>: lần đầu JIT nhanh nhưng tối ưu ít (tier 0); method nào gọi nhiều thì được JIT lại tối ưu hơn (tier 1). Từ .NET 8, <strong>Dynamic PGO</strong> bật mặc định: JIT dùng dữ liệu chạy thật để tối ưu.</li>
+            <li><strong>ReadyToRun</strong>: biên dịch sẵn một phần ra mã máy để khởi động nhanh hơn, vẫn có JIT.</li>
+            <li><strong>Native AOT</strong> (.NET 7+): biên dịch hết ra mã máy, không có JIT. Khởi động rất nhanh, nhẹ, nhưng giới hạn reflection và dynamic code.</li>
+          </ul>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Vì sao lần gọi API đầu tiên sau khi deploy chậm?"</dt>
+            <dd>JIT, load assembly, khởi tạo DI, mở connection pool, warm cache. Giảm bằng ReadyToRun, warm-up endpoint hoặc health check trước khi nhận traffic.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Value type vs reference type, stack vs heap<span class="qh">hay bị trả lời sai</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Value type chứa dữ liệu trực tiếp, gán là copy. Reference type chứa tham chiếu tới object trên managed heap, gán là copy tham chiếu. <strong>Value type nằm ở đâu là tùy chỗ nó được khai báo</strong>: biến local thường nằm trên stack, nhưng là field của class hoặc phần tử của array thì nằm trên heap, bên trong object đó.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>class Order { public int Id; public decimal Amount; } <span class="c">// Id, Amount nằm TRONG object Order, trên heap</span>
+
+void Handle()
+{
+    int count = 5;               <span class="c">// local value type: stack (hoặc thanh ghi)</span>
+    var order = new Order();     <span class="c">// biến 'order' (tham chiếu) trên stack, object trên heap</span>
+    int[] ids = new int[3];      <span class="c">// array là reference type: cả 3 int nằm trên heap</span>
+    Func&lt;int&gt; f = () =&gt; count;   <span class="c">// 'count' bị closure capture: chuyển lên heap</span>
+}</code></pre>
+          <p>Stack: mỗi thread một vùng nhỏ (mặc định khoảng 1MB), cấp phát và giải phóng bằng cách dịch con trỏ, tự dọn khi method kết thúc. Heap: dùng chung, do GC quản lý.</p>
+        </div>
+        <div class="blk real"><span class="chip real">Cách nói của senior</span>
+          <p>"Câu 'value type nằm trên stack' là cách nói đơn giản hóa. Vị trí lưu là chi tiết cài đặt; cái quan trọng khi code là ngữ nghĩa copy. Ví dụ trong async method, các biến local bị đưa thành field của state machine, nên chúng cũng có thể lên heap."</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Struct luôn nằm trên stack đúng không?"</dt>
+            <dd>Không. Field của class, phần tử array, biến bị closure hoặc async capture, hoặc bị boxing đều nằm trên heap. Chỉ <code>ref struct</code> (như <code>Span&lt;T&gt;</code>) là bị ép chỉ được nằm trên stack.</dd>
+            <dt>"StackOverflowException khi nào?"</dt>
+            <dd>Gần như luôn do đệ quy không có điểm dừng (kể cả property gọi lại chính nó). Không catch được: process chết luôn.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Boxing / unboxing</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Boxing là bọc một value type vào object trên heap để dùng nó như <code>object</code> hoặc interface. Unboxing là lấy giá trị ra, cần ép đúng kiểu. Tốn chi phí vì cấp phát heap, copy dữ liệu và tạo việc cho GC.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất: boxing hay ẩn ở đâu</span>
+          <ul>
+            <li>Collection không generic: <code>ArrayList</code>, <code>Hashtable</code>, <code>DataTable</code> (code cũ hay gặp).</li>
+            <li>Gán struct cho biến kiểu interface: <code>IComparable c = 5;</code></li>
+            <li><code>string.Format("{0}", count)</code> và tham số <code>params object[]</code>. String interpolation từ .NET 6 dùng interpolated string handler nên không còn box.</li>
+            <li>Gọi method của <code>object</code> mà struct không override (<code>ToString</code>, <code>GetHashCode</code>, <code>Equals</code>).</li>
+          </ul>
+<pre><code>object o = 5;          <span class="c">// box một int</span>
+long l = (long)o;      <span class="c">// InvalidCastException: phải unbox về đúng int trước</span>
+long ok = (int)o;      <span class="c">// unbox về int rồi mới đổi sang long</span></code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Generic giúp tránh boxing thế nào?"</dt>
+            <dd>Với value type, JIT sinh code riêng cho từng kiểu (<code>List&lt;int&gt;</code> có code riêng), nên phần tử được lưu thẳng là <code>int</code>, không cần bọc vào object.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>GC hoạt động thế nào?<span class="qh">gần như chắc chắn bị hỏi</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Managed heap được chia thành 3 generation. Object mới vào Gen0; sống sót qua một lần GC thì được đẩy lên Gen1, rồi Gen2. Khi GC chạy, nó tìm các object còn được tham chiếu từ các <strong>root</strong> (biến local đang dùng, static field, thanh ghi CPU, GC handle), đánh dấu chúng, phần còn lại là rác. Sau đó nó <strong>compact</strong>: dồn object còn sống lại cho heap liền mạch. Thu Gen0 rất thường xuyên và rẻ; Gen2 (full GC) hiếm và đắt.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <ul>
+            <li><strong>Giả thuyết generation</strong>: phần lớn object chết trẻ (biến tạm trong một request). Nên chỉ quét vùng nhỏ chứa object mới là đủ dọn phần lớn rác.</li>
+            <li><strong>LOH</strong> (Large Object Heap): object từ <strong>85.000 byte</strong> trở lên (thường là array lớn, string lớn). Chỉ được dọn cùng Gen2 và mặc định không compact, nên dễ bị phân mảnh.</li>
+            <li><strong>POH</strong> (.NET 5+): vùng riêng cho object bị pin (truyền buffer cho native code), để chúng không cản việc compact.</li>
+            <li>Lúc GC chạy, các thread của app có thể bị tạm dừng. <strong>Background GC</strong> cho phép Gen2 chạy song song với app.</li>
+          </ul>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Ví dụ dễ kể: export báo cáo bằng cách load cả bảng vào <code>List</code> rồi build một string CSV khổng lồ. Mỗi lần export sinh ra nhiều object trên LOH, đẩy Gen2 chạy liên tục, server giật lúc có nhiều người export. Cách sửa: đọc theo trang hoặc stream (<code>IAsyncEnumerable</code>, ghi thẳng ra response stream) thay vì giữ hết trong bộ nhớ.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"C# khác C++ về quản lý bộ nhớ thế nào?"</dt>
+            <dd>C++ tự <code>new</code>/<code>delete</code> (hoặc smart pointer, RAII): giải phóng ngay, xác định được thời điểm, nhưng dễ leak và dangling pointer. C# có GC: an toàn hơn, nhưng không biết chính xác lúc nào bộ nhớ được thu và có thể có pause.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>GC chạy khi nào? Làm sao biết nó đang chạy và có vấn đề?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>GC tự quyết định. Các trigger chính:</p>
+          <ul>
+            <li><strong>Hết allocation budget của Gen0</strong>: nguyên nhân phổ biến nhất. Budget không phải số cố định; runtime tự điều chỉnh theo cache CPU và tỷ lệ object sống sót.</li>
+            <li>Cấp phát trên LOH vượt ngưỡng, có thể kéo theo Gen2.</li>
+            <li>Hệ điều hành báo thiếu memory, hoặc process gần chạm memory limit của container.</li>
+            <li>Code gọi <code>GC.Collect()</code>.</li>
+          </ul>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất: cách quan sát</span>
+          <ul>
+            <li><code>dotnet-counters monitor -p &lt;pid&gt;</code>: xem <em>gen-0/1/2-gc-count</em>, <em>% Time in GC</em>, <em>GC Heap Size</em>, <em>Allocation Rate</em> theo thời gian thực.</li>
+            <li><code>GC.CollectionCount(0|1|2)</code>, <code>GC.GetGCMemoryInfo()</code> trong code.</li>
+            <li><code>dotnet-trace</code> / PerfView để xem từng lần GC; <code>dotnet-gcdump</code> hoặc dotMemory (Rider) để xem object nào chiếm heap.</li>
+            <li>Production: metric GC xuất qua OpenTelemetry/Application Insights.</li>
+          </ul>
+          <p>Dấu hiệu có vấn đề: % time in GC cao kéo dài, Gen2 count tăng nhanh, heap size tăng mãi không giảm (leak).</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Có nên gọi <code>GC.Collect()</code> không?"</dt>
+            <dd>Hầu như không. Nó phá heuristic của runtime, và còn đẩy object đang sống lên generation cao hơn, làm GC sau đắt hơn. Ngoại lệ: benchmark, test, hoặc ngay sau khi giải phóng một lượng lớn dữ liệu một lần và biết chắc app sắp rảnh.</dd>
+            <dt>"Workstation GC và Server GC khác nhau thế nào?"</dt>
+            <dd>Workstation: một heap, ưu tiên pause ngắn, ít memory, mặc định cho app desktop. Server: mỗi core một heap và một GC thread, throughput cao hơn nhưng tốn memory hơn, mặc định cho ASP.NET Core. Từ .NET 9, chế độ <strong>DATAS</strong> bật mặc định với Server GC để tự co giãn số heap theo tải, hợp với container.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>IDisposable</code>, <code>using</code>, finalizer</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>GC chỉ dọn managed memory. Tài nguyên bên ngoài (DB connection, file handle, socket) phải được giải phóng chủ động qua <code>Dispose()</code>, thường bằng <code>using</code>. Finalizer chỉ là lưới an toàn cuối cho unmanaged resource: không biết lúc nào chạy, và làm object sống thêm ít nhất một vòng GC.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>using var conn = new SqlConnection(cs);        <span class="c">// using declaration: Dispose khi ra khỏi scope</span>
+await using var stream = File.OpenWrite(path);  <span class="c">// IAsyncDisposable: DisposeAsync</span>
+
+<span class="c">// Dispose pattern đầy đủ chỉ cần khi class TỰ giữ unmanaged resource.</span>
+<span class="c">// Thực tế: bọc handle trong SafeHandle, class của bạn chỉ cần Dispose bình thường.</span></code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Dispose có giải phóng memory không?"</dt>
+            <dd>Không trực tiếp. Dispose trả tài nguyên bên ngoài (đóng connection, trả về pool). Bộ nhớ của chính object vẫn chờ GC thu.</dd>
+            <dt>"Gọi Dispose hai lần thì sao?"</dt>
+            <dd>Phải an toàn: Dispose cần idempotent.</dd>
+            <dt>"HttpClient có nên bọc trong <code>using</code> cho mỗi request không?"</dt>
+            <dd>Không. Mỗi lần dispose là đóng connection; socket kẹt ở TIME_WAIT, tải cao sẽ hết socket. Dùng <code>IHttpClientFactory</code>, hoặc một <code>HttpClient</code> dùng chung với <code>SocketsHttpHandler.PooledConnectionLifetime</code> để vẫn cập nhật DNS.</dd>
+            <dt>"DbContext có tự dispose không?"</dt>
+            <dd>Lấy từ DI thì container dispose khi hết scope (hết request). Tự <code>new</code> hoặc lấy qua <code>IDbContextFactory</code> thì phải tự <code>using</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Có GC rồi sao vẫn bị memory leak?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>GC chỉ thu object không còn ai tham chiếu. Leak trong .NET nghĩa là vô tình giữ tham chiếu lâu hơn cần thiết.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Nguồn hay gặp</span>
+          <ul>
+            <li>Static collection hoặc cache tự viết, chỉ thêm không bao giờ xóa.</li>
+            <li>Đăng ký <code>event</code> mà không hủy: publisher sống lâu giữ luôn subscriber.</li>
+            <li>Singleton giữ object scoped (captive dependency).</li>
+            <li><code>Timer</code> chưa dispose; closure capture object lớn.</li>
+            <li>Resource unmanaged chưa dispose.</li>
+          </ul>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>App Web Forms hay có <code>static Dictionary</code> làm cache tra cứu (danh sách merchant, tỷ giá) mà không có hết hạn. Memory của w3wp tăng dần cho tới khi app pool recycle. Cách đúng: <code>MemoryCache</code> có expiration và <code>SizeLimit</code>. Cách tìm: chụp 2 bản heap cách nhau một khoảng thời gian rồi so sánh xem loại object nào tăng.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>Span&lt;T&gt;</code>, <code>Memory&lt;T&gt;</code>, <code>ArrayPool</code><span class="qh">điểm cộng senior</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>Span&lt;T&gt;</code> là một "cửa sổ" nhìn vào vùng nhớ liên tục (array, stack, native) mà không copy. Nó là <code>ref struct</code> nên chỉ sống trên stack: không làm field của class, không giữ qua <code>await</code>. Cần giữ lâu hơn thì dùng <code>Memory&lt;T&gt;</code>. <code>ArrayPool&lt;T&gt;.Shared</code> cho mượn và trả lại buffer để không cấp phát mảng mới mỗi lần.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code><span class="c">// Cắt chuỗi không tạo string mới</span>
+ReadOnlySpan&lt;char&gt; line = "AU,merchant-42,120.50";
+int i = line.IndexOf(',');
+ReadOnlySpan&lt;char&gt; country = line[..i];     <span class="c">// không cấp phát</span>
+decimal amount = decimal.Parse(line[(line.LastIndexOf(',') + 1)..]);</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Bạn có dùng mấy thứ này ở code business không?"</dt>
+            <dd>Câu trả lời thật: hiếm. Chúng đáng dùng ở hot path (parse file lớn, xử lý luồng dữ liệu nhiều). Code business thường bị chậm vì query và I/O trước, nên đo trước rồi mới tối ưu ở mức này.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===================== 4 ===================== -->
+  <section class="part" id="s4">
+    <h2><span class="n">04</span>Async &amp; Concurrency</h2>
+    <p class="lead">Chủ đề hỏi sâu nhất và cũng có nhiều chỗ liên quan trực tiếp tới Web Forms 4.8, nên kinh nghiệm hiện tại của bạn là lợi thế ở phần này.</p>
+
+    <details class="q" open>
+      <summary>Async/await giải quyết vấn đề gì?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Giải phóng thread trong lúc chờ I/O (DB, HTTP, file), để thread đó phục vụ request khác. Nó <strong>không làm một request nhanh hơn</strong>; nó giúp server chịu được nhiều request đồng thời hơn với cùng số thread. Với việc nặng CPU thì async không giúp gì; đó là bài toán parallelism.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th></th><th>I/O-bound</th><th>CPU-bound</th></tr></thead>
+            <tbody>
+              <tr><td>Ví dụ</td><td>Query DB, gọi API, đọc file</td><td>Tính toán, nén, resize ảnh, parse lớn</td></tr>
+              <tr><td>Thời gian đi đâu</td><td>Chờ thiết bị/mạng trả lời</td><td>CPU đang tính</td></tr>
+              <tr><td>Công cụ</td><td><code>async</code>/<code>await</code> với API async thật</td><td><code>Parallel</code>, PLINQ, <code>Task.Run</code> (ở app UI)</td></tr>
+            </tbody>
+          </table></div>
+          <p>Trong lúc chờ một I/O async, <strong>không có thread nào bị block</strong> để chờ cả. Hệ điều hành báo lại khi dữ liệu về (I/O completion port), lúc đó mới cần một thread để chạy tiếp phần code sau <code>await</code>.</p>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Một page Web Forms đồng bộ gọi API bên ngoài mất 3 giây giữ nguyên một thread của IIS trong 3 giây. Lúc đông người, request phải xếp hàng dù CPU gần như rảnh. Đây là triệu chứng điển hình nên dùng async.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>await</code> thực sự chạy thế nào?<span class="qh">câu "under the hood"</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Compiler biến method <code>async</code> thành một state machine. Tại mỗi <code>await</code>, nếu task chưa xong, method lưu lại trạng thái, đăng ký "phần còn lại" làm continuation rồi trả về một Task chưa hoàn thành cho caller, trả thread lại. Khi task xong, continuation được lên lịch chạy tiếp từ đúng chỗ đã dừng.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất: từng bước</span>
+          <ol>
+            <li>Compiler sinh một struct implement <code>IAsyncStateMachine</code>; biến local trở thành field của nó.</li>
+            <li>Method chạy <strong>đồng bộ</strong> trên thread của caller cho tới <code>await</code> đầu tiên.</li>
+            <li>Tại <code>await</code>: lấy awaiter của task. Nếu <code>IsCompleted</code> đã là true thì chạy tiếp luôn, không đổi thread (fast path).</li>
+            <li>Nếu chưa xong: lưu số state, đăng ký continuation, return. Lúc này state machine mới bị đưa lên heap.</li>
+            <li>Khi task xong: continuation được post về <strong>SynchronizationContext</strong> đã capture (UI thread, ASP.NET Framework); nếu không có thì chạy trên thread pool.</li>
+            <li>State machine nhảy tới đúng state, chạy tiếp; cuối cùng set kết quả hoặc exception vào Task đã trả về cho caller.</li>
+          </ol>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Method async có luôn chạy trên thread khác không?"</dt>
+            <dd>Không. Nó có thể chạy từ đầu tới cuối trên cùng một thread nếu mọi thứ đã xong sẵn (ví dụ đọc từ cache). <code>async</code> không tạo thread.</dd>
+            <dt>"Có <code>async</code> mà không có <code>await</code> thì sao?"</dt>
+            <dd>Compiler cảnh báo CS1998, method chạy đồng bộ hoàn toàn mà vẫn tốn chi phí state machine.</dd>
+            <dt>"Return thẳng Task thay vì <code>return await</code> được không?"</dt>
+            <dd>Được và nhẹ hơn, nhưng nguy hiểm khi đang trong <code>using</code> hoặc <code>try/catch</code>: object bị dispose trước khi task xong, và exception không được catch ở đó. Mặc định cứ <code>await</code>; chỉ bỏ ở method một dòng chuyển tiếp đơn giản.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Task vs Thread. Khi nào dùng <code>Task.Run</code>?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><strong>Thread</strong> là thread thật của OS: tốn bộ nhớ stack, tạo và hủy đắt. <strong>Task</strong> đại diện cho một việc sẽ xong trong tương lai (giống promise); nó không nhất thiết gắn với thread nào, và thường chạy trên thread pool. <code>Task.Run</code> đẩy việc CPU sang thread pool.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <ul>
+            <li>Ở app UI: <code>Task.Run</code> để việc nặng không làm đơ UI thread. Hợp lý.</li>
+            <li>Ở ASP.NET Core: request vốn đã chạy trên thread pool. Bọc <code>Task.Run</code> quanh I/O hay "cho nhanh" chỉ là đổi thread này lấy thread khác cộng thêm overhead.</li>
+            <li>Thread pool thêm thread khá chậm khi bị thiếu. Đây là gốc của chuyện thread pool starvation (xem câu deadlock bên dưới).</li>
+          </ul>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Muốn trả response ngay rồi xử lý tiếp phía sau (fire-and-forget) thì làm thế nào?"</dt>
+            <dd>Đừng <code>_ = Task.Run(...)</code> trong controller: exception bị nuốt, và DbContext/scoped service đã bị dispose khi request kết thúc. Cách đúng: đẩy job vào một queue (<code>Channel&lt;T&gt;</code> trong process, hoặc message queue), một <code>BackgroundService</code> đọc ra xử lý và tự tạo scope riêng cho mỗi job.</dd>
+          </dl>
+<pre><code>public class PayoutWorker(Channel&lt;int&gt; queue, IServiceScopeFactory scopes) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken ct)
+    {
+        await foreach (var payoutId in queue.Reader.ReadAllAsync(ct))
+        {
+            using var scope = scopes.CreateScope();
+            var svc = scope.ServiceProvider.GetRequiredService&lt;IPayoutService&gt;();
+            await svc.ProcessAsync(payoutId, ct);
+        }
+    }
+}</code></pre>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Concurrency vs parallelism</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><strong>Concurrency</strong>: nhiều việc cùng đang dở dang, có thể xen kẽ nhau trên ít thread (thường là chờ I/O). <strong>Parallelism</strong>: nhiều việc thật sự chạy cùng lúc trên nhiều core (việc CPU). Parallelism là một dạng của concurrency, nhưng không phải ngược lại.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code><span class="c">// Tuần tự: tổng = 3 lần chờ</span>
+var merchant = await GetMerchantAsync(id);
+var stats    = await GetStatsAsync(id);
+var payouts  = await GetPayoutsAsync(id);
+
+<span class="c">// Concurrent: tổng ≈ lần chờ lâu nhất (khi 3 việc độc lập nhau)</span>
+var mTask = GetMerchantAsync(id);
+var sTask = GetStatsAsync(id);
+var pTask = GetPayoutsAsync(id);
+await Task.WhenAll(mTask, sTask, pTask);
+
+<span class="c">// Nhiều I/O có giới hạn đồng thời</span>
+await Parallel.ForEachAsync(merchantIds,
+    new ParallelOptions { MaxDegreeOfParallelism = 8, CancellationToken = ct },
+    async (id, token) =&gt; await SyncMerchantAsync(id, token));</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Dùng <code>Parallel.ForEach</code> để gọi 100 API được không?"</dt>
+            <dd>Sai công cụ: nó dành cho việc CPU, và với code async bên trong sẽ thành <code>async void</code> hoặc block thread. Dùng <code>Parallel.ForEachAsync</code> có giới hạn, hoặc <code>SemaphoreSlim</code> + <code>Task.WhenAll</code>.</dd>
+            <dt>"Chạy 3 query song song trên cùng một DbContext?"</dt>
+            <dd>Lỗi "A second operation was started on this context". DbContext không thread-safe. Mỗi task phải có context riêng (qua <code>IDbContextFactory</code>), hoặc chạy tuần tự.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>SynchronizationContext và <code>ConfigureAwait(false)</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>SynchronizationContext quyết định phần code sau <code>await</code> chạy ở đâu. App UI (WinForms, WPF) và ASP.NET Framework có context riêng; ASP.NET Core và console app thì không có. <code>ConfigureAwait(false)</code> nghĩa là "không cần quay lại context cũ", chạy tiếp trên thread pool là được.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Môi trường</th><th>Có context?</th><th>Có cần <code>ConfigureAwait(false)</code>?</th></tr></thead>
+            <tbody>
+              <tr><td>WinForms / WPF / MAUI</td><td>Có: UI thread</td><td>Trong library: có. Code UI: không, vì cần quay về UI thread để cập nhật control</td></tr>
+              <tr><td>ASP.NET Framework (Web Forms, MVC 5)</td><td>Có: <code>AspNetSynchronizationContext</code>, giữ <code>HttpContext.Current</code>, culture</td><td>Trong library: có. Nhưng sau nó thì <code>HttpContext.Current</code> là null</td></tr>
+              <tr><td>ASP.NET Core</td><td>Không</td><td>Code app: không cần. Library: vẫn nên dùng, vì không biết ai sẽ gọi nó</td></tr>
+              <tr><td>Console</td><td>Không</td><td>Không ảnh hưởng</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Bug dễ gặp trong Web Forms: helper async có <code>ConfigureAwait(false)</code>, sau đó code đọc <code>HttpContext.Current.User</code> và gặp NullReferenceException, vì phần sau await đang chạy trên thread pool, ngoài request context. Cách nhìn đúng: library thuần (gọi API, truy DB) thì dùng <code>ConfigureAwait(false)</code>; code nào cần HttpContext thì lấy giá trị ra trước <code>await</code>.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Chỉ cần đặt <code>ConfigureAwait(false)</code> ở <code>await</code> đầu tiên là đủ?"</dt>
+            <dd>Không. Nếu task đó đã xong sẵn, code chạy tiếp đồng bộ và vẫn đang ở context cũ; các <code>await</code> sau lại capture context. Trong library phải đặt ở mọi <code>await</code>.</dd>
+            <dt>"Có gì mới không?"</dt>
+            <dd>.NET 8 có <code>ConfigureAwait(ConfigureAwaitOptions)</code>, ví dụ <code>SuppressThrowing</code> để chờ một task mà không ném exception, <code>ForceYielding</code> để luôn chạy tiếp bất đồng bộ.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Deadlock xảy ra khi nào?<span class="qh">câu kinh điển</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Cần đủ 3 điều kiện cùng lúc:</p>
+          <ol>
+            <li>Có một SynchronizationContext chỉ cho <strong>một thread chạy tại một thời điểm</strong> (UI, ASP.NET Framework).</li>
+            <li>Code <strong>block đồng bộ</strong> để chờ một async method: <code>.Result</code>, <code>.Wait()</code>, <code>.GetAwaiter().GetResult()</code>.</li>
+            <li>Bên trong async method đó có <code>await</code> <strong>không</strong> có <code>ConfigureAwait(false)</code>, nên continuation muốn quay về đúng context đó.</li>
+          </ol>
+          <p>Thread đang chờ task xong; task lại chờ thread đó rảnh để chạy tiếp. Không bên nào nhường.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code><span class="c">// Web Forms 4.8: treo vĩnh viễn</span>
+protected void Page_Load(object sender, EventArgs e)
+{
+    var report = _service.GetReportAsync().Result;  <span class="c">// (1) block request thread</span>
+}
+
+public async Task&lt;Report&gt; GetReportAsync()
+{
+    var data = await _http.GetStringAsync(url);     <span class="c">// (2) xong rồi, muốn quay về request context</span>
+    return Parse(data);                             <span class="c">// (3) không bao giờ chạy tới: context đang bị (1) giữ</span>
+}</code></pre>
+          <p><strong>Cách sửa</strong>, theo thứ tự nên dùng:</p>
+          <ol>
+            <li><strong>Async từ đầu tới cuối.</strong> Với Web Forms: <code>&lt;%@ Page Async="true" %&gt;</code> và <code>RegisterAsyncTask(new PageAsyncTask(LoadAsync))</code>.</li>
+            <li><code>ConfigureAwait(false)</code> ở mọi await trong library: hết deadlock, nhưng vẫn đang block một thread.</li>
+            <li><code>Task.Run(() =&gt; GetReportAsync()).Result</code>: chữa cháy, tốn thêm một thread và mất <code>HttpContext.Current</code> bên trong.</li>
+          </ol>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Đây là câu bạn có thể kể từ chính codebase Web Forms: gọi một thư viện chỉ có API async (SDK mới, <code>HttpClient</code>) từ page đồng bộ. Nêu được cả nguyên nhân lẫn cách làm page async đúng chuẩn là điểm cộng rõ.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"ASP.NET Core có bị deadlock kiểu này không?"</dt>
+            <dd>Không, vì không có SynchronizationContext. Nhưng <code>.Result</code> vẫn xấu: nó block một thread pool thread. Dưới tải, nhiều request cùng block gây <strong>thread pool starvation</strong>: latency tăng vọt, request timeout, trong khi CPU thấp. Nhận biết qua <code>dotnet-counters</code>: <em>ThreadPool Queue Length</em> tăng, <em>ThreadPool Thread Count</em> tăng dần đều.</dd>
+            <dt>"<code>.GetAwaiter().GetResult()</code> khác <code>.Result</code> chỗ nào?"</dt>
+            <dd>Cùng block, cùng deadlock. Khác duy nhất: ném exception gốc thay vì bọc trong <code>AggregateException</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>async void</code> có vấn đề gì?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Chỉ dùng cho event handler. Caller không await được nên không biết khi nào xong, và exception bên trong không bắt được từ phía caller: nó bị ném lên SynchronizationContext hoặc thread pool, có thể làm sập process.</p>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Web Forms cho phép <code>protected async void Page_Load</code> khi page có <code>Async="true"</code>, vì <code>AspNetSynchronizationContext</code> đếm các thao tác async void đang chạy và chờ chúng xong trước khi render. Thiếu <code>Async="true"</code> thì gặp lỗi "An asynchronous operation cannot be started at this time". Dù chạy được, Microsoft vẫn khuyên dùng <code>RegisterAsyncTask</code>.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Lambda async truyền vào chỗ nhận <code>Action</code> thì sao?"</dt>
+            <dd>Nó thành <code>async void</code> ngầm. Ví dụ <code>list.ForEach(async x =&gt; await SaveAsync(x))</code>: vòng lặp xong ngay, các lần save chạy lung tung, lỗi bị mất. Dùng <code>foreach</code> + <code>await</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Exception trong async và <code>Task.WhenAll</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>await</code> ném lại exception gốc. Với <code>Task.WhenAll</code>, <code>await</code> chỉ ném <strong>exception đầu tiên</strong>; muốn xem hết thì đọc <code>task.Exception.InnerExceptions</code>.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>var all = Task.WhenAll(tasks);
+try { await all; }
+catch
+{
+    foreach (var ex in all.Exception!.InnerExceptions)
+        _logger.LogError(ex, "Sync failed");
+}</code></pre>
+          <p>Task bị fire-and-forget mà lỗi sẽ không làm sập app (từ .NET 4.5); lỗi chỉ đi vào sự kiện <code>TaskScheduler.UnobservedTaskException</code>, nghĩa là bị nuốt im lặng nếu không ai log.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>CancellationToken</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Cơ chế hủy hợp tác: bên gọi phát tín hiệu, bên làm việc tự kiểm tra và dừng. Phải truyền token xuyên qua mọi tầng (controller → service → EF/HttpClient). Trong ASP.NET Core, thêm tham số <code>CancellationToken</code> vào action là nhận được <code>HttpContext.RequestAborted</code>: token bị hủy khi client đóng kết nối.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>using var cts = CancellationTokenSource.CreateLinkedTokenSource(requestToken);
+cts.CancelAfter(TimeSpan.FromSeconds(10));        <span class="c">// timeout riêng, vẫn hủy theo request</span>
+
+try { await _api.FetchAsync(cts.Token); }
+catch (OperationCanceledException) when (requestToken.IsCancellationRequested)
+{
+    <span class="c">// client bỏ đi: không phải lỗi, đừng log Error</span>
+}</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Hủy giữa chừng một luồng ghi dữ liệu thì sao?"</dt>
+            <dd>Có thể để lại dữ liệu ghi dở. Với bước commit cuối hoặc thao tác không được dừng giữa chừng (đã trừ tiền, đã gọi provider), đừng truyền token của request; hoặc bọc trong transaction để hủy thì rollback. Đây là câu hỏi về nghiệp vụ hơn là kỹ thuật.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>ValueTask</code> vs <code>Task</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>ValueTask</code> tránh cấp phát một object Task khi kết quả thường có sẵn ngay (ví dụ cache hit). Mặc định vẫn dùng <code>Task</code>; <code>ValueTask</code> chỉ cho hot path hoặc library.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Có gì phải cẩn thận?"</dt>
+            <dd>Chỉ được await <strong>một lần</strong>; không await từ hai nơi cùng lúc; không gọi <code>.Result</code> khi chưa xong. Cần dùng nhiều lần thì gọi <code>.AsTask()</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Thread safety: race condition và các công cụ đồng bộ</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Race condition xảy ra khi nhiều thread đọc-sửa-ghi cùng dữ liệu và kết quả phụ thuộc vào thứ tự chạy. Dạng hay gặp nhất là "kiểm tra rồi mới làm" (check-then-act).</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code><span class="c">// Hai thread cùng thấy "chưa có" và cùng Load</span>
+if (!_cache.ContainsKey(key)) _cache[key] = Load(key);
+
+<span class="c">// ConcurrentDictionary: an toàn khi ghi, NHƯNG factory vẫn có thể chạy nhiều lần</span>
+var v = _cache.GetOrAdd(key, k =&gt; Load(k));
+
+<span class="c">// Muốn Load đúng một lần: lưu Lazy</span>
+var v2 = _lazyCache.GetOrAdd(key, k =&gt; new Lazy&lt;Data&gt;(() =&gt; Load(k))).Value;</code></pre>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Công cụ</th><th>Dùng khi</th><th>Lưu ý</th></tr></thead>
+            <tbody>
+              <tr><td><code>lock</code></td><td>Đoạn code đồng bộ ngắn</td><td>Không được <code>await</code> bên trong (lỗi compile). .NET 9 có kiểu <code>System.Threading.Lock</code> riêng</td></tr>
+              <tr><td><code>SemaphoreSlim(1,1)</code></td><td>Cần "lock" quanh code async</td><td><code>await WaitAsync()</code>, luôn <code>Release()</code> trong <code>finally</code></td></tr>
+              <tr><td><code>Interlocked</code></td><td>Tăng giảm, đổi giá trị một biến</td><td>Nhanh nhất, không lock</td></tr>
+              <tr><td><code>ConcurrentDictionary</code>, <code>ConcurrentQueue</code></td><td>Collection dùng chung</td><td>Từng thao tác an toàn, nhưng ghép nhiều thao tác thì không</td></tr>
+              <tr><td><code>Channel&lt;T&gt;</code></td><td>Producer/consumer</td><td>Thay cho <code>BlockingCollection</code> trong code async</td></tr>
+              <tr><td>Immutable collection, record</td><td>Dữ liệu chia sẻ chỉ đọc</td><td>Không cần lock nếu không ai sửa</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Hai người cùng bấm duyệt một payout. <code>lock</code> trong code không giải quyết được, vì app chạy trên nhiều server hoặc nhiều process. Phải xử lý ở database: <code>UPDATE Payouts SET Status = 'Approved' WHERE Id = @id AND Status = 'Pending'</code> rồi kiểm tra số dòng bị ảnh hưởng, hoặc dùng concurrency token (rowversion) của EF. Interviewer rất thích câu trả lời nhận ra rằng lock trong memory không đủ cho hệ thống nhiều instance.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"<code>volatile</code> có thay được <code>lock</code> không?"</dt>
+            <dd>Không. <code>volatile</code> chỉ đảm bảo đọc giá trị mới nhất và chặn sắp xếp lại lệnh; nó không làm <code>count++</code> thành thao tác nguyên tử. Hiếm khi cần trong code business.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>Task.Yield()</code> dùng để làm gì?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Buộc phần code sau nó luôn chạy như một continuation bất đồng bộ, kể cả khi không có gì để chờ. Method trả control về cho caller ngay tại đó. Dùng hiếm: ở app UI để nhường UI thread trước một đoạn xử lý dài, hoặc khi cần chắc chắn method trả về trước khi làm tiếp.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Có giúp tăng hiệu năng hay chống thread pool starvation không?"</dt>
+            <dd>Không. Trên ASP.NET Core nó chỉ đưa phần còn lại vào hàng đợi của thread pool. Nguyên nhân thật của starvation là block đồng bộ, cách sửa là bỏ block.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+  <!-- ===================== 5 ===================== -->
+  <section class="part" id="s5">
+    <h2><span class="n">05</span>C# hiện đại</h2>
+    <p class="lead">Những gì đã thay đổi trong lúc bạn ở với C# 7.3 của .NET Framework. Interviewer hay hỏi "bạn dùng tính năng mới nào", và đọc code mẫu toàn cú pháp mới, nên cần nhìn quen mắt.</p>
+
+    <h3>Bản đồ theo version</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>C#</th><th>.NET</th><th>Tính năng đáng nhớ</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>Core 3.x</td><td>Nullable reference types, switch expression, <code>using</code> declaration, <code>IAsyncEnumerable</code> / <code>await foreach</code>, default interface method, index/range <code>^1</code> <code>..</code></td></tr>
+        <tr><td>9</td><td>5</td><td><code>record</code>, <code>init</code>, top-level statements, pattern <code>and</code>/<code>or</code>/<code>not</code>, target-typed <code>new()</code></td></tr>
+        <tr><td>10</td><td>6</td><td><code>record struct</code>, file-scoped namespace, <code>global using</code>, implicit usings</td></tr>
+        <tr><td>11</td><td>7</td><td><code>required</code>, raw string literal <code>"""</code>, list pattern, static abstract trong interface</td></tr>
+        <tr><td>12</td><td>8</td><td>Primary constructor cho class, collection expression <code>[1, 2, 3]</code></td></tr>
+        <tr><td>13</td><td>9</td><td><code>params</code> cho collection bất kỳ, kiểu <code>Lock</code>, escape <code>\e</code></td></tr>
+        <tr><td>14</td><td>10</td><td>Từ khóa <code>field</code> trong property, extension members, gán qua null-conditional <code>a?.B = x</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <details class="q" open>
+      <summary>Nullable reference types</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Bật <code>&lt;Nullable&gt;enable&lt;/Nullable&gt;</code> thì compiler coi reference type mặc định là không được null; muốn cho phép null phải ghi <code>string?</code>. Compiler phân tích luồng code và cảnh báo khi có thể dereference null. Mục tiêu là bắt NullReferenceException lúc compile thay vì lúc chạy.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>public string? FindMerchantName(int id) { ... }
+
+var name = FindMerchantName(42);
+Console.WriteLine(name.Length);     // cảnh báo CS8602: có thể null
+if (name is not null)
+    Console.WriteLine(name.Length); // ok: compiler biết đã kiểm tra
+Console.WriteLine(name!.Length);    // '!' = "tin tôi đi", tắt cảnh báo</code></pre>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Với codebase cũ, không bật một lần cho cả project vì sẽ ra hàng nghìn cảnh báo. Bật theo từng file bằng <code>#nullable enable</code>, bắt đầu từ code mới và các model ở biên (DTO, API contract).</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Bật nullable rồi thì runtime có kiểm tra null không?"</dt>
+            <dd>Không. Đây chỉ là chú thích và cảnh báo lúc compile. Dữ liệu từ JSON, DB, hay caller chưa bật nullable vẫn có thể là null, nên ở biên hệ thống vẫn phải validate.</dd>
+            <dt>"Dùng <code>!</code> nhiều có sao không?"</dt>
+            <dd>Mỗi chỗ <code>!</code> là một chỗ tắt bảo vệ. Dùng nhiều là dấu hiệu model chưa phản ánh đúng thực tế; nên sửa kiểu dữ liệu hoặc thêm kiểm tra.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Pattern matching và switch expression</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Switch expression trả về giá trị và kết hợp được với type pattern, property pattern, relational pattern (<code>&gt;</code>, <code>&lt;=</code>), <code>and</code>/<code>or</code>/<code>not</code>. Viết logic phân nhánh theo nghiệp vụ gọn hơn nhiều so với chuỗi if/else, và compiler cảnh báo khi thiếu nhánh.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>decimal CommissionRate(Merchant m) =&gt; m switch
+{
+    { Tier: Tier.Enterprise }                  =&gt; 0.05m,
+    { MonthlySales: &gt;= 100_000 }                =&gt; 0.08m,
+    { MonthlySales: &gt;= 10_000 and &lt; 100_000 }  =&gt; 0.10m,
+    { IsActive: false }                        =&gt; 0m,
+    _                                          =&gt; 0.12m,
+};
+
+if (result is { Status: PayoutStatus.Failed, Error: var err }) Log(err);</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Thứ tự các nhánh có quan trọng không?"</dt>
+            <dd>Có. Nhánh đầu tiên khớp sẽ thắng. Trong ví dụ trên, merchant Enterprise mà không active vẫn ra 0.05 vì nhánh Tier đứng trước. Compiler báo lỗi nếu một nhánh không bao giờ tới được, nhưng không bắt được sai về nghiệp vụ.</dd>
+            <dt>"Khi nào vẫn nên dùng Strategy thay vì switch?"</dt>
+            <dd>Khi mỗi nhánh là một khối logic lớn, cần dependency riêng, hoặc cần thêm nhánh mà không sửa chỗ này. Switch expression hợp với ánh xạ ngắn từ dữ liệu ra giá trị.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Primary constructor, <code>required</code>, <code>init</code></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>init</code>: property chỉ gán được lúc khởi tạo. <code>required</code>: bắt buộc caller phải gán property đó trong object initializer. Primary constructor (C# 12): khai báo tham số ngay trên tên class, dùng được trong toàn bộ class; rất hợp với constructor injection.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>public class PayoutService(IPayoutRepository repo, ILogger&lt;PayoutService&gt; logger)
+{
+    public async Task ApproveAsync(int id) { var p = await repo.GetAsync(id); ... }
+}
+
+public class CreatePayoutRequest
+{
+    public required int MerchantId { get; init; }
+    public required decimal Amount { get; init; }
+    public string? Note { get; init; }
+}
+var req = new CreatePayoutRequest { MerchantId = 1, Amount = 50 }; // thiếu field required là lỗi compile</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Tham số primary constructor có phải là field readonly không?"</dt>
+            <dd>Không. Nó là biến được capture, và <strong>gán lại được</strong> bên trong class. Muốn đảm bảo không đổi thì khai báo field rõ ràng: <code>private readonly IPayoutRepository _repo = repo;</code>. Với <code>record</code> thì khác: tham số positional trở thành property public.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Mấy cú pháp nhỏ hay gặp trong code mẫu</summary>
+      <div class="qbody">
+        <div class="blk why"><span class="chip why">Nhận diện nhanh</span>
+<pre><code>namespace Billing;                        // file-scoped namespace, bớt một tầng thụt lề
+global using System.Text.Json;            // dùng cho cả project
+int[] ids = [1, 2, 3];                    // collection expression
+int[] more = [..ids, 4];                  // spread
+var last = ids[^1];                       // phần tử cuối
+var firstTwo = ids[..2];                  // range
+Order o = new();                          // target-typed new
+var sql = """
+    SELECT * FROM Payouts WHERE Status = 'Pending'
+    """;                                  // raw string, không cần escape
+await foreach (var row in ReadRowsAsync()) { }   // IAsyncEnumerable
+
+public string Name { get; set => field = value.Trim(); }  // C# 14: 'field' là backing field tự sinh</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Có nên dùng record làm entity cho EF Core không?"</dt>
+            <dd>Không nên. Record so sánh theo giá trị và khuyến khích bất biến, trong khi entity có identity (Id) và được EF track rồi sửa tại chỗ. Record hợp với DTO, request/response và value object.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===================== 6 ===================== -->
+  <section class="part" id="s6">
+    <h2><span class="n">06</span>Collections &amp; LINQ</h2>
+    <p class="lead">Câu hỏi ở đây thường không dừng ở "khác nhau thế nào" mà hỏi tiếp "bên trong nó cài đặt ra sao" và "độ phức tạp bao nhiêu".</p>
+
+    <h3>Độ phức tạp cần thuộc</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Collection</th><th>Truy cập</th><th>Tìm</th><th>Thêm</th><th>Xóa</th><th>Bên trong</th></tr></thead>
+      <tbody>
+        <tr><td><code>T[]</code></td><td>O(1)</td><td>O(n)</td><td>không đổi kích thước</td><td>không</td><td>Vùng nhớ liên tục</td></tr>
+        <tr><td><code>List&lt;T&gt;</code></td><td>O(1)</td><td>O(n)</td><td>O(1)* cuối, O(n) giữa</td><td>O(n)</td><td>Array, đầy thì cấp mảng gấp đôi và copy</td></tr>
+        <tr><td><code>Dictionary&lt;K,V&gt;</code></td><td>O(1)* theo key</td><td>O(1)*</td><td>O(1)*</td><td>O(1)*</td><td>Hash table: bucket theo <code>GetHashCode</code>, so khớp bằng <code>Equals</code></td></tr>
+        <tr><td><code>HashSet&lt;T&gt;</code></td><td>không</td><td>O(1)*</td><td>O(1)*</td><td>O(1)*</td><td>Như Dictionary nhưng chỉ có key</td></tr>
+        <tr><td><code>SortedDictionary</code></td><td>O(log n)</td><td>O(log n)</td><td>O(log n)</td><td>O(log n)</td><td>Cây đỏ đen, luôn có thứ tự</td></tr>
+        <tr><td><code>LinkedList&lt;T&gt;</code></td><td>O(n)</td><td>O(n)</td><td>O(1) nếu có node</td><td>O(1) nếu có node</td><td>Danh sách liên kết đôi</td></tr>
+        <tr><td><code>Queue</code> / <code>Stack</code></td><td colspan="2">chỉ phần tử đầu/đỉnh</td><td>O(1)*</td><td>O(1)</td><td>Array vòng / array</td></tr>
+      </tbody>
+    </table></div>
+    <p style="color:var(--muted);font-size:14px">* trung bình hoặc amortized. Dictionary/HashSet tệ nhất là O(n) khi hash bị trùng nhiều.</p>
+
+    <details class="q" open>
+      <summary>Dictionary hoạt động bên trong thế nào?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Gọi <code>GetHashCode()</code> của key để chọn bucket, rồi dùng <code>Equals()</code> để tìm đúng key trong bucket đó. Vì vậy tra cứu trung bình là O(1). Nếu nhiều key có cùng hash, chúng dồn vào cùng một chuỗi và tra cứu chậm dần tới O(n).</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Dùng object tự định nghĩa làm key cần gì?"</dt>
+            <dd>Override cả <code>Equals</code> và <code>GetHashCode</code> (hoặc dùng record), và key phải bất biến. Sửa field tham gia vào hash sau khi đã thêm vào Dictionary thì key coi như "biến mất".</dd>
+            <dt>"Dictionary có giữ thứ tự thêm vào không?"</dt>
+            <dd>Không được đảm bảo, dù thực tế thường thấy đúng thứ tự khi chưa xóa phần tử nào. Đừng dựa vào nó.</dd>
+            <dt>"Dữ liệu tra cứu nạp một lần rồi đọc rất nhiều thì dùng gì?"</dt>
+            <dd><code>FrozenDictionary</code> (.NET 8): tạo chậm hơn nhưng đọc nhanh hơn, và không sửa được.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Nên nhận và trả về kiểu collection nào?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Tham số: nhận kiểu <strong>tổng quát nhất</strong> mà method cần (<code>IEnumerable&lt;T&gt;</code> nếu chỉ duyệt). Giá trị trả về: trả kiểu <strong>cụ thể vừa đủ</strong> để caller dùng thuận tiện, thường là <code>IReadOnlyList&lt;T&gt;</code> hoặc <code>IReadOnlyCollection&lt;T&gt;</code> khi dữ liệu đã nạp xong.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Trả về <code>IEnumerable&lt;T&gt;</code> từ repository có vấn đề gì?"</dt>
+            <dd>Caller không biết dữ liệu đã nạp hay chưa. Nếu bên dưới là query chưa chạy, mỗi lần duyệt lại là một lần query DB, và có thể chạy sau khi DbContext đã bị dispose. Trả <code>IReadOnlyList</code> sau khi <code>ToListAsync()</code> thì rõ ràng hơn.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary><code>IEnumerable</code> vs <code>IQueryable</code><span class="qh">gần như chắc chắn bị hỏi</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>IEnumerable</code> chạy LINQ trong memory, nhận delegate (<code>Func&lt;T,bool&gt;</code>). <code>IQueryable</code> nhận <strong>expression tree</strong> (<code>Expression&lt;Func&lt;T,bool&gt;&gt;</code>), một cấu trúc dữ liệu mô tả biểu thức, để provider như EF dịch sang SQL và lọc ngay trong database.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>// Lọc trong SQL: WHERE Amount &gt; 100
+var a = await db.Payouts.Where(p =&gt; p.Amount &gt; 100).ToListAsync();
+
+// AsEnumerable() chuyển sang LINQ to Objects:
+// kéo TOÀN BỘ bảng về rồi mới lọc trong memory
+var b = db.Payouts.AsEnumerable().Where(p =&gt; p.Amount &gt; 100).ToList();</code></pre>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Bạn đang dùng LINQ to SQL nên khái niệm này quen: cũng là <code>IQueryable</code> dịch sang SQL. Lỗi hay gặp khi review code là có một bước <code>.ToList()</code> hoặc <code>AsEnumerable()</code> đặt quá sớm, sau đó mới <code>Where</code>/<code>Take</code>. Chạy dev với dữ liệu nhỏ không sao, lên production với hàng triệu dòng thì chậm.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Gọi method C# của mình bên trong <code>Where</code> của <code>IQueryable</code> thì sao?"</dt>
+            <dd>EF không dịch được sang SQL. Từ EF Core 3.0 nó ném lỗi thay vì âm thầm kéo dữ liệu về lọc trong memory như EF Core 2.x từng làm.</dd>
+            <dt>"Repository có nên trả <code>IQueryable</code> không?"</dt>
+            <dd>Linh hoạt cho caller, nhưng làm rò rỉ chi tiết EF ra ngoài: caller có thể viết query không dịch được, và không còn chỗ tập trung để tối ưu query. Đây là trade-off, nói rõ bạn chọn bên nào và vì sao.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Deferred execution và multiple enumeration</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Phần lớn toán tử LINQ (<code>Where</code>, <code>Select</code>, <code>OrderBy</code>) chỉ dựng ra một "công thức", chưa chạy gì. Query chạy khi được duyệt: <code>foreach</code>, <code>ToList</code>, <code>Count</code>, <code>First</code>... Và <strong>mỗi lần duyệt là chạy lại từ đầu</strong>.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>var pending = payouts.Where(p =&gt; p.Status == Pending);  // chưa chạy
+
+if (pending.Any())                  // chạy lần 1
+    foreach (var p in pending) {}   // chạy lần 2: với IQueryable là 2 lần query DB
+
+var list = pending.ToList();        // chạy 1 lần, dùng lại list
+
+int min = 100;
+var big = orders.Where(o =&gt; o.Amount &gt; min);
+min = 1000;                         // query dùng giá trị LÚC CHẠY, không phải lúc khai báo
+var n = big.Count();                // lọc với 1000</code></pre>
+          <p><code>yield return</code> cũng tạo ra deferred execution: compiler sinh một state machine iterator, mỗi lần <code>MoveNext()</code> mới chạy tới <code>yield</code> kế tiếp.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Rider/ReSharper báo 'Possible multiple enumeration' nghĩa là gì?"</dt>
+            <dd>Biến <code>IEnumerable</code> đó đang bị duyệt nhiều lần. Nếu nguồn đắt (DB, file, generator) thì vật hóa một lần bằng <code>ToList()</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Các cặp toán tử LINQ hay bị hỏi</summary>
+      <div class="qbody">
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Cặp</th><th>Khác nhau</th></tr></thead>
+            <tbody>
+              <tr><td><code>First</code> / <code>Single</code></td><td><code>First</code> lấy phần tử đầu, dừng ngay khi gặp. <code>Single</code> khẳng định có đúng 1, phải quét tiếp để chắc không có cái thứ 2 (SQL dùng <code>TOP 2</code>). Không có phần tử: cả hai ném lỗi; bản <code>OrDefault</code> trả default.</td></tr>
+              <tr><td><code>Any()</code> / <code>Count() &gt; 0</code></td><td><code>Any</code> dừng ở phần tử đầu tiên (SQL <code>EXISTS</code>); <code>Count</code> phải đếm hết.</td></tr>
+              <tr><td><code>Select</code> / <code>SelectMany</code></td><td><code>Select</code> biến mỗi phần tử thành 1 giá trị; <code>SelectMany</code> trải phẳng danh sách con (merchant → tất cả transaction).</td></tr>
+              <tr><td><code>GroupBy</code> / <code>ToLookup</code></td><td><code>GroupBy</code> deferred; <code>ToLookup</code> chạy ngay và cho tra cứu theo key nhiều lần.</td></tr>
+              <tr><td><code>Distinct</code> / <code>DistinctBy</code></td><td><code>DistinctBy(x =&gt; x.Email)</code> (.NET 6) lọc trùng theo một thuộc tính.</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="blk real"><span class="chip real">Live coding hay gặp</span>
+<pre><code>// Group anagrams: ["eat","tea","tan","ate","nat","bat"]
+var groups = words
+    .GroupBy(w =&gt; new string(w.Order().ToArray()))
+    .Select(g =&gt; g.ToList())
+    .ToList();
+
+// Đếm tần suất từ
+var freq = text.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+    .GroupBy(w =&gt; w.ToLowerInvariant())
+    .ToDictionary(g =&gt; g.Key, g =&gt; g.Count());
+
+// Ký tự lặp đầu tiên: dùng HashSet, O(n)
+var seen = new HashSet&lt;char&gt;();
+char? firstRepeat = s.FirstOrDefault(c =&gt; !seen.Add(c));</code></pre>
+          <p>Khi live coding, nói độ phức tạp ngay sau khi viết xong: group anagram là O(n · k log k) với k là độ dài từ.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"LINQ có chậm không?"</dt>
+            <dd>Có overhead (delegate, iterator, cấp phát) so với vòng lặp tay. Với code business thì không đáng kể so với một lần gọi DB, nên ưu tiên đọc dễ. Chỉ thay bằng vòng lặp ở hot path sau khi đã đo.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Big-O và các bẫy O(n²) ẩn trong code business</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Big-O đo số bước tăng theo kích thước dữ liệu n, bỏ qua hằng số. Nó trả lời câu hỏi "dữ liệu tăng gấp 10 thì code chậm đi bao nhiêu lần". Khi n = 10.000: O(1) ≈ 1, O(log n) ≈ 14, O(n) = 10.000, O(n log n) ≈ 130.000, O(n²) = 100 triệu.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất: vì sao ghép string trong vòng lặp là O(n²)</span>
+          <p>Mỗi lần <code>+=</code> tạo string mới và copy toàn bộ phần đã có. Tổng lượng copy là 1 + 2 + … + n ≈ n²/2. Export 10.000 dòng, file cuối 1MB, thì tổng copy khoảng 5GB. <code>StringBuilder</code> ghi tiếp vào buffer, đầy thì nhân đôi, nên tổng copy chưa tới 2 lần kích thước cuối: O(n).</p>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>O(n²) hiếm khi là hai vòng <code>for</code> rõ ràng. Thường nó là một method LINQ nằm trong vòng lặp:</p>
+<pre><code>// O(n × m): mỗi payout quét lại cả danh sách merchant
+foreach (var p in payouts)
+    var m = merchants.First(x =&gt; x.Id == p.MerchantId);
+
+// O(n + m): dựng Dictionary một lần, tra O(1)
+var byId = merchants.ToDictionary(x =&gt; x.Id);
+foreach (var p in payouts)
+    var m = byId[p.MerchantId];</code></pre>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Bên trong vòng lặp</th><th>Thay bằng</th></tr></thead>
+            <tbody>
+              <tr><td><code>Contains</code>, <code>Any</code>, <code>First</code>, <code>Where</code> trên List</td><td><code>HashSet</code>, <code>Dictionary</code>, <code>ToLookup</code> dựng trước vòng lặp</td></tr>
+              <tr><td><code>list.Remove</code>, <code>Insert(0, …)</code></td><td><code>RemoveAll</code>, hoặc lọc một lần</td></tr>
+              <tr><td><code>str += …</code></td><td><code>StringBuilder</code>, <code>string.Join</code></td></tr>
+              <tr><td><code>Count()</code>, <code>ElementAt(i)</code> trên <code>IEnumerable</code></td><td><code>ToList()</code> một lần trước vòng lặp</td></tr>
+              <tr><td>SQL join trên cột không có index</td><td>Thêm index</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>Sau khi viết xong lời giải, nói luôn cả time lẫn space</dt>
+            <dd>"Time O(n + m), space O(m) cho Dictionary; cách dùng <code>First</code> trong vòng lặp là O(n × m)." Đổi bộ nhớ lấy tốc độ là đánh đổi bình thường, nhưng nên nói rõ ra.</dd>
+            <dt>"Lúc nào O(n²) vẫn chấp nhận được?"</dt>
+            <dd>Khi n nhỏ và cố định, ví dụ vài chục currency. Chỉ tối ưu khi n lớn lên theo dữ liệu thật: số merchant, số transaction, số dòng export.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===================== 7 ===================== -->
+  <section class="part" id="s7">
+    <h2><span class="n">07</span>ASP.NET Core</h2>
+    <p class="lead">Phần bị hỏi nhiều nhất trong vòng technical. Đối chiếu với Web Forms giúp bạn trả lời có chiều sâu thay vì chỉ đọc định nghĩa.</p>
+
+    <details class="q" open>
+      <summary>App ASP.NET Core khởi động thế nào?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>Program.cs</code> có hai phần. Phần 1: <code>WebApplication.CreateBuilder</code> dựng host, nạp config, logging, rồi đăng ký service vào DI. Phần 2: sau <code>builder.Build()</code>, dựng middleware pipeline và map endpoint, cuối cùng <code>app.Run()</code> để Kestrel bắt đầu nhận request.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>var builder = WebApplication.CreateBuilder(args);
+
+// 1. Đăng ký service (thay cho Application_Start + container ngoài)
+builder.Services.AddControllers();
+builder.Services.AddDbContext&lt;AppDbContext&gt;(o =&gt; o.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddScoped&lt;IPayoutService, PayoutService&gt;();
+
+var app = builder.Build();
+
+// 2. Pipeline (thay cho HttpModule + Global.asax events)
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();</code></pre>
+          <p>Bên dưới là <strong>Generic Host</strong>: thứ quản lý DI, config, logging và vòng đời của các <code>IHostedService</code>. Worker service hay console app dùng cùng host này, chỉ khác là không có web server. Mẫu cũ <code>Startup.cs</code> với <code>ConfigureServices</code>/<code>Configure</code> vẫn chạy được, chỉ là được gộp vào Program.cs từ .NET 6.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Middleware là gì? Thứ tự có quan trọng không?<span class="qh">gần như chắc chắn bị hỏi</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Middleware là các bước nối tiếp nhau mà mọi request đi qua. Mỗi bước có thể xử lý trước, gọi bước kế tiếp (<code>next</code>), xử lý response sau khi bước kế tiếp xong, hoặc dừng luôn không gọi tiếp (short-circuit). Thứ tự đăng ký chính là thứ tự chạy, nên rất quan trọng: request đi xuôi, response đi ngược lại.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <p>Thứ tự chuẩn (bỏ những cái app không dùng):</p>
+          <ol>
+            <li><code>UseExceptionHandler</code>: đứng đầu để bắt lỗi của mọi bước sau</li>
+            <li><code>UseHsts</code>, <code>UseHttpsRedirection</code></li>
+            <li><code>UseStaticFiles</code>: trả file tĩnh sớm, không tốn công auth</li>
+            <li><code>UseRouting</code>: xác định endpoint nào sẽ xử lý</li>
+            <li><code>UseCors</code></li>
+            <li><code>UseAuthentication</code>: bạn là ai</li>
+            <li><code>UseAuthorization</code>: bạn được làm gì (cần biết endpoint nên đứng sau routing)</li>
+            <li><code>UseRateLimiter</code>, middleware tự viết</li>
+            <li><code>MapControllers</code> / <code>MapGet</code>: endpoint, điểm cuối của pipeline</li>
+          </ol>
+<pre><code>public class CorrelationIdMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext ctx, ILogger&lt;CorrelationIdMiddleware&gt; logger)
+    {
+        var id = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+        ctx.Response.Headers["X-Correlation-Id"] = id;
+        using (logger.BeginScope(new Dictionary&lt;string, object&gt; { ["CorrelationId"] = id }))
+        {
+            await next(ctx);   // phần trước: request; phần sau: response
+        }
+    }
+}
+app.UseMiddleware&lt;CorrelationIdMiddleware&gt;();</code></pre>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Middleware là phiên bản hiện đại của HttpModule. <code>Application_BeginRequest</code> trong Global.asax hay một HttpModule ghi log hoặc kiểm tra IP giờ là một middleware. Khác biệt chính: HttpModule gắn vào các event cố định của IIS pipeline; middleware là chuỗi delegate do bạn tự sắp xếp, rõ ràng và test được.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Inject service scoped vào constructor của middleware được không?"</dt>
+            <dd>Không. Middleware dạng thường chỉ được tạo một lần cho cả app, giống singleton. Service scoped phải nhận qua tham số của <code>InvokeAsync</code> như ví dụ trên, hoặc implement <code>IMiddleware</code> để được tạo theo từng request.</dd>
+            <dt>"<code>Use</code>, <code>Run</code>, <code>Map</code> khác nhau thế nào?"</dt>
+            <dd><code>Use</code>: có <code>next</code>, gọi tiếp được. <code>Run</code>: điểm cuối, không gọi tiếp. <code>Map</code>/<code>MapWhen</code>: rẽ nhánh pipeline theo path hoặc điều kiện.</dd>
+            <dt>"Sửa header sau khi đã gọi <code>next</code> được không?"</dt>
+            <dd>Nếu response đã bắt đầu gửi về client thì không, sẽ ném lỗi. Kiểm tra <code>ctx.Response.HasStarted</code>, hoặc đăng ký <code>Response.OnStarting</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Filter là gì? Khác middleware chỗ nào?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Filter chạy <strong>bên trong</strong> MVC, quanh việc thực thi action, nên biết action nào, controller nào, model binding ra sao, ModelState hợp lệ không. Middleware chạy cho mọi request và chỉ thấy <code>HttpContext</code>. Logic chung cho cả app (log, correlation id) dùng middleware; logic cần ngữ cảnh action (validate, audit theo action) dùng filter.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Thứ tự chạy</span>
+          <ol>
+            <li><strong>Authorization filter</strong></li>
+            <li><strong>Resource filter</strong>: trước model binding, hợp cho cache</li>
+            <li>Model binding và validation</li>
+            <li><strong>Action filter</strong>: trước và sau action</li>
+            <li><strong>Exception filter</strong>: chỉ khi action hoặc filter trước nó ném lỗi</li>
+            <li><strong>Result filter</strong>: trước và sau khi ghi kết quả</li>
+          </ol>
+          <p>Minimal API không có MVC filter, thay vào đó là <strong>endpoint filter</strong> (<code>AddEndpointFilter</code>).</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Exception filter có bắt được lỗi trong middleware không?"</dt>
+            <dd>Không. Nó chỉ bắt lỗi trong phạm vi MVC. Lỗi toàn cục phải xử lý bằng <code>UseExceptionHandler</code>.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Controller hay Minimal API?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Cả hai đều chạy trên cùng routing và DI. Minimal API (.NET 6+) gọn, nhẹ, khởi động nhanh, hợp với service nhỏ và endpoint đơn giản. Controller có sẵn nhiều thứ (filter, model binding phức tạp, conventions), quen thuộc với team lớn. Từ .NET 8, Minimal API đã đủ cho hầu hết trường hợp; chọn theo quy mô và thói quen của team.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>var payouts = app.MapGroup("/api/payouts").RequireAuthorization();
+
+payouts.MapGet("/{id:int}", async (int id, IPayoutService svc, CancellationToken ct) =&gt;
+    await svc.GetAsync(id, ct) is { } p ? Results.Ok(p) : Results.NotFound());
+
+payouts.MapPost("/", async (CreatePayoutRequest req, IPayoutService svc) =&gt;
+{
+    var id = await svc.CreateAsync(req);
+    return Results.Created($"/api/payouts/{id}", new { id });
+});</code></pre>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Model binding, validation và xử lý lỗi</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Model binding lấy dữ liệu từ route, query, header, body, form và đổ vào tham số action. Với <code>[ApiController]</code>, nếu validation thất bại thì framework tự trả 400 kèm chi tiết lỗi theo chuẩn <strong>ProblemDetails</strong> (RFC 9457), không cần tự kiểm tra <code>ModelState.IsValid</code>. Lỗi không mong đợi thì để một chỗ xử lý toàn cục.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler&lt;GlobalExceptionHandler&gt;();  // .NET 8
+app.UseExceptionHandler();
+
+public class GlobalExceptionHandler(ILogger&lt;GlobalExceptionHandler&gt; logger) : IExceptionHandler
+{
+    public async ValueTask&lt;bool&gt; TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
+    {
+        var (status, title) = ex switch
+        {
+            NotFoundException       =&gt; (404, "Not found"),
+            BusinessRuleException   =&gt; (409, ex.Message),
+            _                       =&gt; (500, "Unexpected error"),
+        };
+        if (status == 500) logger.LogError(ex, "Unhandled exception");
+        ctx.Response.StatusCode = status;
+        await ctx.Response.WriteAsJsonAsync(new ProblemDetails { Status = status, Title = title }, ct);
+        return true;
+    }
+}</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Có nên dùng exception cho lỗi nghiệp vụ không?"</dt>
+            <dd>Đây là câu tranh luận. Exception đơn giản và đi xuyên qua các tầng, nhưng tốn chi phí và làm luồng code khó đoán. Cách khác là trả về kiểu Result (thành công hoặc lỗi kèm lý do). Nói được cả hai và chọn theo tần suất: lỗi xảy ra thường xuyên (validate) thì không nên dùng exception.</dd>
+            <dt>"Có trả stack trace về client không?"</dt>
+            <dd>Không bao giờ ở production: lộ cấu trúc code. Log đầy đủ phía server kèm trace id, client chỉ nhận thông báo chung và trace id đó để báo lại.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Thiết kế REST API: status code và các quy ước</summary>
+      <div class="qbody">
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Code</th><th>Khi nào</th></tr></thead>
+            <tbody>
+              <tr><td>200 OK</td><td>Thành công, có body</td></tr>
+              <tr><td>201 Created</td><td>Tạo mới thành công, kèm header <code>Location</code></td></tr>
+              <tr><td>204 No Content</td><td>Thành công, không có body (thường là DELETE, PUT)</td></tr>
+              <tr><td>400 Bad Request</td><td>Dữ liệu gửi lên sai format hoặc không hợp lệ</td></tr>
+              <tr><td>401 Unauthorized</td><td>Chưa xác thực (thiếu hoặc sai token)</td></tr>
+              <tr><td>403 Forbidden</td><td>Đã xác thực nhưng không có quyền</td></tr>
+              <tr><td>404 Not Found</td><td>Không có resource</td></tr>
+              <tr><td>409 Conflict</td><td>Xung đột trạng thái: duyệt payout đã bị reject, sửa bản đã bị người khác sửa</td></tr>
+              <tr><td>422 Unprocessable</td><td>Đúng format nhưng sai rule nghiệp vụ (có team dùng 400 cho trường hợp này)</td></tr>
+              <tr><td>429 Too Many Requests</td><td>Vượt rate limit</td></tr>
+              <tr><td>500 / 503</td><td>Lỗi server / service tạm thời không phục vụ được</td></tr>
+            </tbody>
+          </table></div>
+          <ul>
+            <li><strong>Idempotent</strong>: GET, PUT, DELETE gọi nhiều lần cho cùng kết quả. POST thì không, nên với thao tác nhạy cảm (tạo payout, thanh toán) dùng <strong>idempotency key</strong> gửi kèm request để retry không tạo bản ghi trùng.</li>
+            <li>URL là danh từ số nhiều: <code>/payouts/42</code>, hành động nghiệp vụ đặc biệt có thể là <code>POST /payouts/42/approve</code>.</li>
+            <li>Phân trang: <code>?page=2&amp;pageSize=50</code>, hoặc cursor cho dữ liệu lớn. Versioning: qua URL <code>/v1/</code> hoặc header.</li>
+          </ul>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"PUT và PATCH khác nhau thế nào?"</dt>
+            <dd>PUT thay toàn bộ resource bằng nội dung gửi lên; PATCH chỉ sửa một phần.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Logging đúng cách</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Inject <code>ILogger&lt;T&gt;</code> và dùng <strong>structured logging</strong>: message template có placeholder, giá trị đi kèm thành field riêng để lọc và tìm kiếm trong hệ thống log (Seq, Elastic, Application Insights).</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>// Đúng: PayoutId và Amount là field riêng, lọc được
+logger.LogInformation("Payout {PayoutId} approved, amount {Amount}", payout.Id, payout.Amount);
+
+// Sai: thành một chuỗi phẳng, không lọc theo PayoutId được, và luôn tốn công ghép chuỗi
+logger.LogInformation($"Payout {payout.Id} approved, amount {payout.Amount}");</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Cái gì không được log?"</dt>
+            <dd>Mật khẩu, token, số thẻ, thông tin cá nhân nhạy cảm. Cẩn thận khi log nguyên object request.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Gọi API bên ngoài: <code>IHttpClientFactory</code> và resilience</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><code>IHttpClientFactory</code> quản lý pool các handler bên dưới: tái sử dụng connection, nhưng vẫn xoay vòng định kỳ để cập nhật DNS. Đăng ký <strong>typed client</strong> để mỗi API bên ngoài có một class riêng, config base address, timeout và retry ở một chỗ.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>builder.Services.AddHttpClient&lt;SeoDataClient&gt;(c =&gt;
+{
+    c.BaseAddress = new Uri("https://api.provider.com/");
+    c.Timeout = TimeSpan.FromSeconds(30);
+})
+.AddStandardResilienceHandler();   // .NET 8: retry, circuit breaker, timeout có sẵn
+
+public class SeoDataClient(HttpClient http)
+{
+    public Task&lt;Ranking?&gt; GetRankingAsync(string domain, CancellationToken ct) =&gt;
+        http.GetFromJsonAsync&lt;Ranking&gt;($"rankings?domain={domain}", ct);
+}</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Retry có nguy hiểm không?"</dt>
+            <dd>Có, với request không idempotent (POST tạo đơn, chuyển tiền): retry có thể tạo bản ghi trùng. Chỉ retry tự động cho GET hoặc khi có idempotency key. Thêm backoff và jitter để không dồn dập vào service đang lỗi.</dd>
+            <dt>"Circuit breaker để làm gì?"</dt>
+            <dd>Khi service phía sau lỗi liên tục, ngắt mạch: fail ngay trong một khoảng thời gian thay vì tiếp tục chờ timeout, để không làm cạn thread và không đè thêm tải lên service đang lỗi. Hết thời gian thì thử lại vài request (half-open).</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Caching trong ASP.NET Core</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Loại</th><th>Dùng khi</th></tr></thead>
+            <tbody>
+              <tr><td><code>IMemoryCache</code></td><td>Một instance, dữ liệu nhỏ, chấp nhận mỗi server một bản</td></tr>
+              <tr><td><code>IDistributedCache</code> (Redis, SQL)</td><td>Nhiều instance cần thấy cùng dữ liệu, cache sống qua lần deploy</td></tr>
+              <tr><td><code>HybridCache</code> (.NET 9)</td><td>Gộp cả hai tầng, có sẵn chống stampede</td></tr>
+              <tr><td>Output caching (.NET 7)</td><td>Cache nguyên response của endpoint phía server</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Cache stampede là gì?"</dt>
+            <dd>Cache của một key nóng vừa hết hạn, hàng trăm request cùng lúc thấy miss và cùng query DB. Cách chống: chỉ cho một request nạp lại còn lại chờ (HybridCache làm sẵn), hoặc làm mới cache trước khi hết hạn.</dd>
+            <dt>"Khó nhất của cache là gì?"</dt>
+            <dd>Invalidation: khi dữ liệu gốc đổi thì xóa cache thế nào cho đúng và kịp. Trả lời thực tế: chọn TTL theo mức độ chấp nhận dữ liệu cũ của nghiệp vụ, và xóa chủ động ở luồng ghi với dữ liệu quan trọng.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>"API chậm dần khi traffic tăng, bạn xử lý thế nào?"<span class="qh">câu tình huống</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Đo trước, đoán sau. Xác định chậm ở đâu bằng dữ liệu, rồi mới sửa.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Các bước</span>
+          <ol>
+            <li><strong>Khoanh vùng</strong>: endpoint nào, từ lúc nào, có trùng với deploy hay đợt traffic nào không. Xem trace (Application Insights, OpenTelemetry) để biết thời gian nằm ở code, DB hay API ngoài.</li>
+            <li><strong>Database</strong> là nghi phạm số một: query chậm, thiếu index, N+1, lock/blocking. Xem execution plan, Query Store.</li>
+            <li><strong>Thread pool starvation</strong>: CPU thấp mà latency cao, queue length tăng. Tìm <code>.Result</code>/<code>.Wait()</code> và I/O đồng bộ.</li>
+            <li><strong>Dependency ngoài</strong>: API bên thứ ba chậm kéo theo mình. Thêm timeout, circuit breaker, cache.</li>
+            <li><strong>Memory/GC</strong>: % time in GC cao, cấp phát lớn.</li>
+            <li>Sau khi đã sửa được nút thắt: cache, phân trang, đẩy việc nặng ra background, rồi mới tới scale ngang.</li>
+          </ol>
+        </div>
+        <div class="blk real"><span class="chip real">Cách nói của senior</span>
+          <p>Kể một lần thật bạn đã điều tra chậm, kể cả trên Web Forms: dùng công cụ gì để tìm ra, nguyên nhân là gì, sửa ra sao, kết quả trước và sau. Một câu chuyện thật có số liệu ăn điểm hơn liệt kê đủ 6 bước.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===================== 8 ===================== -->
+  <section class="part" id="s8">
+    <h2><span class="n">08</span>Dependency Injection</h2>
+    <p class="lead">Câu về service lifetime gần như vòng nào cũng có. Bản cheatsheet cũ có một chỗ sai ở đây, phần này viết lại cho đúng.</p>
+
+    <details class="q" open>
+      <summary>Transient, Scoped, Singleton<span class="qh">gần như chắc chắn bị hỏi</span></summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p><strong>Transient</strong>: tạo mới mỗi lần được yêu cầu. <strong>Scoped</strong>: một instance cho mỗi scope, trong web là mỗi request. <strong>Singleton</strong>: một instance cho cả vòng đời app, nên phải thread-safe.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Lifetime</th><th>Ví dụ hợp lý</th><th>Lưu ý</th></tr></thead>
+            <tbody>
+              <tr><td>Transient</td><td>Service nhỏ, không state, rẻ để tạo</td><td>Cùng một request có thể có nhiều instance khác nhau</td></tr>
+              <tr><td>Scoped</td><td><code>DbContext</code>, unit of work, thông tin user hiện tại</td><td>Mọi service trong cùng request dùng chung một instance, nên chung một DbContext và một transaction</td></tr>
+              <tr><td>Singleton</td><td>Cache, config đã nạp, client tốn chi phí khởi tạo</td><td>Có state thì phải thread-safe; không được giữ service scoped</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Ví dụ dễ kể: đặt <code>DbContext</code> scoped để mọi repository trong một request dùng chung context, gọi <code>SaveChanges</code> một lần là ghi hết trong một transaction. Nếu lỡ để transient, mỗi repository một context, việc ghi bị chia ra và không còn nguyên tử.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Captive dependency: inject lifetime nào vào lifetime nào được?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Quy tắc: <strong>service sống lâu không được giữ service sống ngắn hơn</strong>. Singleton giữ một scoped service thì service đó bị "giam" và sống suốt đời app: DbContext bị dùng chung cho mọi request, sai dữ liệu và không thread-safe. Đó gọi là captive dependency.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Inject ↓ vào →</th><th>Transient</th><th>Scoped</th><th>Singleton</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Transient</strong></td><td>OK</td><td>OK</td><td>Chạy được, nhưng bị kéo dài thành singleton. Chỉ ổn nếu nó không state và thread-safe</td></tr>
+              <tr><td><strong>Scoped</strong></td><td>OK</td><td>OK</td><td><strong>Sai</strong>. Bị chặn khi bật scope validation</td></tr>
+              <tr><td><strong>Singleton</strong></td><td>OK</td><td>OK</td><td>OK</td></tr>
+            </tbody>
+          </table></div>
+<pre><code>// Singleton (hoặc BackgroundService) cần dùng DbContext: tự tạo scope
+public class DailyReportJob(IServiceScopeFactory scopes) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken ct)
+    {
+        using var scope = scopes.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService&lt;AppDbContext&gt;();
+        // ... dùng db, scope dispose thì db dispose theo
+    }
+}</code></pre>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Làm sao phát hiện captive dependency sớm?"</dt>
+            <dd><code>ValidateScopes</code> (mặc định bật ở môi trường Development) ném lỗi khi resolve scoped từ root. Bật thêm <code>ValidateOnBuild</code> để kiểm tra toàn bộ đăng ký ngay lúc khởi động thay vì đợi tới lúc resolve.</dd>
+            <dt>"Scoped inject transient có sao không?"</dt>
+            <dd>Không sao. Transient sống theo scoped đã giữ nó. Câu "scoped không được dùng transient" trong bản cheatsheet trước là sai.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Container dispose service thế nào?</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Container chỉ dispose những object <strong>nó tự tạo</strong>, vào lúc scope chứa object đó kết thúc: scoped và transient theo request, singleton khi app tắt. Object bạn tự <code>new</code> rồi đăng ký bằng instance thì container không dispose.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Resolve transient <code>IDisposable</code> từ root provider thì sao?"</dt>
+            <dd>Container giữ tham chiếu để dispose lúc app tắt, nghĩa là mỗi lần resolve lại giữ thêm một object tới cuối đời app: memory leak. Luôn resolve trong một scope.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Nhiều implementation cho một interface, keyed services, decorator</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Đăng ký nhiều lần cùng một interface: inject <code>T</code> thì nhận bản đăng ký <strong>cuối cùng</strong>; inject <code>IEnumerable&lt;T&gt;</code> thì nhận tất cả. Từ .NET 8 có <strong>keyed services</strong> để chọn theo key. Container có sẵn không hỗ trợ decorator, phải tự đăng ký bằng factory hoặc dùng thư viện như Scrutor.</p>
+        </div>
+        <div class="blk why"><span class="chip why">Bản chất</span>
+<pre><code>// Keyed services (.NET 8): Strategy theo phương thức payout
+builder.Services.AddKeyedScoped&lt;IPayoutMethod, BankTransferPayout&gt;("bank");
+builder.Services.AddKeyedScoped&lt;IPayoutMethod, PayPalPayout&gt;("paypal");
+
+public class PayoutRunner(IServiceProvider sp)
+{
+    public Task RunAsync(Payout p) =&gt; sp.GetRequiredKeyedService&lt;IPayoutMethod&gt;(p.Method).SendAsync(p);
+}
+
+// Decorator không cần thư viện: bọc cache quanh repository
+builder.Services.AddScoped&lt;MerchantRepository&gt;();
+builder.Services.AddScoped&lt;IMerchantRepository&gt;(sp =&gt;
+    new CachedMerchantRepository(
+        sp.GetRequiredService&lt;MerchantRepository&gt;(),
+        sp.GetRequiredService&lt;IMemoryCache&gt;()));</code></pre>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Cách decorator bằng factory ở trên hợp với môi trường hạn chế thêm package bên ngoài như công ty hiện tại của bạn: đủ dùng, ai đọc cũng hiểu, không thêm dependency.</p>
+        </div>
+        <div class="blk trap"><span class="chip trap">Bẫy &amp; follow-up</span>
+          <dl>
+            <dt>"Inject <code>IServiceProvider</code> rồi tự <code>GetService</code> có ổn không?"</dt>
+            <dd>Đó là service locator, thường bị coi là anti-pattern vì che giấu dependency thật. Chấp nhận được ở tầng hạ tầng (factory, chọn theo key lúc runtime như trên), không nên rải trong business logic.</dd>
+            <dt>"<code>TryAdd</code> để làm gì?"</dt>
+            <dd>Chỉ đăng ký nếu chưa có ai đăng ký interface đó. Thư viện dùng nó để app vẫn ghi đè được bằng implementation riêng.</dd>
+          </dl>
+        </div>
+      </div>
+    </details>
+
+    <details class="q" open>
+      <summary>Constructor có quá nhiều dependency</summary>
+      <div class="qbody">
+        <div class="blk quick"><span class="chip quick">Trả lời nhanh</span>
+          <p>Khoảng 5–6 dependency trở lên thường là dấu hiệu class đang làm quá nhiều việc (SRP). Cách xử lý là tách class theo trách nhiệm, không phải gom các dependency vào một object "bao tải" để constructor trông ngắn lại.</p>
+        </div>
+        <div class="blk real"><span class="chip real">Ở dự án thật</span>
+          <p>Web Forms ngày trước không có constructor injection cho page, nên code hay tự <code>new</code> service ngay trong page. Từ .NET Framework 4.7.2 đã có thể bật DI cho Web Forms qua <code>HttpRuntime.WebObjectActivator</code>. Biết chi tiết này cho thấy bạn hiểu cả hai thế giới, và nó là bước đệm hợp lý trước khi migrate: đưa logic về các service được inject, sau này mang sang .NET mới gần như nguyên vẹn.</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="later">Mục 9–14 sẽ có ở các đợt sau: AuthN/AuthZ, EF Core, Testing, Migration, kiến trúc mức senior và question bank.</div>
+  </section>
+
+  </div>
+  </main>
+</div>
+
+<script>window.Prism = window.Prism || {}; window.Prism.manual = true;</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+<script>
+(function () {
+  if (window.Prism && Prism.languages && Prism.languages.csharp) {
+    document.querySelectorAll('pre code').forEach(function (el) {
+      el.classList.add('language-csharp');
+      Prism.highlightElement(el);
+    });
+  }
+})();
+</script>
+<script>
+(function () {
+  var side = document.getElementById('side');
+  var menuBtn = document.getElementById('menuBtn');
+  var toc = document.getElementById('toc');
+
+  menuBtn.addEventListener('click', function () {
+    var open = side.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  function textOf(el, dropSelector) {
+    var c = el.cloneNode(true);
+    c.querySelectorAll(dropSelector).forEach(function (x) { x.remove(); });
+    return c.textContent.replace(/\s+/g, ' ').trim();
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function link(href, num, label) {
+    var a = el('a');
+    a.href = href;
+    a.appendChild(el('span', 'num', num));
+    a.appendChild(el('span', null, label));
+    return a;
+  }
+
+  // 1. Number every h3 and question inside each section, in document order: 1.1, 1.2 ...
+  var model = [];
+  document.querySelectorAll('section.part').forEach(function (sec) {
+    var n = sec.id.replace(/\D/g, '');
+    var items = [];
+    sec.querySelectorAll('h3, details.q > summary').forEach(function (node) {
+      if (node.tagName === 'H3' && node.closest('details')) return;
+      var code = n + '.' + (items.length + 1);
+      var target = node.tagName === 'H3' ? node : node.parentElement;
+      target.id = 'q-' + n + '-' + (items.length + 1);
+      var label = textOf(node, '.qh');
+      node.insertBefore(el('span', 'qn', code), node.firstChild);
+      items.push({ code: code, id: target.id, label: label, target: target });
+    });
+    model.push({ n: n, id: sec.id, title: textOf(sec.querySelector('h2'), '.n'), items: items, sec: sec });
+  });
+
+  // 2. Build the table of contents
+  var intro = el('li', 'toc-sec');
+  var introRow = el('div', 'toc-row');
+  introRow.appendChild(el('span', 'toc-spacer'));
+  var introLink = link('#cach-dung', '0', 'Cách dùng sổ này');
+  introRow.appendChild(introLink);
+  intro.appendChild(introRow);
+  toc.appendChild(intro);
+
+  model.forEach(function (m) {
+    var li = el('li', 'toc-sec');
+    var row = el('div', 'toc-row');
+    var tg = el('button', 'toc-tg');
+    tg.type = 'button';
+    tg.setAttribute('aria-label', 'Mở hoặc đóng mục ' + m.n);
+    tg.setAttribute('aria-expanded', 'false');
+    tg.appendChild(el('span', null, '›'));
+    var a = link('#' + m.id, m.n, m.title);
+    row.appendChild(tg);
+    row.appendChild(a);
+    li.appendChild(row);
+    var sub = el('ul', 'toc-sub');
+    m.items.forEach(function (it) {
+      var sli = el('li');
+      it.link = link('#' + it.id, it.code, it.label);
+      sli.appendChild(it.link);
+      sub.appendChild(sli);
+    });
+    li.appendChild(sub);
+    toc.appendChild(li);
+    m.li = li; m.link = a; m.toggle = tg; m.manual = false;
+    tg.addEventListener('click', function () {
+      var open = !li.classList.contains('open');
+      setOpen(m, open);
+      m.manual = open;
+    });
+  });
+
+  function setOpen(m, open) {
+    m.li.classList.toggle('open', open);
+    m.toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  // 3. Following a link opens the target question; on mobile it also closes the menu
+  function openTarget(id) {
+    var t = id && document.getElementById(id);
+    if (t && t.tagName === 'DETAILS') t.open = true;
+  }
+  toc.addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (!a) return;
+    openTarget(a.getAttribute('href').slice(1));
+    side.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  });
+  if (location.hash) openTarget(location.hash.slice(1));
+
+  // 4. Track position: highlight current section and item, auto-expand the current section
+  var current = null, activeLinks = [];
+  function keepVisible(a) {
+    if (!a || !a.offsetParent || side.scrollHeight <= side.clientHeight) return;
+    var sr = side.getBoundingClientRect(), ar = a.getBoundingClientRect();
+    if (ar.top < sr.top + 8) side.scrollTop -= (sr.top + 8 - ar.top);
+    else if (ar.bottom > sr.bottom - 8) side.scrollTop += (ar.bottom - sr.bottom + 8);
+  }
+  function update() {
+    var line = 110, cur = null, item = null;
+    model.forEach(function (m) { if (m.sec.getBoundingClientRect().top <= line) cur = m; });
+    if (cur) cur.items.forEach(function (it) { if (it.target.getBoundingClientRect().top <= line + 40) item = it; });
+    if (cur !== current) {
+      if (current && !current.manual) setOpen(current, false);
+      if (cur) setOpen(cur, true);
+      current = cur;
+    }
+    activeLinks.forEach(function (a) { a.classList.remove('active'); });
+    activeLinks = cur ? [cur.link] : [introLink];
+    if (item) activeLinks.push(item.link);
+    activeLinks.forEach(function (a) { a.classList.add('active'); });
+    keepVisible(activeLinks[activeLinks.length - 1]);
+  }
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { ticking = false; update(); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
+
+  // 5. Expand / collapse all questions in the content
+  var all = function () { return document.querySelectorAll('details.q'); };
+  document.getElementById('collapseAll').addEventListener('click', function () { all().forEach(function (d) { d.open = false; }); });
+  document.getElementById('expandAll').addEventListener('click', function () { all().forEach(function (d) { d.open = true; }); });
+})();
+</script>

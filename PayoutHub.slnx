@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PayoutHub.Api/PayoutHub.Api.csproj" />
+    <Project Path="src/PayoutHub.Core/PayoutHub.Core.csproj" />
+    <Project Path="src/PayoutHub.Infrastructure/PayoutHub.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PayoutHub.IntegrationTests/PayoutHub.IntegrationTests.csproj" />
+    <Project Path="tests/PayoutHub.UnitTests/PayoutHub.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/FakeBank.Api/FakeBank.Api.csproj" />
+  </Folder>
+</Solution>
