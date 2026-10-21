@@ -55,3 +55,15 @@ Mẫu:
 - **Câu phỏng vấn đáng nhớ:** vì sao message template thay vì interpolation (đã ghi `INTERVIEW-NOTES.md` › Logging, kèm `[LoggerMessage]`).
 - **Quiz / mock:** câu khởi động "Core lưu DB thế nào": Gần đúng.
 - **Tiếp theo:** (máy khác) tiếp bước 5: điền `GlobalExceptionHandler` (log kèm exception, status code, ProblemDetails không lộ message, `TryWriteAsync`, ý nghĩa `return true/false`), đặt `app.UseExceptionHandler()` đúng chỗ, test bằng `/boom`; nhớ bẫy .NET 10 handler trả `true` thì middleware không tự log. Sau đó lab 1 của M1.
+
+## 2026-10-19 · M1
+- **Đã làm:** onboard máy mới (.NET 10.0.402 có sẵn, LocalDB có, chưa có Docker và `dotnet-ef`). Điền `GlobalExceptionHandler`: log kèm exception + `{Method} {Path}`, `await TryWriteAsync` và return kết quả của nó, `Detail` chỉ hiện message ở Development. `UseExceptionHandler()` lên đầu pipeline, thêm `/boom`. Bật `IncludeScopes` cho JSON console để log có `TraceId`. Thêm `docs/README.md` (mục lục chung), `docs/notes/exception-handling.md`.
+- **Khái niệm đã chạm:** 7.2, 7.5, 7.7, 8.2; ProblemDetails, `IExceptionHandler` true/false, W3C `traceparent` (trace / span / flags).
+- **Chỗ yếu:**
+  - Lần đầu quên `await` `TryWriteAsync` (fire-and-forget); sau đó viết `return await ValueTask.FromResult(true)`: chưa chắc `async` tự bọc giá trị return.
+  - Che message ở `Title` nhưng vẫn lộ ở `Detail`.
+  - Dùng `exception.Message` làm log template.
+  - Không biết trace id nằm trong log scope, `AddJsonConsole` mặc định không in scopes.
+- **Câu phỏng vấn đáng nhớ:** "User báo lỗi 500, tìm log thế nào?" (đã ghi `INTERVIEW-NOTES.md` › Logging).
+- **Quiz / mock:** câu ôn "placeholder bind theo tên hay vị trí": Đúng.
+- **Tiếp theo:** chạy `/boom`, so `TraceId` trong log với `traceId` trong response (phần 32 hex giữa). Lab 1 M1 (middleware ném lỗi đặt trước `UseExceptionHandler`). Câu còn mở: `AddExceptionHandler<T>` đăng ký lifetime gì, inject `DbContext` vào thì sao (note câu 4). Sau đó health check, rồi tick bước 5.

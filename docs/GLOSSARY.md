@@ -37,6 +37,9 @@ Tra nhanh, mỗi dòng một ý. Xếp theo nhóm, trong nhóm theo ABC. Mã tro
 | OpenAPI | (trước đây gọi là Swagger) | Chuẩn mô tả API dạng JSON; sinh tài liệu, client |
 | ProblemDetails | RFC 7807 / RFC 9457 | Format JSON chuẩn cho lỗi HTTP: `type`, `title`, `status`, `detail` (7.5) |
 | REST | Representational State Transfer | Kiểu thiết kế API theo resource + HTTP method + status code (7.6) |
+| Span | (OpenTelemetry) | Một bước công việc trong một trace (xử lý request, gọi DB, gọi FakeBank); .NET gọi là `Activity` |
+| Trace | (distributed tracing) | Toàn bộ hành trình của một thao tác, có thể đi qua nhiều service; gồm nhiều span lồng nhau |
+| traceparent | W3C Trace Context | Header/chuỗi `version-traceId-spanId-flags`, mang trace id đi giữa các service |
 
 ## Dữ liệu
 

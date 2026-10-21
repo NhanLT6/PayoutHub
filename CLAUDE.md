@@ -19,6 +19,12 @@ Thành công nghĩa là Nhan **tự viết code**, hiểu vì sao làm vậy, v�
 
 Trả lời bằng tiếng Việt, giữ nguyên thuật ngữ tiếng Anh (interface, method, middleware, thread pool, ...). Không dịch method thành "phương thức", function thành "hàm".
 
+Nhan có thể gõ tiếng Anh (đỡ đổi bộ gõ); vẫn trả lời tiếng Việt, câu nào rõ hơn bằng tiếng Anh thì dùng tiếng Anh.
+
+## Viết note / giải thích
+
+Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc định không, hay phải bật gì. Đối chiếu với `Program.cs` / `appsettings` hiện tại trước khi nói "sẽ thấy X". Lý do: note từng viết "log mang trace id" mà thiếu điều kiện `IncludeScopes`, Nhan chạy thử không thấy và phải quay lại hỏi.
+
 ## Vai trò của Claude: mentor, không làm thay
 
 1. **Nhan viết code.** Mặc định chỉ đưa hướng đi, gợi ý, hoặc pseudo-code. Chỉ viết code hoàn chỉnh khi Nhan yêu cầu rõ, hoặc khi đó là boilerplate không có giá trị học (csproj, docker-compose, seed data, cấu hình).
@@ -38,6 +44,8 @@ Trả lời bằng tiếng Việt, giữ nguyên thuật ngữ tiếng Anh (inte
 | `docs/GLOSSARY.md` | Từ viết tắt và thuật ngữ. Khi giải thích dùng một viết tắt mới (AOT, REPR, HMAC...), thêm 1 dòng vào đây |
 | `docs/handbook-index.md` | Danh sách mã mục sổ tay (vd 2.8 SOLID, 4.6 Deadlock) |
 | `docs/handbook.html` | Nội dung đầy đủ của sổ tay; grep theo tiêu đề trong index khi cần trích |
+| `docs/notes/*.md` | Note chuyên đề do Claude viết khi Nhan cần tài liệu dễ đọc hơn Microsoft docs. Note mới: thêm vào `docs/README.md` và `→ note` trong `handbook-index.md` |
+| `docs/README.md` | Mục lục chung cho Nhan: mọi tài liệu và note đều có link ở đây |
 
 Mã mục chỉ dùng cho các mục đã có trong index. Chủ đề chưa có (EF Core, Testing, Auth...) thì giải thích trực tiếp, không bịa mã.
 

@@ -117,3 +117,10 @@ src/PayoutHub.Api/
 - Kiểu dữ liệu giữ nguyên: truyền `decimal` thì field là số; truyền chuỗi từ `IConfiguration` thì là string, so sánh số có thể sai.
 - Hiệu năng: interpolation luôn ghép chuỗi kể cả khi level bị tắt. Mức senior: `[LoggerMessage]` source generator, sinh code lúc compile, check `IsEnabled`, không boxing, kiểm tra placeholder khớp tham số (CA1848 gợi ý).
 - `ILogger<T>`: `T` thành **category** (tên đầy đủ của class), dùng để lọc level theo tiền tố namespace trong `Logging:LogLevel`.
+
+### User báo lỗi 500, bạn tìm log tương ứng thế nào? (7.5, 7.7)
+
+- ProblemDetails trả `traceId` (W3C `traceparent`: `00-<trace-id 32 hex>-<span-id 16 hex>-<flags>`). Client gửi id đó khi báo lỗi.
+- Log phải mang trace id: ASP.NET Core đặt `TraceId`/`SpanId` vào **log scope** của request; formatter phải in scopes (`AddJsonConsole(o => o.IncludeScopes = true)`, mặc định tắt). Tìm theo phần trace-id 32 hex trong Seq/Elastic.
+- Mở rộng: `HttpClient` tự gửi header `traceparent` sang service khác (PayoutHub → FakeBank ở M4), nên một trace-id nối log của cả chuỗi gọi (distributed tracing). Trong .NET, span = `System.Diagnostics.Activity`.
+- Trade-off/bẫy: response chỉ lộ id, không lộ chi tiết lỗi; chi tiết nằm ở server log. Quên bật scopes thì có id mà không có gì để nối.

@@ -74,7 +74,7 @@ Mã mục dùng để tham chiếu khi giải thích (vd "xem 4.6"). Nội dung 
 - **7.2** Middleware là gì? Thứ tự có quan trọng không?
 - **7.3** Filter là gì? Khác middleware chỗ nào?
 - **7.4** Controller hay Minimal API?
-- **7.5** Model binding, validation và xử lý lỗi
+- **7.5** Model binding, validation và xử lý lỗi → note: [exception-handling](notes/exception-handling.md)
 - **7.6** Thiết kế REST API: status code và các quy ước
 - **7.7** Logging đúng cách
 - **7.8** Gọi API bên ngoài: IHttpClientFactory và resilience
