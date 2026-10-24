@@ -1,6 +1,10 @@
+---
+title: "Health check"
+---
+
 # Health check
 
-Đọc trước khi làm bước cuối của M1. Handbook chưa có mục riêng; liên quan: [Middleware](/aspnet-core/questions#middleware), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), note [Exception handling](/aspnet-core/notes/exception-handling).
+Đọc trước khi làm bước cuối của M1. Liên quan: [Middleware](/aspnet-core/middleware), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Exception handling](/aspnet-core/exception-handling).
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="hAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="hInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="hOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="hBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
@@ -75,12 +79,28 @@ Ba câu hỏi khác nhau. Khác nhau quan trọng nhất là **orchestrator làm
 | Exception trong check | Không làm sập endpoint: check đó tính là `failureStatus` (mặc định `Unhealthy`) |
 | Lifetime | Mỗi lần chạy check có **DI scope riêng**, inject `DbContext` được |
 
+### Status đổi theo thời gian
+
+**Status không đo bằng độ chậm.** Bên gọi không tự đoán "app chậm nên chưa ready" hay "app chậm nên Degraded". Status là thứ **code check của bạn trả về**. Một vòng đời điển hình:
+
+```
+                 app vừa start ──► đang warm-up ──► sẵn sàng ──► FakeBank chậm
+/health/live          200              200            200           200
+/health/ready         503              503            200           200 (Degraded)
+```
+
+- **Live** không check gì bên ngoài, nên kể cả lúc warm-up vẫn trả 200 rất nhanh.
+- **Ready** trả `Unhealthy` cho tới khi warm-up xong, ví dụ một cờ được bật sau khi load cache và kết nối được DB. Load balancer thấy 503 nên chưa gửi traffic vào.
+- **Degraded** là lúc app đã ready nhưng một phần phụ đang yếu, ví dụ check FakeBank thấy phản hồi quá 2s. Vẫn trả 200 nên traffic vẫn vào.
+
+Còn "chậm" thật sự là chuyện **timeout của bên gọi**. Nếu live probe bị timeout lúc cold start, Kubernetes sẽ khởi động lại app. Đó là lý do có **startup probe** (hoặc `initialDelaySeconds`): cho app thời gian khởi động trước khi bắt đầu check live.
+
 ### Dễ nhầm
 
 | Dễ nhầm | Khác nhau ở đâu |
 |---|---|
 | Liveness và readiness | Fail thì bị restart, hay chỉ bị rút khỏi load balancer |
-| Degraded và Unhealthy | Vẫn phục vụ được dù chậm (200), hay không phục vụ được (503) |
+| Degraded và Unhealthy | Vẫn phục vụ được dù thiếu phần phụ (200), hay không phục vụ được (503). Cả hai do check của bạn trả về, không phải do bên gọi đo độ chậm |
 | `IHealthCheck` và `IExceptionHandler` | Đều là class bạn đăng ký, nhưng health check chạy trong scope riêng, exception handler là singleton |
 | Health check và monitoring | Health check trả lời có/không cho máy ra quyết định; monitoring (metrics, log) giúp người tìm nguyên nhân |
 

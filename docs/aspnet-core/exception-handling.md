@@ -1,6 +1,10 @@
+---
+title: "Exception handling"
+---
+
 # Exception handling
 
-Handbook liên quan: [Middleware](/aspnet-core/questions#middleware), [Filter](/aspnet-core/questions#filters), [Validation và xử lý lỗi](/aspnet-core/questions#validation-errors), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency). Nên đọc note [Middleware pipeline](/aspnet-core/notes/middleware-pipeline) trước.
+Nên đọc [Middleware](/aspnet-core/middleware) trước. [Câu hỏi phỏng vấn](#interview) nằm ở cuối. Liên quan: [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Result pattern](/aspnet-core/result-pattern).
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="eAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="eInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="eOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="eBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
@@ -173,10 +177,55 @@ Lỗi 404 là chuyện bình thường nên handler này **không log Error**. H
 
 | Dễ nhầm | Khác nhau ở đâu |
 |---|---|
-| `IExceptionHandler` và `IExceptionFilter` | Middleware bắt lỗi của **mọi** request, chỉ có `HttpContext`. Filter chỉ bắt lỗi trong action MVC, biết action nào, có `ModelState` ([Filter](/aspnet-core/questions#filters)). Mặc định chọn middleware |
+| `IExceptionHandler` và `IExceptionFilter` | Middleware bắt lỗi của **mọi** request, chỉ có `HttpContext`. Filter chỉ bắt lỗi trong action MVC, biết action nào, có `ModelState` ([Filter](/aspnet-core/middleware#filters)). Mặc định chọn middleware |
 | `title` và `detail` | `title` cố định theo loại lỗi; `detail` cho lần xảy ra này, không lộ thông tin nội bộ ở Production |
 | ExceptionHandler và Developer Exception Page | Trang stack trace chỉ có ở Development, nằm ngoài cùng; handler của bạn nằm trong nên bắt trước |
 | Lỗi có exception và lỗi không có exception | 404 sai route, 405 sai method không ném exception nên handler không chạy. Muốn chúng cũng trả ProblemDetails thì thêm `app.UseStatusCodePages()` |
+
+## Câu hỏi phỏng vấn {#interview}
+
+Ôn nhanh trước khi đi phỏng vấn. Mỗi câu có trả lời nhanh, bản chất, ví dụ thật và bẫy.
+
+### Model binding, validation và xử lý lỗi {#validation-errors}
+
+::: tip Trả lời nhanh
+Model binding lấy dữ liệu từ route, query, header, body, form và đổ vào tham số action. Với `[ApiController]`, nếu validation thất bại thì framework tự trả 400 kèm chi tiết lỗi theo chuẩn **ProblemDetails** (RFC 9457), không cần tự kiểm tra `ModelState.IsValid`. Lỗi không mong đợi thì để một chỗ xử lý toàn cục.
+:::
+
+::: info Bản chất
+```csharp
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();  // .NET 8
+app.UseExceptionHandler();
+
+public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+{
+    public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
+    {
+        var (status, title) = ex switch
+        {
+            NotFoundException       => (404, "Not found"),
+            BusinessRuleException   => (409, ex.Message),
+            _                       => (500, "Unexpected error"),
+        };
+        if (status == 500) logger.LogError(ex, "Unhandled exception");
+        ctx.Response.StatusCode = status;
+        await ctx.Response.WriteAsJsonAsync(new ProblemDetails { Status = status, Title = title }, ct);
+        return true;
+    }
+}
+```
+:::
+
+::: warning Bẫy & follow-up
+**"Có nên dùng exception cho lỗi nghiệp vụ không?"**
+
+Đây là câu tranh luận. Exception đơn giản và đi xuyên qua các tầng, nhưng tốn chi phí và làm luồng code khó đoán. Cách khác là trả về kiểu Result (thành công hoặc lỗi kèm lý do). Nói được cả hai và chọn theo tần suất: lỗi xảy ra thường xuyên (validate) thì không nên dùng exception.
+
+**"Có trả stack trace về client không?"**
+
+Không bao giờ ở production: lộ cấu trúc code. Log đầy đủ phía server kèm trace id, client chỉ nhận thông báo chung và trace id đó để báo lại.
+:::
 
 ## Hỏi đáp
 
@@ -217,7 +266,7 @@ Số exception cũng ít: thường chỉ 3–4 loại theo **ý nghĩa** (NotFo
 :::
 
 ::: details Dùng exception cho lỗi nghiệp vụ hay Result pattern?
-**Trade-off nên nhắc khi phỏng vấn.** Exception + handler thì đơn giản, controller mỏng, nhưng exception tốn chi phí và ẩn luồng điều khiển. Result pattern (method trả `Result<T>`) thì luồng lỗi hiện rõ trong chữ ký, nhưng code dài hơn ở mọi tầng. Với PayoutHub, exception + handler là đủ. Chi tiết, code và so sánh: [Result pattern](/aspnet-core/notes/result-pattern).
+**Trade-off nên nhắc khi phỏng vấn.** Exception + handler thì đơn giản, controller mỏng, nhưng exception tốn chi phí và ẩn luồng điều khiển. Result pattern (method trả `Result<T>`) thì luồng lỗi hiện rõ trong chữ ký, nhưng code dài hơn ở mọi tầng. Với PayoutHub, exception + handler là đủ. Chi tiết, code và so sánh: [Result pattern](/aspnet-core/result-pattern).
 :::
 
 ::: details Muốn thêm field chung cho mọi ProblemDetails (vd instance) thì làm ở đâu?

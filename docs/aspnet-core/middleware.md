@@ -1,6 +1,10 @@
+---
+title: "Middleware pipeline"
+---
+
 # Middleware pipeline
 
-Phần chính là khái niệm kèm hình. Câu hỏi và phần đào sâu nằm trong các ô **Hỏi đáp**, mở khi cần. Đi kèm handbook: [Middleware](/aspnet-core/questions#middleware), [Filter](/aspnet-core/questions#filters), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency).
+Phần đầu là bài học kèm hình. [Câu hỏi phỏng vấn](#interview) nằm ở cuối, để ôn nhanh. Liên quan: [Captive dependency](/aspnet-core/dependency-injection#captive-dependency).
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="aAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="aInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="aOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="aBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
@@ -17,7 +21,6 @@ Phần chính là khái niệm kèm hình. Câu hỏi và phần đào sâu nằ
 
 ### Một lớp middleware trông thế nào
 
-
 ```cs
 app.Use(async (ctx, next) =>
 {
@@ -29,13 +32,12 @@ app.Use(async (ctx, next) =>
 
 ### Ba luật suy ra từ "hàm lồng nhau"
 
-
 1. **Lớp ngoài bắt lỗi của lớp trong**, như `try/catch` bọc lời gọi hàm.
 2. **Lớp trong dùng được thứ lớp ngoài đã gắn** vào `HttpContext` (endpoint, User).
 3. **Không gọi `next`** thì lớp trong không chạy (short-circuit).
 
 ::: details Dễ nhầm: middleware và filter khác nhau thế nào?
-**Middleware** bọc _mọi_ request, chỉ biết `HttpContext`. **[Filter](/aspnet-core/questions#filters)** là một pipeline nhỏ hơn nằm bên trong endpoint MVC, biết action nào, có `ModelState`. Cùng hình củ hành, chỉ khác là filter nằm trong lõi.
+**Middleware** bọc _mọi_ request, chỉ biết `HttpContext`. **[Filter](/aspnet-core/middleware#filters)** là một pipeline nhỏ hơn nằm bên trong endpoint MVC, biết action nào, có `ModelState`. Cùng hình củ hành, chỉ khác là filter nằm trong lõi.
 :::
 
 ::: details PayoutHub chưa gọi UseRouting(), vậy routing chạy ở đâu?
@@ -61,7 +63,7 @@ app.Use(async (ctx, next) =>
 
 ### ExceptionHandler
 
-**UseExceptionHandler**: `try/catch` lớn nhất, đặt ngoài cùng để bọc tất cả. Chi tiết trong [Exception handling](/aspnet-core/notes/exception-handling).
+**UseExceptionHandler**: `try/catch` lớn nhất, đặt ngoài cùng để bọc tất cả. Chi tiết trong [Exception handling](/aspnet-core/exception-handling).
 
 ### HttpsRedirection và HSTS
 
@@ -171,7 +173,88 @@ app.UseMiddleware<TimingMiddleware>();
 :::
 
 ::: tip Chọn nhanh
-Chỉ liên quan action MVC thì dùng filter ([Filter](/aspnet-core/questions#filters)). Vài dòng hoặc lab thì dùng `app.Use(…)`. Còn lại dùng `IMiddleware`. Convention class chỉ khi viết library hoặc hot path cực nóng; các middleware có sẵn của ASP.NET đều là convention class vì lý do đó.
+Chỉ liên quan action MVC thì dùng filter ([Filter](/aspnet-core/middleware#filters)). Vài dòng hoặc lab thì dùng `app.Use(…)`. Còn lại dùng `IMiddleware`. Convention class chỉ khi viết library hoặc hot path cực nóng; các middleware có sẵn của ASP.NET đều là convention class vì lý do đó.
+:::
+
+## Câu hỏi phỏng vấn {#interview}
+
+Ôn nhanh trước khi đi phỏng vấn. Mỗi câu có trả lời nhanh, bản chất, ví dụ thật và bẫy.
+
+### Middleware là gì? Thứ tự có quan trọng không? <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#middleware}
+
+::: tip Trả lời nhanh
+Middleware là các bước nối tiếp nhau mà mọi request đi qua. Mỗi bước có thể xử lý trước, gọi bước kế tiếp (`next`), xử lý response sau khi bước kế tiếp xong, hoặc dừng luôn không gọi tiếp (short-circuit). Thứ tự đăng ký chính là thứ tự chạy, nên rất quan trọng: request đi xuôi, response đi ngược lại.
+:::
+
+::: info Bản chất
+Thứ tự chuẩn (bỏ những cái app không dùng):
+
+1. `UseExceptionHandler`: đứng đầu để bắt lỗi của mọi bước sau
+2. `UseHsts`, `UseHttpsRedirection`
+3. `UseStaticFiles`: trả file tĩnh sớm, không tốn công auth
+4. `UseRouting`: xác định endpoint nào sẽ xử lý
+5. `UseCors`
+6. `UseAuthentication`: bạn là ai
+7. `UseAuthorization`: bạn được làm gì (cần biết endpoint nên đứng sau routing)
+8. `UseRateLimiter`, middleware tự viết
+9. `MapControllers` / `MapGet`: endpoint, điểm cuối của pipeline
+
+```csharp
+public class CorrelationIdMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext ctx, ILogger<CorrelationIdMiddleware> logger)
+    {
+        var id = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+        ctx.Response.Headers["X-Correlation-Id"] = id;
+        using (logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = id }))
+        {
+            await next(ctx);   // phần trước: request; phần sau: response
+        }
+    }
+}
+app.UseMiddleware<CorrelationIdMiddleware>();
+```
+:::
+
+::: details Ở dự án thật
+Middleware là phiên bản hiện đại của HttpModule. `Application_BeginRequest` trong Global.asax hay một HttpModule ghi log hoặc kiểm tra IP giờ là một middleware. Khác biệt chính: HttpModule gắn vào các event cố định của IIS pipeline; middleware là chuỗi delegate do bạn tự sắp xếp, rõ ràng và test được.
+:::
+
+::: warning Bẫy & follow-up
+**"Inject service scoped vào constructor của middleware được không?"**
+
+Không. Middleware dạng thường chỉ được tạo một lần cho cả app, giống singleton. Service scoped phải nhận qua tham số của `InvokeAsync` như ví dụ trên, hoặc implement `IMiddleware` để được tạo theo từng request.
+
+**"`Use`, `Run`, `Map` khác nhau thế nào?"**
+
+`Use`: có `next`, gọi tiếp được. `Run`: điểm cuối, không gọi tiếp. `Map`/`MapWhen`: rẽ nhánh pipeline theo path hoặc điều kiện.
+
+**"Sửa header sau khi đã gọi `next` được không?"**
+
+Nếu response đã bắt đầu gửi về client thì không, sẽ ném lỗi. Kiểm tra `ctx.Response.HasStarted`, hoặc đăng ký `Response.OnStarting`.
+:::
+
+### Filter là gì? Khác middleware chỗ nào? {#filters}
+
+::: tip Trả lời nhanh
+Filter chạy **bên trong** MVC, quanh việc thực thi action, nên biết action nào, controller nào, model binding ra sao, ModelState hợp lệ không. Middleware chạy cho mọi request và chỉ thấy `HttpContext`. Logic chung cho cả app (log, correlation id) dùng middleware; logic cần ngữ cảnh action (validate, audit theo action) dùng filter.
+:::
+
+::: info Thứ tự chạy
+1. **Authorization filter**
+2. **Resource filter**: trước model binding, hợp cho cache
+3. Model binding và validation
+4. **Action filter**: trước và sau action
+5. **Exception filter**: chỉ khi action hoặc filter trước nó ném lỗi
+6. **Result filter**: trước và sau khi ghi kết quả
+
+Minimal API không có MVC filter, thay vào đó là **endpoint filter** (`AddEndpointFilter`).
+:::
+
+::: warning Bẫy & follow-up
+**"Exception filter có bắt được lỗi trong middleware không?"**
+
+Không. Nó chỉ bắt lỗi trong phạm vi MVC. Lỗi toàn cục phải xử lý bằng `UseExceptionHandler`.
 :::
 
 ## Hỏi đáp
@@ -250,7 +333,7 @@ Thêm: CORS phải đứng **trước** Authentication/Authorization, vì prefli
 | Log thời gian xử lý mọi request (cần `ILogger`) | `IMiddleware` | Class riêng, inject logger, compiler kiểm tra chữ ký |
 | Ghi audit vào DB cho mọi request ghi dữ liệu (cần `PayoutDbContext`) | `IMiddleware` | Service scoped inject thẳng vào constructor, không lo captive |
 | Verify chữ ký HMAC của webhook FakeBank (M5) | **Filter**, không phải middleware | Chỉ áp cho một endpoint; middleware chạy cho mọi request |
-| Validate `ModelState`, cần biết action nào | **[Filter](/aspnet-core/questions#filters)** | Middleware không thấy action |
+| Validate `ModelState`, cần biết action nào | **[Filter](/aspnet-core/middleware#filters)** | Middleware không thấy action |
 | Đóng gói thành NuGet dùng cho nhiều service | Convention class | Không bắt người dùng đăng ký DI, tạo một lần nên rẻ, giống các middleware có sẵn |
 
 Tóm lại, trong code ứng dụng gần như không bao giờ cần convention class. Bạn gặp nó chủ yếu khi **đọc** code của framework và thư viện.

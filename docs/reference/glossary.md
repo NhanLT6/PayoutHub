@@ -19,11 +19,11 @@ Tra nhanh, mỗi dòng một ý. Xếp theo nhóm, trong nhóm theo ABC. Mã tro
 
 | Viết tắt | Đầy đủ | Nghĩa ngắn |
 |---|---|---|
-| DI | Dependency Injection | Dependency được đưa từ ngoài vào (thường qua constructor) thay vì class tự `new` ([DI hoạt động thế nào](/aspnet-core/notes/how-di-works)) |
+| DI | Dependency Injection | Dependency được đưa từ ngoài vào (thường qua constructor) thay vì class tự `new` ([DI hoạt động thế nào](/aspnet-core/dependency-injection)) |
 | DIP | Dependency Inversion Principle | Phụ thuộc vào abstraction; Core khai báo interface, Infrastructure implement ([SOLID](/dotnet/classic-questions#solid)) |
 | DTO | Data Transfer Object | Object chỉ chứa dữ liệu để trả ra/nhận vào API, tách khỏi entity |
 | DRY / KISS / YAGNI | Don't Repeat Yourself / Keep It Simple, Stupid / You Aren't Gonna Need It | ([DRY, KISS, YAGNI](/dotnet/classic-questions#dry-kiss-yagni)) |
-| IoC | Inversion of Control | Framework gọi code của bạn thay vì ngược lại; DI là một dạng IoC ([DI hoạt động thế nào](/aspnet-core/notes/how-di-works)) |
+| IoC | Inversion of Control | Framework gọi code của bạn thay vì ngược lại; DI là một dạng IoC ([DI hoạt động thế nào](/aspnet-core/dependency-injection)) |
 | OCP | Open/Closed Principle | Mở để mở rộng, đóng để sửa; thêm Wise = thêm class, không sửa `switch` ([SOLID](/dotnet/classic-questions#solid)) |
 | REPR | Request–Endpoint–Response | Mỗi endpoint một file gồm Request, handler, Response; hay dùng với Minimal API |
 | SOLID | SRP, OCP, LSP, ISP, DIP | 5 nguyên tắc thiết kế hướng đối tượng ([SOLID](/dotnet/classic-questions#solid)) |
@@ -36,7 +36,7 @@ Tra nhanh, mỗi dòng một ý. Xếp theo nhóm, trong nhóm theo ABC. Mã tro
 | HMAC | Hash-based Message Authentication Code | Chữ ký tạo từ nội dung + secret chung; dùng verify webhook (M5) |
 | JWT | JSON Web Token | Token chứa claim (user, role) có chữ ký; dùng cho authentication (M3) |
 | OpenAPI | (trước đây gọi là Swagger) | Chuẩn mô tả API dạng JSON; sinh tài liệu, client |
-| ProblemDetails | RFC 7807 / RFC 9457 | Format JSON chuẩn cho lỗi HTTP: `type`, `title`, `status`, `detail` ([Validation và xử lý lỗi](/aspnet-core/questions#validation-errors)) |
+| ProblemDetails | RFC 7807 / RFC 9457 | Format JSON chuẩn cho lỗi HTTP: `type`, `title`, `status`, `detail` ([Validation và xử lý lỗi](/aspnet-core/exception-handling#validation-errors)) |
 | REST | Representational State Transfer | Kiểu thiết kế API theo resource + HTTP method + status code ([Thiết kế REST](/aspnet-core/questions#rest-design)) |
 | Span | (OpenTelemetry) | Một bước công việc trong một trace (xử lý request, gọi DB, gọi FakeBank); .NET gọi là `Activity` |
 | Trace | (distributed tracing) | Toàn bộ hành trình của một thao tác, có thể đi qua nhiều service; gồm nhiều span lồng nhau |

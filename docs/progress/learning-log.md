@@ -58,7 +58,7 @@ Mẫu:
 
 ## 2026-10-19 · M1
 - **Đã làm:** onboard máy mới (.NET 10.0.402 có sẵn, LocalDB có, chưa có Docker và `dotnet-ef`). Điền `GlobalExceptionHandler`: log kèm exception + `{Method} {Path}`, `await TryWriteAsync` và return kết quả của nó, `Detail` chỉ hiện message ở Development. `UseExceptionHandler()` lên đầu pipeline, thêm `/boom`. Bật `IncludeScopes` cho JSON console để log có `TraceId`. Thêm `docs/README.md` (mục lục chung), `docs/notes/exception-handling.md`.
-- **Khái niệm đã chạm:** [Middleware](/aspnet-core/questions#middleware), [Validation và xử lý lỗi](/aspnet-core/questions#validation-errors), [Logging](/aspnet-core/questions#logging), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency); ProblemDetails, `IExceptionHandler` true/false, W3C `traceparent` (trace / span / flags).
+- **Khái niệm đã chạm:** [Middleware](/aspnet-core/middleware#middleware), [Validation và xử lý lỗi](/aspnet-core/exception-handling#validation-errors), [Logging](/aspnet-core/questions#logging), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency); ProblemDetails, `IExceptionHandler` true/false, W3C `traceparent` (trace / span / flags).
 - **Chỗ yếu:**
   - Lần đầu quên `await` `TryWriteAsync` (fire-and-forget); sau đó viết `return await ValueTask.FromResult(true)`: chưa chắc `async` tự bọc giá trị return.
   - Che message ở `Title` nhưng vẫn lộ ở `Detail`.
@@ -70,7 +70,7 @@ Mẫu:
 
 ## 2026-10-22 → 23 · M1
 - **Đã làm:** chuyển sang học qua project (cloud thread, Claude đọc repo trên máy). Lab 1 M1: middleware ném lỗi đặt trước `UseExceptionHandler` → Developer Exception Page, sau → ProblemDetails. Đã so `TraceId` ở `/boom`. Tick bước 5. Dựng site document VitePress (`pnpm docs:dev`), home mới thay `docs/README.md`, handbook cũ chuyển sang `docs/public/`. Note mới/viết lại theo format hình + Q&A: middleware-pipeline, health-checks, exception-handling. Thêm `.gitattributes` (CRLF/LF).
-- **Khái niệm đã chạm:** [Middleware](/aspnet-core/questions#middleware), [Filter](/aspnet-core/questions#filters), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency); pipeline = các hàm gọi lồng nhau; exception vs short-circuit; HSTS vs HttpsRedirection; CORS; vị trí `UseRateLimiter`; convention class vs `IMiddleware`; closure.
+- **Khái niệm đã chạm:** [Middleware](/aspnet-core/middleware#middleware), [Filter](/aspnet-core/middleware#filters), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency); pipeline = các hàm gọi lồng nhau; exception vs short-circuit; HSTS vs HttpsRedirection; CORS; vị trí `UseRateLimiter`; convention class vs `IMiddleware`; closure.
 - **Chỗ yếu:**
   - Hiểu nhầm CORS lâu nay là filter chặn request ở server; đúng là server dặn browser, browser thực thi, không bảo vệ API.
   - Gộp exception với short-circuit thành một khái niệm; exception bỏ qua code sau `next` cho tới chỗ có `catch`.
@@ -80,9 +80,23 @@ Mẫu:
 - **Tiếp theo:** xoá middleware Lab 1 trong `Program.cs`, làm health check theo note health-checks mục 4, rồi giải thích thứ tự từng `Use...` trong `Program.cs` (tick bước 2), sau đó `/mock M1`. Đầu phiên: hỏi nhanh 1 câu về CORS hoặc exception vs short-circuit.
 
 ## 2026-10-24 · M1 (đọc tài liệu, chưa code)
-- **Đã làm:** chuyển handbook cũ thành các trang VitePress theo chủ đề, bỏ mã mục (7.3...) và thay bằng link. Tổ chức lại `docs/` theo kiểu folder = URL = sidebar. Note mới: [DI hoạt động thế nào](/aspnet-core/notes/how-di-works), [Result pattern](/aspnet-core/notes/result-pattern). Viết lại ví dụ trong [Exception handling](/aspnet-core/notes/exception-handling) thành class đầy đủ. Thêm bài Aspire (tuỳ chọn) vào cuối M4.
+- **Đã làm:** chuyển handbook cũ thành các trang VitePress theo chủ đề, bỏ mã mục (7.3...) và thay bằng link. Tổ chức lại `docs/` theo kiểu folder = URL = sidebar. Note mới: [DI hoạt động thế nào](/aspnet-core/dependency-injection), [Result pattern](/aspnet-core/result-pattern). Viết lại ví dụ trong [Exception handling](/aspnet-core/exception-handling) thành class đầy đủ. Thêm bài Aspire (tuỳ chọn) vào cuối M4.
 - **Khái niệm đã chạm:** IoC / DI / DIP / container, [Service lifetime](/aspnet-core/dependency-injection#lifetimes); Result pattern và exception; `StatusCodeSelector`; rich và anemic domain model; C# 15 union types; F#; Aspire.
 - **Chỗ yếu:** chưa có (phiên đọc và hỏi đáp).
-- **Câu phỏng vấn đáng nhớ:** "IoC khác DI thế nào?", "Dùng exception hay Result cho lỗi nghiệp vụ?" (câu trả lời mẫu nằm trong 2 note trên).
+- **Câu phỏng vấn đáng nhớ:** "IoC khác DI thế nào?", "Dùng exception hay Result cho lỗi nghiệp vụ?" (câu trả lời mẫu nằm trong 2 trang trên).
 - **Quiz / mock:** chưa.
-- **Tiếp theo:** đọc tiếp [Health check](/aspnet-core/notes/health-checks) từ mục 4 "Áp dụng vào PayoutHub", rồi xoá middleware Lab 1 trong `Program.cs` và làm health check. Sau đó giải thích thứ tự từng `Use...` (tick bước 2) và `/mock M1`. Đầu phiên: hỏi nhanh 1 câu "IoC khác DI thế nào".
+- **Tiếp theo:** đọc tiếp [Health check](/aspnet-core/health-checks) từ mục 4 "Áp dụng vào PayoutHub", rồi xoá middleware Lab 1 trong `Program.cs` và làm health check. Sau đó giải thích thứ tự từng `Use...` (tick bước 2) và `/mock M1`. Đầu phiên: hỏi nhanh 1 câu "IoC khác DI thế nào".
+
+## 2026-10-24 (tối) · M1
+- **Đã làm:** tự thêm health check (`AddHealthChecks()` + `MapHealthChecks("/health")`), middleware Lab 1 đã gỡ. Chưa commit code, chưa tick plan (chờ review). Tổ chức lại site: **mỗi chủ đề một trang** (bài học ở trên, câu phỏng vấn ở dưới), bỏ folder `notes/`. Các câu ASP.NET Core chưa có bài nằm tạm ở [Câu hỏi khác](/aspnet-core/questions). Quy ước giáo trình adaptive ghi trong `CLAUDE.md`.
+- **Khái niệm đã chạm:** status health check do code check trả về, không do độ chậm ([Status đổi theo thời gian](/aspnet-core/health-checks)); startup probe; [Service lifetime](/aspnet-core/dependency-injection#lifetimes); atomic.
+- **Chỗ yếu:**
+  - Chọn lifetime theo "code chạy lúc nào" (exception xảy ra trong request nên handler là scoped). Đúng là theo việc object có giữ dữ liệu riêng của request không: `GlobalExceptionHandler` là singleton, `DbContext` là scoped.
+  - Nghĩ "chưa ready" và Degraded được phân biệt bằng độ chậm.
+- **Câu phỏng vấn đáng nhớ:** "Handler chạy trong request, vậy có phải scoped?" (khối Bẫy ở [Lifetimes](/aspnet-core/dependency-injection#lifetimes)).
+- **Quiz / mock:** chưa. Còn treo 2 câu tự kiểm tra lifetime: (1) `PayoutApprovalService` chỉ phụ thuộc `IPayoutRepository` (dùng `DbContext`) thì lifetime gì; (2) `GlobalExceptionHandler` inject `DbContext` thì sao.
+- **Tiếp theo:**
+  1. Đầu phiên: trả lời 2 câu lifetime ở trên.
+  2. Review diff health check (có một `using Microsoft.Extensions.Logging.Configuration` thừa), tự trả lời câu ở bước 3 mục M1 trong [Health check](/aspnet-core/health-checks), rồi tick bước "Health check endpoint".
+  3. Giải thích thứ tự từng `Use...` trong `Program.cs` (tick bước 2), commit code M1.
+  4. `/mock M1`.

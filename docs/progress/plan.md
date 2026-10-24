@@ -4,7 +4,7 @@
 Ngân sách: khoảng 4 tuần, tối đa khoảng 3 giờ mỗi ngày, có thể ngắt quãng.
 Mỗi milestone kết thúc bằng `/mock Mx` (10–15 phút), rồi `/wrap`.
 
-**Cách đọc:** mỗi bước có dòng `→` giải thích làm gì và vì sao. Lab là phần **cố tình làm sai** để thấy lỗi tận mắt, vì đó là chất liệu tốt nhất để kể khi phỏng vấn. "Ôn" là link tới các câu trong [handbook](/reference/).
+**Cách đọc:** mỗi bước có dòng `→` giải thích làm gì và vì sao. Lab là phần **cố tình làm sai** để thấy lỗi tận mắt, vì đó là chất liệu tốt nhất để kể khi phỏng vấn. "Ôn" là link tới các câu phỏng vấn (xem [Mục lục câu hỏi](/reference/)).
 
 ## Domain
 
@@ -59,7 +59,7 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming. 
 1. Đặt `UseExceptionHandler` **sau** một middleware ném lỗi: lỗi không được bắt, vì middleware chỉ bọc được những gì đứng sau nó.
 2. (Có thể dời sang M3 khi đã có JWT) Đảo thứ tự `UseAuthentication` / `UseAuthorization`: authorization chạy khi chưa biết user là ai → luôn 401.
 
-**Ôn:** [Framework vs .NET](/dotnet/framework-vs-core#framework-vs-core), [Kestrel](/dotnet/framework-vs-core#kestrel), [HttpContext.Current](/dotnet/framework-vs-core#httpcontext-current), [Configuration](/dotnet/framework-vs-core#configuration), [Startup](/aspnet-core/questions#startup), [Middleware](/aspnet-core/questions#middleware), [Validation và xử lý lỗi](/aspnet-core/questions#validation-errors), [Logging](/aspnet-core/questions#logging)
+**Ôn:** [Framework vs .NET](/dotnet/framework-vs-core#framework-vs-core), [Kestrel](/dotnet/framework-vs-core#kestrel), [HttpContext.Current](/dotnet/framework-vs-core#httpcontext-current), [Configuration](/dotnet/framework-vs-core#configuration), [Startup](/aspnet-core/questions#startup), [Middleware](/aspnet-core/middleware#middleware), [Validation và xử lý lỗi](/aspnet-core/exception-handling#validation-errors), [Logging](/aspnet-core/questions#logging)
 
 ## M2: Domain + EF Core (khoảng 3 ngày)
 
@@ -104,7 +104,7 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming. 
 1. Bắn 2 request duyệt cùng lúc để thấy payout bị duyệt 2 lần, rồi sửa bằng `rowversion` (optimistic concurrency) và trả 409.
 2. Đăng ký một singleton giữ `DbContext` (captive dependency). Ở môi trường Development, `ValidateScopes`/`ValidateOnBuild` đã bật sẵn nên app báo lỗi ngay; chạy thử với Production để thấy lỗi lọt qua.
 
-**Ôn:** [SOLID](/dotnet/classic-questions#solid), [Design patterns](/dotnet/classic-questions#design-patterns), [Thread safety](/runtime/async#thread-safety), [Filter](/aspnet-core/questions#filters), [Thiết kế REST](/aspnet-core/questions#rest-design), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Container dispose](/aspnet-core/dependency-injection#disposal), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations)
+**Ôn:** [SOLID](/dotnet/classic-questions#solid), [Design patterns](/dotnet/classic-questions#design-patterns), [Thread safety](/runtime/async#thread-safety), [Filter](/aspnet-core/middleware#filters), [Thiết kế REST](/aspnet-core/questions#rest-design), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Container dispose](/aspnet-core/dependency-injection#disposal), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations)
 
 ## M4: Thực thi payout (khoảng 4 ngày)
 

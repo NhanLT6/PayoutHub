@@ -562,7 +562,7 @@ Không có đáp án đúng, nên trả lời có lý do. Ví dụ: "SRP và DIP
 
 **"DIP, DI và IoC khác nhau thế nào?"**
 
-**IoC** là ý tưởng chung: framework gọi code của bạn chứ không phải ngược lại. **DIP** là nguyên tắc thiết kế: phụ thuộc abstraction do tầng nghiệp vụ định nghĩa. **DI** là kỹ thuật: dependency được truyền từ ngoài vào (thường qua constructor). DI container chỉ là công cụ tự động hóa DI. Có hình và câu hỏi sâu hơn: [DI hoạt động thế nào](/aspnet-core/notes/how-di-works).
+**IoC** là ý tưởng chung: framework gọi code của bạn chứ không phải ngược lại. **DIP** là nguyên tắc thiết kế: phụ thuộc abstraction do tầng nghiệp vụ định nghĩa. **DI** là kỹ thuật: dependency được truyền từ ngoài vào (thường qua constructor). DI container chỉ là công cụ tự động hóa DI. Có hình và câu hỏi sâu hơn: [DI hoạt động thế nào](/aspnet-core/dependency-injection).
 :::
 
 ## Design pattern hay bị hỏi (và chỗ chúng có sẵn trong .NET) {#design-patterns}

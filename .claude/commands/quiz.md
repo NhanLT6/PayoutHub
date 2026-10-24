@@ -5,7 +5,7 @@ argument-hint: "[chủ đề, tuỳ chọn]"
 
 Quiz nhanh 5 câu kiểu phỏng vấn.
 
-1. Đọc `docs/progress/learning-log.md` và `docs/reference/index.md` (mục lục handbook).
+1. Đọc `docs/progress/learning-log.md` và `docs/reference/index.md` (mục lục câu hỏi).
 2. Chọn câu hỏi:
    - Nếu có `$ARGUMENTS` thì tập trung vào chủ đề đó.
    - Nếu không: ít nhất 2 câu lấy từ "Chỗ yếu" gần đây; phần còn lại trộn từ các khái niệm đã chạm ở những milestone đã xong. Trộn nhiều chủ đề, không gom một chủ đề.

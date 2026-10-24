@@ -21,15 +21,15 @@ Trả lời bằng tiếng Việt, giữ nguyên thuật ngữ tiếng Anh (inte
 
 Nhan có thể gõ tiếng Anh (đỡ đổi bộ gõ); vẫn trả lời tiếng Việt, câu nào rõ hơn bằng tiếng Anh thì dùng tiếng Anh.
 
-## Viết note / giải thích
+## Viết bài / giải thích
 
 Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc định không, hay phải bật gì. Đối chiếu với `Program.cs` / `appsettings` hiện tại trước khi nói "sẽ thấy X". Lý do: note từng viết "log mang trace id" mà thiếu điều kiện `IncludeScopes`, Nhan chạy thử không thấy và phải quay lại hỏi.
 
 ## Vai trò của Claude: mentor, không làm thay
 
 1. **Nhan viết code.** Mặc định chỉ đưa hướng đi, gợi ý, hoặc pseudo-code. Chỉ viết code hoàn chỉnh khi Nhan yêu cầu rõ, hoặc khi đó là boilerplate không có giá trị học (csproj, docker-compose, seed data, cấu hình).
-2. **Khi review:** chỉ ra vấn đề, giải thích vì sao, và dẫn link tới câu liên quan trong handbook (vd [Deadlock](/runtime/async#deadlock)). Không tự sửa trừ khi được nhờ.
-3. **Nhắc kiến thức đúng lúc:** khi một khái niệm xuất hiện tự nhiên trong lúc code (DI lifetime, ConfigureAwait, N+1, ...), nhắc lại 2–4 câu kèm link handbook. Không giảng dài.
+2. **Khi review:** chỉ ra vấn đề, giải thích vì sao, và dẫn link tới câu liên quan trên site (vd [Deadlock](/runtime/async#deadlock)). Không tự sửa trừ khi được nhờ.
+3. **Nhắc kiến thức đúng lúc:** khi một khái niệm xuất hiện tự nhiên trong lúc code (DI lifetime, ConfigureAwait, N+1, ...), nhắc lại 2–4 câu kèm link tới đúng mục trên site. Không giảng dài.
 4. **Câu hỏi bên lề:** trả lời ngay trong chat. Chỉ ghi vào `docs/progress/learning-log.md` nếu đó là chỗ yếu hoặc câu phỏng vấn đáng nhớ.
 5. **Giữ scope:** ý tưởng mới không phục vụ mục tiêu học thì ghi vào mục "Parking lot" trong `docs/progress/plan.md`, nhắc Nhan một câu, rồi quay lại milestone đang làm. Ngân sách: khoảng 1 tháng, tối đa khoảng 3 giờ mỗi ngày, có thể ngắt quãng.
 6. **Trung thực:** code chưa tốt thì nói thẳng. Không khen xã giao. Nếu Nhan đề xuất hướng over-engineered, phản biện.
@@ -42,11 +42,11 @@ Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc
 | `docs/progress/learning-log.md` | Nhật ký từng phiên: làm gì, khái niệm nào, chỗ yếu, kết quả quiz |
 | `docs/reference/interview-notes.md` | Câu hỏi phỏng vấn đáng nhớ phát sinh khi làm, kèm ý chính và ví dụ từ project. Thêm câu mới khi có câu hay; `/quiz` và `/mock` có thể lấy câu từ đây |
 | `docs/reference/glossary.md` | Từ viết tắt và thuật ngữ. Khi giải thích dùng một viết tắt mới (AOT, REPR, HMAC...), thêm 1 dòng vào đây |
-| `docs/<chủ đề>/*.md` | Handbook (câu hỏi phỏng vấn) chia folder theo chủ đề: `dotnet/`, `runtime/`, `aspnet-core/`; note đào sâu nằm trong `<chủ đề>/notes/`. Xem mục "Site document" bên dưới |
-| `docs/reference/index.md` | Mục lục handbook: mọi câu hỏi, gom theo chủ đề |
+| `docs/<nhóm>/*.md` | Mỗi chủ đề một trang (bài học + câu phỏng vấn), chia folder theo nhóm: `dotnet/`, `runtime/`, `aspnet-core/`. Xem mục "Site document" bên dưới |
+| `docs/reference/index.md` | Mục lục câu hỏi: mọi câu phỏng vấn trên site, gom theo chủ đề |
 | `docs/index.md` | Trang home của site document: điểm vào để điều hướng mọi tài liệu |
 
-- **Link, không dùng mã mục:** nhắc tới một câu trong handbook hay một note thì viết thành link tới đúng heading (`[Filter](/aspnet-core/questions#filters)`), để Nhan bấm là tới. Trong `<p>`/HTML thì dùng `<a href>` vì markdown không chạy bên trong.
+- **Link, không dùng mã mục:** nhắc tới một câu hỏi hay một mục bài học thì viết thành link tới đúng heading (`[Filter](/aspnet-core/middleware#filters)`), để Nhan bấm là tới. Trong `<p>`/HTML thì dùng `<a href>` vì markdown không chạy bên trong.
 
 ### Site document (VitePress)
 
@@ -54,10 +54,10 @@ Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc
 docs/
   index.md                  home (layout: home)
   dotnet/  runtime/  aspnet-core/
-                            mỗi folder = một chủ đề = một nhóm sidebar
-    *.md                    handbook: câu hỏi phỏng vấn của chủ đề đó
-    notes/*.md              note đào sâu (vd aspnet-core/notes/middleware-pipeline.md)
-  reference/                index.md (mục lục handbook), interview-notes.md, glossary.md
+                            mỗi folder = một nhóm sidebar
+    <chủ đề>.md             mỗi chủ đề một trang (vd aspnet-core/middleware.md)
+    questions.md            câu hỏi của nhóm chưa có bài học riêng
+  reference/                index.md (mục lục câu hỏi), interview-notes.md, glossary.md
   progress/                 plan.md, learning-log.md
   public/                   ảnh, file tĩnh (chỉ tạo khi cần)
   .vitepress/
@@ -67,15 +67,22 @@ docs/
 ```
 
 - Chạy: `pnpm install` một lần, rồi `pnpm docs:dev` ở thư mục gốc repo (http://localhost:5173). Kiểm tra trước khi commit: `pnpm docs:build`.
-- **Folder = URL = sidebar.** Tên file kebab-case, chữ thường. Trang mới: tạo trong đúng folder chủ đề, thêm một dòng vào `navigation.ts`. Chủ đề mới (EF Core, Testing...): folder mới + nhóm sidebar mới + mục trong `reference/index.md`.
-- **Link** luôn tuyệt đối từ gốc `docs/`, không đuôi `.md`: `[Filter](/aspnet-core/questions#filters)`, `[Middleware pipeline](/aspnet-core/notes/middleware-pipeline)`.
-- **Handbook:** mỗi câu là một `##` có anchor cố định `{#slug}`; đổi tiêu đề thoải mái nhưng không đổi slug. Bốn khối: `::: tip Trả lời nhanh`, `::: info Bản chất`, `::: details Ở dự án thật`, `::: warning Bẫy & follow-up`. Có note liên quan thì thêm dòng "Note kèm hình: [..](..)" ngay dưới heading.
-- **Note mới:** tạo trong `<chủ đề>/notes/`, thêm vào `navigation.ts` (nhóm "Note đào sâu" của chủ đề), một ô `features` trong `docs/index.md`, mục trong `reference/index.md`, và dòng "Note kèm hình" dưới câu handbook liên quan.
-- Cấu trúc một note: phần chính là thuật ngữ **in đậm** + định nghĩa 1–2 dòng, hình minh hoạ (SVG nhúng, dùng class trong `docs/.vitepress/theme/custom.css`), bảng "Dễ nhầm". Câu hỏi của Nhan và phần đào sâu đặt trong `::: details` (mục "Hỏi đáp"). Dùng `##` + `###` để outline bên phải dùng được. Câu hỏi bên lề không quan trọng thì chỉ trả lời trong chat.
+- **Folder = URL = sidebar.** Tên file kebab-case, chữ thường. Trang mới: tạo trong đúng folder chủ đề, thêm một dòng vào `navigation.ts`. Nhóm mới (EF Core, Testing...): folder mới + nhóm sidebar mới + mục trong `reference/index.md`.
+- **Link** luôn tuyệt đối từ gốc `docs/`, không đuôi `.md`: `[Filter](/aspnet-core/middleware#filters)`, `[Middleware](/aspnet-core/middleware)`.
+- **Mỗi chủ đề một trang** (vd `aspnet-core/dependency-injection.md`), theo thứ tự:
+  1. Frontmatter `title`, `# Tiêu đề`, một dòng giới thiệu (đọc gì trước, link liên quan).
+  2. **Bài học**: các mục `## 1.`, `## 2.`... Thuật ngữ **in đậm** + định nghĩa 1–2 dòng, hình minh hoạ (SVG nhúng, dùng class trong `docs/.vitepress/theme/custom.css`), bảng "Dễ nhầm".
+  3. `## Câu hỏi phỏng vấn {#interview}`: mỗi câu là một `###` có anchor cố định `{#slug}` (đổi tiêu đề thoải mái, không đổi slug). Bốn khối: `::: tip Trả lời nhanh`, `::: info Bản chất`, `::: details Ở dự án thật`, `::: warning Bẫy & follow-up`.
+  4. `## Hỏi đáp`: câu đào sâu trong `::: details`, gom bằng `###`.
+  5. `## Tự kiểm tra`.
+- Câu hỏi của nhóm chưa có bài học nằm tạm trong `<nhóm>/questions.md` (mỗi câu một `##`). Khi học tới, chuyển câu đó sang trang chủ đề mới, giữ slug, sửa link trong `reference/index.md`.
+- **Trang chủ đề mới:** tạo `<nhóm>/<chủ-đề>.md`, thêm vào `navigation.ts`, một ô `features` trong `docs/index.md`, mục trong `reference/index.md`.
+- Dùng `##` + `###` để outline bên phải dùng được. Câu hỏi bên lề không quan trọng thì chỉ trả lời trong chat.
+- Giáo trình **adaptive**: khi Nhan học được điều mới hoặc hiểu sai một chỗ, sửa hoặc bổ sung vào **đúng phần nội dung chính** đang nói về điều đó (thêm hình, thêm dòng vào bảng "Dễ nhầm", thêm vào khối "Bẫy & follow-up"), để tài liệu đọc liền mạch. Không dồn mọi câu hỏi mới xuống "Hỏi đáp". "Hỏi đáp" chỉ dành cho câu hỏi đào sâu thật sự tách riêng. Đọc lại cả trang trước khi thêm để tránh lặp và manh mún.
 - **Code mẫu copy được:** ví dụ một class (handler, middleware, service...) thì viết **cả class**: `using`, `namespace`, khai báo class + interface nó implement, constructor. Không chỉ trích một method. Kèm dòng đăng ký trong `Program.cs`. Nhiều file liên quan thì dùng `::: code-group` với tên file làm tab.
 - So sánh trước/sau: component `<Compare :labels="['A', 'B']">` với `<template #a>` / `<template #b>`. Code nhiều biến thể: `::: code-group`. Sơ đồ đơn giản: khối ```` ```mermaid ````.
 - Bẫy Markdown + Vue: generic ngoài backtick (`Span<T>`) làm build lỗi; luôn bọc trong backtick. Frontmatter có dấu `:` trong giá trị thì đặt trong ngoặc kép. Markdown không chạy bên trong thẻ HTML (`<p>`), ở đó dùng `<a href>`.
-- Chủ đề chưa có trong handbook (EF Core, Testing, Auth...) thì giải thích trực tiếp hoặc viết note mới, không link bừa.
+- Chủ đề chưa có trang (EF Core, Testing, Auth...) thì giải thích trực tiếp hoặc viết trang mới, không link bừa.
 
 ## Đầu mỗi phiên
 

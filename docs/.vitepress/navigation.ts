@@ -1,7 +1,8 @@
 import type { DefaultTheme } from 'vitepress'
 
 // Mỗi nhóm sidebar ứng với một folder trong docs/: URL, file và menu đi cùng một cấu trúc.
-// Trang mới: tạo file trong đúng folder rồi thêm một dòng vào nhóm tương ứng ở đây.
+// Mỗi chủ đề một trang: bài học ở trên, câu phỏng vấn ở dưới. Trang mới: tạo file trong đúng folder
+// rồi thêm một dòng vào nhóm tương ứng ở đây.
 
 export const nav: DefaultTheme.NavItem[] = [
   { text: 'Mục lục', link: '/reference/' },
@@ -31,24 +32,18 @@ export const sidebar: DefaultTheme.Sidebar = [
     text: 'ASP.NET Core',
     collapsed: false,
     items: [
-      { text: 'Câu hỏi ASP.NET Core', link: '/aspnet-core/questions' },
       { text: 'Dependency Injection', link: '/aspnet-core/dependency-injection' },
-      {
-        text: 'Note đào sâu',
-        items: [
-          { text: 'DI hoạt động thế nào', link: '/aspnet-core/notes/how-di-works' },
-          { text: 'Middleware pipeline', link: '/aspnet-core/notes/middleware-pipeline' },
-          { text: 'Exception handling', link: '/aspnet-core/notes/exception-handling' },
-          { text: 'Result pattern', link: '/aspnet-core/notes/result-pattern' },
-          { text: 'Health check', link: '/aspnet-core/notes/health-checks' },
-        ],
-      },
+      { text: 'Middleware pipeline', link: '/aspnet-core/middleware' },
+      { text: 'Exception handling', link: '/aspnet-core/exception-handling' },
+      { text: 'Result pattern', link: '/aspnet-core/result-pattern' },
+      { text: 'Health check', link: '/aspnet-core/health-checks' },
+      { text: 'Câu hỏi khác', link: '/aspnet-core/questions' },
     ],
   },
   {
     text: 'Tra cứu',
     items: [
-      { text: 'Mục lục handbook', link: '/reference/' },
+      { text: 'Mục lục câu hỏi', link: '/reference/' },
       { text: 'Interview notes', link: '/reference/interview-notes' },
       { text: 'Glossary', link: '/reference/glossary' },
     ],

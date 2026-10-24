@@ -309,7 +309,7 @@ Hai người cùng bấm duyệt một payout. `lock` trong code không giải q
 ::: warning Bẫy & follow-up
 **"`volatile` có thay được `lock` không?"**
 
-Không. `volatile` chỉ đảm bảo đọc giá trị mới nhất và chặn sắp xếp lại lệnh; nó không làm `count++` thành thao tác nguyên tử. Hiếm khi cần trong code business.
+Không. `volatile` chỉ đảm bảo đọc giá trị mới nhất và chặn sắp xếp lại lệnh; nó không làm `count++` thành thao tác **atomic** (đọc, cộng, ghi trong một bước không bị thread khác chen vào). Cần thì dùng `Interlocked.Increment`. Hiếm khi cần trong code business.
 :::
 
 ## `Task.Yield()` dùng để làm gì? {#task-yield}

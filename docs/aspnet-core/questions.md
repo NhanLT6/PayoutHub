@@ -1,10 +1,10 @@
 ---
-title: "ASP.NET Core"
+title: "Câu hỏi ASP.NET Core khác"
 ---
 
-# ASP.NET Core
+# Câu hỏi ASP.NET Core khác
 
-Phần bị hỏi nhiều nhất trong vòng technical. Đối chiếu với Web Forms giúp bạn trả lời có chiều sâu thay vì chỉ đọc định nghĩa.
+Các câu ASP.NET Core chưa có bài học riêng. Khi học tới chủ đề nào, câu đó được chuyển sang trang chủ đề của nó (như [Middleware](/aspnet-core/middleware) hay [Exception handling](/aspnet-core/exception-handling)).
 
 ## App ASP.NET Core khởi động thế nào? {#startup}
 
@@ -36,85 +36,6 @@ app.Run();
 Bên dưới là **Generic Host**: thứ quản lý DI, config, logging và vòng đời của các `IHostedService`. Worker service hay console app dùng cùng host này, chỉ khác là không có web server. Mẫu cũ `Startup.cs` với `ConfigureServices`/`Configure` vẫn chạy được, chỉ là được gộp vào Program.cs từ .NET 6.
 :::
 
-## Middleware là gì? Thứ tự có quan trọng không? <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#middleware}
-
-Note kèm hình: [Middleware pipeline](/aspnet-core/notes/middleware-pipeline).
-
-::: tip Trả lời nhanh
-Middleware là các bước nối tiếp nhau mà mọi request đi qua. Mỗi bước có thể xử lý trước, gọi bước kế tiếp (`next`), xử lý response sau khi bước kế tiếp xong, hoặc dừng luôn không gọi tiếp (short-circuit). Thứ tự đăng ký chính là thứ tự chạy, nên rất quan trọng: request đi xuôi, response đi ngược lại.
-:::
-
-::: info Bản chất
-Thứ tự chuẩn (bỏ những cái app không dùng):
-
-1. `UseExceptionHandler`: đứng đầu để bắt lỗi của mọi bước sau
-2. `UseHsts`, `UseHttpsRedirection`
-3. `UseStaticFiles`: trả file tĩnh sớm, không tốn công auth
-4. `UseRouting`: xác định endpoint nào sẽ xử lý
-5. `UseCors`
-6. `UseAuthentication`: bạn là ai
-7. `UseAuthorization`: bạn được làm gì (cần biết endpoint nên đứng sau routing)
-8. `UseRateLimiter`, middleware tự viết
-9. `MapControllers` / `MapGet`: endpoint, điểm cuối của pipeline
-
-```csharp
-public class CorrelationIdMiddleware(RequestDelegate next)
-{
-    public async Task InvokeAsync(HttpContext ctx, ILogger<CorrelationIdMiddleware> logger)
-    {
-        var id = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
-        ctx.Response.Headers["X-Correlation-Id"] = id;
-        using (logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = id }))
-        {
-            await next(ctx);   // phần trước: request; phần sau: response
-        }
-    }
-}
-app.UseMiddleware<CorrelationIdMiddleware>();
-```
-:::
-
-::: details Ở dự án thật
-Middleware là phiên bản hiện đại của HttpModule. `Application_BeginRequest` trong Global.asax hay một HttpModule ghi log hoặc kiểm tra IP giờ là một middleware. Khác biệt chính: HttpModule gắn vào các event cố định của IIS pipeline; middleware là chuỗi delegate do bạn tự sắp xếp, rõ ràng và test được.
-:::
-
-::: warning Bẫy & follow-up
-**"Inject service scoped vào constructor của middleware được không?"**
-
-Không. Middleware dạng thường chỉ được tạo một lần cho cả app, giống singleton. Service scoped phải nhận qua tham số của `InvokeAsync` như ví dụ trên, hoặc implement `IMiddleware` để được tạo theo từng request.
-
-**"`Use`, `Run`, `Map` khác nhau thế nào?"**
-
-`Use`: có `next`, gọi tiếp được. `Run`: điểm cuối, không gọi tiếp. `Map`/`MapWhen`: rẽ nhánh pipeline theo path hoặc điều kiện.
-
-**"Sửa header sau khi đã gọi `next` được không?"**
-
-Nếu response đã bắt đầu gửi về client thì không, sẽ ném lỗi. Kiểm tra `ctx.Response.HasStarted`, hoặc đăng ký `Response.OnStarting`.
-:::
-
-## Filter là gì? Khác middleware chỗ nào? {#filters}
-
-::: tip Trả lời nhanh
-Filter chạy **bên trong** MVC, quanh việc thực thi action, nên biết action nào, controller nào, model binding ra sao, ModelState hợp lệ không. Middleware chạy cho mọi request và chỉ thấy `HttpContext`. Logic chung cho cả app (log, correlation id) dùng middleware; logic cần ngữ cảnh action (validate, audit theo action) dùng filter.
-:::
-
-::: info Thứ tự chạy
-1. **Authorization filter**
-2. **Resource filter**: trước model binding, hợp cho cache
-3. Model binding và validation
-4. **Action filter**: trước và sau action
-5. **Exception filter**: chỉ khi action hoặc filter trước nó ném lỗi
-6. **Result filter**: trước và sau khi ghi kết quả
-
-Minimal API không có MVC filter, thay vào đó là **endpoint filter** (`AddEndpointFilter`).
-:::
-
-::: warning Bẫy & follow-up
-**"Exception filter có bắt được lỗi trong middleware không?"**
-
-Không. Nó chỉ bắt lỗi trong phạm vi MVC. Lỗi toàn cục phải xử lý bằng `UseExceptionHandler`.
-:::
-
 ## Controller hay Minimal API? {#controllers-vs-minimal}
 
 ::: tip Trả lời nhanh
@@ -134,49 +55,6 @@ payouts.MapPost("/", async (CreatePayoutRequest req, IPayoutService svc) =>
     return Results.Created($"/api/payouts/{id}", new { id });
 });
 ```
-:::
-
-## Model binding, validation và xử lý lỗi {#validation-errors}
-
-Note kèm hình: [Exception handling](/aspnet-core/notes/exception-handling).
-
-::: tip Trả lời nhanh
-Model binding lấy dữ liệu từ route, query, header, body, form và đổ vào tham số action. Với `[ApiController]`, nếu validation thất bại thì framework tự trả 400 kèm chi tiết lỗi theo chuẩn **ProblemDetails** (RFC 9457), không cần tự kiểm tra `ModelState.IsValid`. Lỗi không mong đợi thì để một chỗ xử lý toàn cục.
-:::
-
-::: info Bản chất
-```csharp
-builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();  // .NET 8
-app.UseExceptionHandler();
-
-public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
-{
-    public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
-    {
-        var (status, title) = ex switch
-        {
-            NotFoundException       => (404, "Not found"),
-            BusinessRuleException   => (409, ex.Message),
-            _                       => (500, "Unexpected error"),
-        };
-        if (status == 500) logger.LogError(ex, "Unhandled exception");
-        ctx.Response.StatusCode = status;
-        await ctx.Response.WriteAsJsonAsync(new ProblemDetails { Status = status, Title = title }, ct);
-        return true;
-    }
-}
-```
-:::
-
-::: warning Bẫy & follow-up
-**"Có nên dùng exception cho lỗi nghiệp vụ không?"**
-
-Đây là câu tranh luận. Exception đơn giản và đi xuyên qua các tầng, nhưng tốn chi phí và làm luồng code khó đoán. Cách khác là trả về kiểu Result (thành công hoặc lỗi kèm lý do). Nói được cả hai và chọn theo tần suất: lỗi xảy ra thường xuyên (validate) thì không nên dùng exception.
-
-**"Có trả stack trace về client không?"**
-
-Không bao giờ ở production: lộ cấu trúc code. Log đầy đủ phía server kèm trace id, client chỉ nhận thông báo chung và trace id đó để báo lại.
 :::
 
 ## Thiết kế REST API: status code và các quy ước {#rest-design}

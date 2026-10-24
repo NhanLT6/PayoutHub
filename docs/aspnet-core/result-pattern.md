@@ -1,6 +1,10 @@
+---
+title: "Result pattern"
+---
+
 # Result pattern
 
-Cách thứ hai để báo lỗi, đặt cạnh exception. Đọc sau note [Exception handling](/aspnet-core/notes/exception-handling). PayoutHub theo plan vẫn dùng exception + handler; note này để hiểu, so sánh và trả lời được khi bị hỏi "sao không dùng Result?".
+Cách thứ hai để báo lỗi, đặt cạnh exception. Đọc sau [Exception handling](/aspnet-core/exception-handling). PayoutHub theo plan vẫn dùng exception + handler; trang này để hiểu, so sánh và trả lời được khi bị hỏi "sao không dùng Result?".
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="rAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="rOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="rBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 

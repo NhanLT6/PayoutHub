@@ -1,10 +1,10 @@
 ---
-title: Mục lục handbook
+title: Mục lục câu hỏi
 ---
 
-# Mục lục handbook
+# Mục lục câu hỏi
 
-Câu hỏi kiểu phỏng vấn, chia theo chủ đề. Mỗi câu có 4 phần: **Trả lời nhanh**, **Bản chất**, **Ở dự án thật** (thu gọn), **Bẫy & follow-up**.
+Mọi câu hỏi kiểu phỏng vấn trên site, chia theo chủ đề. Trang nào có bài học thì câu hỏi nằm ở cuối trang đó. Mỗi câu có 4 phần: **Trả lời nhanh**, **Bản chất**, **Ở dự án thật** (thu gọn), **Bẫy & follow-up**.
 
 ::: tip Công thức cho câu hỏi trả bài
 Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 case bạn từng làm (Ở dự án thật), kết bằng 1 trade-off hoặc trường hợp không nên dùng. Interviewer gần như luôn đi theo hướng bạn mở ra, và phần thứ hai mới là chỗ senior được chấm điểm.
@@ -82,20 +82,7 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 
 ## ASP.NET Core
 
-### [ASP.NET Core](/aspnet-core/questions)
-
-- [App ASP.NET Core khởi động thế nào?](/aspnet-core/questions#startup)
-- [Middleware là gì? Thứ tự có quan trọng không?](/aspnet-core/questions#middleware)
-- [Filter là gì? Khác middleware chỗ nào?](/aspnet-core/questions#filters)
-- [Controller hay Minimal API?](/aspnet-core/questions#controllers-vs-minimal)
-- [Model binding, validation và xử lý lỗi](/aspnet-core/questions#validation-errors)
-- [Thiết kế REST API: status code và các quy ước](/aspnet-core/questions#rest-design)
-- [Logging đúng cách](/aspnet-core/questions#logging)
-- [Gọi API bên ngoài: IHttpClientFactory và resilience](/aspnet-core/questions#httpclientfactory)
-- [Caching trong ASP.NET Core](/aspnet-core/questions#caching)
-- ["API chậm dần khi traffic tăng, bạn xử lý thế nào?"](/aspnet-core/questions#slow-api)
-
-### [Dependency Injection](/aspnet-core/dependency-injection)
+### [Dependency Injection](/aspnet-core/dependency-injection#interview)
 
 - [Transient, Scoped, Singleton](/aspnet-core/dependency-injection#lifetimes)
 - [Captive dependency: inject lifetime nào vào lifetime nào được?](/aspnet-core/dependency-injection#captive-dependency)
@@ -103,13 +90,29 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Nhiều implementation cho một interface, keyed services, decorator](/aspnet-core/dependency-injection#multiple-implementations)
 - [Constructor có quá nhiều dependency](/aspnet-core/dependency-injection#too-many-dependencies)
 
-### Note đào sâu
+### [Middleware](/aspnet-core/middleware#interview)
 
-- [DI hoạt động thế nào](/aspnet-core/notes/how-di-works)
-- [Middleware pipeline](/aspnet-core/notes/middleware-pipeline)
-- [Exception handling](/aspnet-core/notes/exception-handling)
-- [Result pattern](/aspnet-core/notes/result-pattern)
-- [Health check](/aspnet-core/notes/health-checks)
+- [Middleware là gì? Thứ tự có quan trọng không?](/aspnet-core/middleware#middleware)
+- [Filter là gì? Khác middleware chỗ nào?](/aspnet-core/middleware#filters)
+
+### [Exception handling](/aspnet-core/exception-handling#interview)
+
+- [Model binding, validation và xử lý lỗi](/aspnet-core/exception-handling#validation-errors)
+
+### Chưa có câu phỏng vấn riêng
+
+- [Result pattern](/aspnet-core/result-pattern)
+- [Health check](/aspnet-core/health-checks)
+
+### [Câu hỏi khác](/aspnet-core/questions)
+
+- [App ASP.NET Core khởi động thế nào?](/aspnet-core/questions#startup)
+- [Controller hay Minimal API?](/aspnet-core/questions#controllers-vs-minimal)
+- [Thiết kế REST API: status code và các quy ước](/aspnet-core/questions#rest-design)
+- [Logging đúng cách](/aspnet-core/questions#logging)
+- [Gọi API bên ngoài: IHttpClientFactory và resilience](/aspnet-core/questions#httpclientfactory)
+- [Caching trong ASP.NET Core](/aspnet-core/questions#caching)
+- ["API chậm dần khi traffic tăng, bạn xử lý thế nào?"](/aspnet-core/questions#slow-api)
 
 ## Chưa viết
 
