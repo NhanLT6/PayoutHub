@@ -22,5 +22,5 @@ Cách làm:
    - Có nối sang ví dụ thật không
    - Rõ ràng và ngắn gọn
 
-   Sau đó nêu 3 điểm cần ôn nhất, kèm mã mục sổ tay. Với câu trả lời yếu nhất, đưa ra phiên bản mẫu.
-5. Ghi kết quả vào `docs/LEARNING-LOG.md`.
+   Sau đó nêu 3 điểm cần ôn nhất, kèm link tới câu tương ứng trong handbook. Với câu trả lời yếu nhất, đưa ra phiên bản mẫu.
+5. Ghi kết quả vào `docs/progress/learning-log.md`.

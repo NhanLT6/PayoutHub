@@ -1,0 +1,40 @@
+/* Khung cho hình minh hoạ: <div class="fig"><svg>...</svg><p class="fig-caption">...</p></div> */
+.vp-doc .fig {
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+  overflow-x: auto;
+}
+.vp-doc .fig svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.vp-doc .fig-caption { font-size: 13px; color: var(--vp-c-text-2); margin: 6px 0 0; line-height: 1.5; }
+
+/* Bảng màu dùng chung cho mọi sơ đồ SVG, tự đổi theo light/dark của VitePress */
+.vp-doc svg text { font-family: var(--vp-font-family-base); fill: var(--vp-c-text-1); }
+.vp-doc svg .mono { font-family: var(--vp-font-family-mono); }
+.vp-doc svg .muted { fill: var(--vp-c-text-2); }
+.vp-doc svg .okT { fill: var(--vp-c-green-1); }
+.vp-doc svg .badT { fill: var(--vp-c-red-1); }
+.vp-doc svg .accT { fill: var(--vp-c-brand-1); }
+.vp-doc svg .band { fill: var(--vp-c-brand-1); stroke: var(--vp-c-brand-1); stroke-opacity: .5; }
+.vp-doc svg .box { fill: var(--vp-c-bg); stroke: var(--vp-c-divider); stroke-width: 1.5; }
+.vp-doc svg .boxAcc { fill: var(--vp-c-brand-soft); stroke: var(--vp-c-brand-1); stroke-width: 1.5; }
+.vp-doc svg .boxOk { fill: var(--vp-c-green-soft); stroke: var(--vp-c-green-1); stroke-width: 1.5; }
+.vp-doc svg .boxBad { fill: var(--vp-c-red-soft); stroke: var(--vp-c-red-1); stroke-width: 1.5; }
+.vp-doc svg .dash { stroke-dasharray: 5 4; }
+.vp-doc svg .dotBad { fill: var(--vp-c-red-1); }
+.vp-doc svg .ln { stroke: var(--vp-c-text-1); stroke-width: 1.6; fill: none; }
+.vp-doc svg .lnMuted { stroke: var(--vp-c-divider); stroke-width: 1.5; fill: none; }
+.vp-doc svg .lnOk { stroke: var(--vp-c-green-1); stroke-width: 2; fill: none; }
+.vp-doc svg .lnBad { stroke: var(--vp-c-red-1); stroke-width: 2; fill: none; }
+.vp-doc svg .lnAcc { stroke: var(--vp-c-brand-1); stroke-width: 2.2; fill: none; }
+.vp-doc svg .head { fill: var(--vp-c-text-1); }
+.vp-doc svg .headOk { fill: var(--vp-c-green-1); }
+.vp-doc svg .headBad { fill: var(--vp-c-red-1); }
+.vp-doc svg .headAcc { fill: var(--vp-c-brand-1); }
+
+/* "Trong trang này": mục con (h3) chỉ mở khi đang đọc mục cha */
+.VPDocAsideOutline ul.nested { display: none; }
+.VPDocAsideOutline li:has(> a.outline-link.active) > ul.nested,
+.VPDocAsideOutline li:has(ul.nested a.outline-link.active) > ul.nested { display: block; }

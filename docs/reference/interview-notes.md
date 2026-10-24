@@ -1,7 +1,7 @@
 # Câu hỏi phỏng vấn đáng nhớ
 
 Ghi ngắn gọn các câu hỏi phát sinh trong lúc làm PayoutHub. Mỗi câu: ý chính + ví dụ từ project. Mới nhất ở cuối từng nhóm.
-Mã trong ngoặc là mục sổ tay (`handbook-index.md`).
+Link trong ngoặc dẫn tới câu tương ứng trong [handbook](/reference/).
 
 ---
 
@@ -35,7 +35,7 @@ Mã trong ngoặc là mục sổ tay (`handbook-index.md`).
 
 ## Dependency Injection
 
-### Captive dependency là gì? (8.2)
+### Captive dependency là gì? ([handbook](/aspnet-core/dependency-injection#captive-dependency))
 
 - Service sống lâu giữ dependency sống ngắn → dependency bị "giam", sống lâu hơn dự kiến.
 - Kinh điển: singleton giữ `DbContext` (scoped) → một `DbContext` dùng chung mọi request, không thread-safe, change tracker phình, dữ liệu cũ.
@@ -46,12 +46,12 @@ Mã trong ngoặc là mục sổ tay (`handbook-index.md`).
 
 ## C# & Runtime
 
-### `string?` hay `string = string.Empty` cho field bắt buộc? (5.2)
+### `string?` hay `string = string.Empty` cho field bắt buộc? ([handbook](/dotnet/modern-csharp#nullable))
 
 - `string?` nói null là trạng thái hợp lệ → sai ý nghĩa, mọi chỗ dùng phải check null vô ích.
 - Field luôn có giá trị: `string X { get; set; } = string.Empty;` + `[Required]`. `[Required]` mặc định từ chối cả chuỗi rỗng.
 
-### Native AOT là gì? (3.1)
+### Native AOT là gì? ([handbook](/runtime/memory#clr-il-jit))
 
 - Biên dịch thẳng ra mã máy lúc publish, thay vì IL + JIT lúc chạy.
 - Lợi: khởi động gần như tức thì, ít RAM, không cần cài runtime → serverless, container scale nhanh, CLI.
@@ -61,7 +61,7 @@ Mã trong ngoặc là mục sổ tay (`handbook-index.md`).
 
 ## ASP.NET Core
 
-### Controllers hay Minimal API? Minimal API có dùng cho app lớn được không? (7.4)
+### Controllers hay Minimal API? Minimal API có dùng cho app lớn được không? ([handbook](/aspnet-core/questions#controllers-vs-minimal))
 
 - Cả hai cùng chạy trên routing và middleware của ASP.NET Core, đều dùng được cho app lớn.
 - Controllers **áp sẵn cấu trúc** (convention, filter, model binding). Minimal API thì **phải tự đặt cấu trúc**: chia theo feature, `MapGroup`, `IEndpointFilter`, `TypedResults`.
@@ -70,7 +70,7 @@ Mã trong ngoặc là mục sổ tay (`handbook-index.md`).
 - Câu trả lời mẫu: "Team lớn, nhiều người mới, chưa có convention → Controllers, vì framework áp cấu trúc thay team. Minimal API khi team đã thống nhất cách tổ chức, hoặc cần AOT."
 - **PayoutHub:** API chính dùng Controllers để luyện filter và model binding; FakeBank vài endpoint nên dùng Minimal API.
 
-### Tổ chức Minimal API ở app lớn thế nào? (7.4)
+### Tổ chức Minimal API ở app lớn thế nào? ([handbook](/aspnet-core/questions#controllers-vs-minimal))
 
 ```
 src/PayoutHub.Api/
@@ -95,7 +95,7 @@ src/PayoutHub.Api/
 | `IActionResult` | `Results<Ok<T>, NotFound>` + `TypedResults` (OpenAPI biết chính xác kiểu trả về) |
 | `[ApiController]` tự trả 400 khi model sai | `AddValidation()` (.NET 10) |
 
-### Controller có quá nhiều dependency trong constructor thì xử lý thế nào? (8.5)
+### Controller có quá nhiều dependency trong constructor thì xử lý thế nào? ([handbook](/aspnet-core/dependency-injection#too-many-dependencies))
 
 - **Constructor overloading:** chạy được nhưng vô dụng. Container chọn constructor trước khi action chạy, không biết request gọi action nào; nó lấy constructor nhiều tham số nhất mà resolve được hết, hai constructor ngang nhau thì ném exception.
 - **Property injection:** container mặc định không hỗ trợ (cần Autofac); ẩn dependency, dễ null.
@@ -110,7 +110,7 @@ src/PayoutHub.Api/
 
 ## Logging
 
-### Vì sao dùng message template thay vì string interpolation? (7.7)
+### Vì sao dùng message template thay vì string interpolation? ([handbook](/aspnet-core/questions#logging))
 
 - Template giữ giá trị thành **field riêng** (`State.MinAmount`). Hệ thống log (Seq, Elastic, App Insights) index field đó → lọc `MinAmount > 500`, group/count theo `PayoutId`. Interpolation chỉ còn một chuỗi phẳng → chỉ full-text search hoặc regex, không so sánh số được.
 - Bẫy: placeholder bind theo **vị trí**, không theo tên. Tên chỉ là tên field trong log → đảo thứ tự tham số là log sai âm thầm. `{0}` thì field tên là `0`, vô dụng khi query. Analyzer CA2017 báo lệch số lượng.
@@ -118,7 +118,7 @@ src/PayoutHub.Api/
 - Hiệu năng: interpolation luôn ghép chuỗi kể cả khi level bị tắt. Mức senior: `[LoggerMessage]` source generator, sinh code lúc compile, check `IsEnabled`, không boxing, kiểm tra placeholder khớp tham số (CA1848 gợi ý).
 - `ILogger<T>`: `T` thành **category** (tên đầy đủ của class), dùng để lọc level theo tiền tố namespace trong `Logging:LogLevel`.
 
-### User báo lỗi 500, bạn tìm log tương ứng thế nào? (7.5, 7.7)
+### User báo lỗi 500, bạn tìm log tương ứng thế nào? ([Validation và xử lý lỗi](/aspnet-core/questions#validation-errors), [Logging](/aspnet-core/questions#logging))
 
 - ProblemDetails trả `traceId` (W3C `traceparent`: `00-<trace-id 32 hex>-<span-id 16 hex>-<flags>`). Client gửi id đó khi báo lỗi.
 - Log phải mang trace id: ASP.NET Core đặt `TraceId`/`SpanId` vào **log scope** của request; formatter phải in scopes (`AddJsonConsole(o => o.IncludeScopes = true)`, mặc định tắt). Tìm theo phần trace-id 32 hex trong Seq/Elastic.
