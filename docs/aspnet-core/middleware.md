@@ -80,9 +80,16 @@ app.Use(async (ctx, next) =>
 </template>
 </Compare>
 
-### Routing và CORS
+### Routing và CORS {#routing}
 
 **UseRouting**: chọn endpoint cho request và **gắn nhãn** lên `HttpContext` (endpoint nào, có attribute gì). Các lớp sau đọc nhãn này.
+
+**`Map…` không phải middleware.** `MapControllers`, `MapGet`, `MapHealthChecks` không xếp thêm lớp vào hàng đợi; chúng **thêm dòng vào route table**. Routing nhìn **cả bảng một lúc** rồi chọn route **cụ thể nhất** (route precedence): literal `/payouts/new` thắng `/payouts/{id}` dù đăng ký trước hay sau. Vì vậy `MapGet` đứng trước hay sau `MapControllers` không quan trọng. Hai route giống hệt nhau (cùng path, cùng method) không báo lỗi lúc start mà ném **`AmbiguousMatchException`** lúc có request khớp.
+
+<div class="fig">
+<svg viewBox="0 0 720 260" role="img" aria-label="Use… là các lớp chạy theo thứ tự; Map… là các dòng trong route table, routing chọn dòng cụ thể nhất"><text x="20" y="28" font-size="14" font-weight="600">Use… : hàng đợi, thứ tự = thứ tự chạy</text><g font-size="12" class="mono" text-anchor="middle"><rect class="box" x="20" y="44" width="150" height="40" rx="8"/><text x="95" y="68">ExceptionHandler</text><rect class="box" x="200" y="44" width="150" height="40" rx="8"/><text x="275" y="68">HttpsRedirection</text><rect class="boxAcc" x="380" y="44" width="130" height="40" rx="8"/><text x="445" y="68">Routing</text><rect class="box" x="540" y="44" width="160" height="40" rx="8"/><text x="620" y="68">endpoint đã chọn</text></g><line class="ln" x1="170" y1="64" x2="196" y2="64" marker-end="url(#aInk)"/><line class="ln" x1="350" y1="64" x2="376" y2="64" marker-end="url(#aInk)"/><line class="ln" x1="510" y1="64" x2="536" y2="64" marker-end="url(#aInk)"/><text x="20" y="128" font-size="14" font-weight="600">Map… : route table, thứ tự đăng ký không quan trọng</text><rect class="boxAcc" x="20" y="142" width="440" height="104" rx="8"/><g font-size="12" class="mono"><text x="36" y="164">GET  /payouts/{id}        ← MapControllers</text><text x="36" y="186" class="okT">GET  /payouts/new         ← MapGet (đăng ký sau)</text><text x="36" y="208">GET  /health              ← MapHealthChecks</text><text x="36" y="230">GET  /                    ← MapGet</text></g><g font-size="12"><text x="480" y="164">Request GET /payouts/new:</text><text x="480" y="186" class="okT">literal cụ thể hơn {id}</text><text x="480" y="208" class="okT">→ chọn /payouts/new</text><text x="480" y="234" class="muted">Giống hệt nhau → AmbiguousMatch</text></g><line class="lnAcc dash" x1="445" y1="84" x2="445" y2="138" marker-end="url(#aAcc)"/><text x="455" y="116" font-size="12" class="accT">tra cả bảng</text></svg>
+<p class="fig-caption">Thứ tự chỉ quan trọng với Use…. Với Map…, routing không duyệt từ trên xuống mà xếp hạng mọi route khớp theo độ cụ thể.</p>
+</div>
 
 **UseCors**: **server nói với browser** origin nào được phép đọc response, qua các header `Access-Control-Allow-*`. Người thực thi là browser, không phải server.
 
@@ -106,6 +113,7 @@ app.Use(async (ctx, next) =>
 | HttpsRedirection và HSTS | Server chuyển hướng từng lần, hay browser tự nhớ và tự đổi |
 | CORS và Authorization | CORS bảo vệ **người dùng của browser**, do browser thực thi. Authorization bảo vệ **API**, do server thực thi |
 | Authentication và Authorization | "Bạn là ai" (401 nếu không biết) và "bạn được làm gì" (403 nếu không được) |
+| `app.Map("/path", …)` và `app.MapGet(…)` | `Map` (không có method): **rẽ nhánh pipeline**, thứ tự có ý nghĩa. `MapGet`/`MapControllers`: **thêm route** vào route table, thứ tự không có ý nghĩa |
 | Rate limit trả 503 và 429 | Mặc định là 503 (server quá tải). Đúng nghĩa là 429 (bạn gọi quá nhiều). Đổi bằng `RejectionStatusCode = 429` |
 
 ## 4. Ba cách viết middleware
@@ -118,14 +126,23 @@ app.Use(async (ctx, next) =>
 
 **IMiddleware**: class implement interface, compiler kiểm tra chữ ký. Phải đăng ký vào DI.
 
-### Instance sống bao lâu
+### Instance sống bao lâu {#middleware-lifetime}
 
 Khác nhau cốt lõi là **instance sống bao lâu**:
 
 <div class="fig">
 <svg viewBox="0 0 720 250" role="img" aria-label="Convention class có một instance từ lúc start, IMiddleware có instance mới mỗi request"><g font-size="13" font-weight="600"><text x="10" y="64" class="mono">Convention</text><text x="10" y="134" class="mono">IMiddleware</text><text x="10" y="204" class="mono">app.Use(λ)</text></g><rect class="boxAcc" x="170" y="44" width="530" height="32" rx="6"/><text x="180" y="65" font-size="12">1 instance, tạo lúc app start (giống singleton)</text><rect class="boxOk" x="275" y="114" width="70" height="32" rx="6"/><text x="310" y="135" font-size="12" text-anchor="middle">mới</text><rect class="boxOk" x="425" y="114" width="70" height="32" rx="6"/><text x="460" y="135" font-size="12" text-anchor="middle">mới</text><rect class="boxOk" x="575" y="114" width="70" height="32" rx="6"/><text x="610" y="135" font-size="12" text-anchor="middle">mới</text><text x="170" y="164" font-size="12" class="muted">lấy từ DI mỗi request (Scoped/Transient)</text><rect class="boxAcc" x="170" y="184" width="530" height="32" rx="6"/><text x="180" y="205" font-size="12">1 closure, tạo lúc app start</text><line class="lnMuted" x1="170" y1="232" x2="700" y2="232"/><g font-size="12" text-anchor="middle"><text x="170" y="247" class="muted">app start</text><text x="310" y="247" class="muted">request 1</text><text x="460" y="247" class="muted">request 2</text><text x="610" y="247" class="muted">request 3</text></g><line class="lnMuted dash" x1="310" y1="36" x2="310" y2="226"/><line class="lnMuted dash" x1="460" y1="36" x2="460" y2="226"/><line class="lnMuted dash" x1="610" y1="36" x2="610" y2="226"/></svg>
-<p class="fig-caption">Instance sống cả đời app thì không được giữ service scoped trong constructor (<a href="/aspnet-core/dependency-injection#captive-dependency">captive dependency</a>). Instance mới mỗi request thì giữ thoải mái.</p>
+<p class="fig-caption">Instance sống cả đời app thì không được giữ service scoped trong constructor (<a :href="$withBase('/aspnet-core/dependency-injection#captive-dependency')">captive dependency</a>). Instance mới mỗi request thì giữ thoải mái.</p>
 </div>
+
+**Ai tạo object, lúc nào, và dependency lấy từ đâu:**
+
+<div class="fig">
+<svg viewBox="0 0 720 300" role="img" aria-label="Convention: constructor chạy một lần, tham số InvokeAsync lấy từ scope của từng request. IMiddleware: IMiddlewareFactory resolve instance mới từ scope mỗi request"><text x="20" y="26" font-size="14" font-weight="600">Convention class</text><g font-size="12" text-anchor="middle"><rect class="boxAcc" x="20" y="40" width="260" height="56" rx="8"/><text x="150" y="62" class="mono">new TimingMiddleware(next, log)</text><text x="150" y="82" class="accT">1 lần, lúc dựng pipeline</text><rect class="boxOk" x="330" y="40" width="370" height="56" rx="8"/><text x="515" y="62" class="mono">InvokeAsync(ctx, PayoutDbContext db)</text><text x="515" y="82" class="okT">mỗi request: db lấy từ scope của request đó</text></g><line class="ln" x1="280" y1="68" x2="326" y2="68" marker-end="url(#aInk)"/><text x="20" y="118" font-size="12" class="muted">Constructor chạy 1 lần → chỉ nhận singleton. Tham số InvokeAsync được resolve lại mỗi lần gọi → nhận scoped được.</text><text x="20" y="176" font-size="14" font-weight="600">IMiddleware</text><g font-size="12" text-anchor="middle"><rect class="box" x="20" y="190" width="200" height="56" rx="8"/><text x="120" y="212" class="mono">IMiddlewareFactory</text><text x="120" y="232" class="muted">mỗi request</text><rect class="boxOk" x="260" y="190" width="230" height="56" rx="8"/><text x="375" y="212" class="mono">RequestServices.GetRequired…</text><text x="375" y="232" class="okT">instance mới, ctor nhận db được</text><rect class="box" x="530" y="190" width="170" height="56" rx="8"/><text x="615" y="212" class="mono">InvokeAsync(ctx, next)</text><text x="615" y="232" class="muted">xong → Release</text></g><line class="ln" x1="220" y1="218" x2="256" y2="218" marker-end="url(#aInk)"/><line class="ln" x1="490" y1="218" x2="526" y2="218" marker-end="url(#aInk)"/><text x="20" y="272" font-size="12" class="muted">Factory xin instance từ DI, nên class phải được đăng ký (AddScoped/AddTransient). Quên đăng ký → InvalidOperationException ở request đầu tiên.</text></svg>
+<p class="fig-caption">Cùng gọi app.UseMiddleware&lt;T&gt;(). Framework nhìn T có implement IMiddleware không để chọn một trong hai đường.</p>
+</div>
+
+Hay nhầm: "đặt `DbContext` ở tham số `InvokeAsync` trông như singleton". Không phải. **Instance** middleware sống lâu, nhưng **tham số** `InvokeAsync` được framework lấy lại từ `HttpContext.RequestServices` (scope của request) ở mỗi lần gọi, giống method injection bằng `[FromServices]` ở action. Ngược lại, đặt `DbContext` vào constructor của convention class mới là sai: constructor chỉ chạy một lần, `DbContext` đó bị giam cả đời app.
 
 ### Closure
 
@@ -228,6 +245,10 @@ Không. Middleware dạng thường chỉ được tạo một lần cho cả ap
 **"`Use`, `Run`, `Map` khác nhau thế nào?"**
 
 `Use`: có `next`, gọi tiếp được. `Run`: điểm cuối, không gọi tiếp. `Map`/`MapWhen`: rẽ nhánh pipeline theo path hoặc điều kiện.
+
+**"Đặt `MapGet` trước `MapControllers` thì route của `MapGet` có bị che không?"**
+
+Không. `MapGet`/`MapControllers` thêm route vào route table, không phải middleware xếp hàng. Routing chọn route cụ thể nhất trong cả bảng, xem [Routing và CORS](#routing).
 
 **"Sửa header sau khi đã gọi `next` được không?"**
 
@@ -371,4 +392,8 @@ Không. Policy theo endpoint bị lờ đi trong im lặng; chỉ thấy lỗi C
 
 ::: details 5. Convention class inject DbContext vào constructor thì sao?
 Instance sống cả đời app, giữ DbContext scoped là captive dependency. Development có scope validation nên báo lỗi; Production có thể lọt và một DbContext bị dùng chung giữa mọi request.
+:::
+
+::: details 6. Controller có GET /payouts/{id}, sau MapControllers bạn thêm MapGet("/payouts/new"). Request GET /payouts/new vào đâu?
+`MapGet("/payouts/new")`: literal cụ thể hơn `{id}`, thứ tự đăng ký không ảnh hưởng. Nếu hai route giống hệt nhau thì ném `AmbiguousMatchException` lúc request, không phải lúc start.
 :::

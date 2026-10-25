@@ -48,6 +48,10 @@ Không. Đây chỉ là chú thích và cảnh báo lúc compile. Dữ liệu t�
 **"Dùng `!` nhiều có sao không?"**
 
 Mỗi chỗ `!` là một chỗ tắt bảo vệ. Dùng nhiều là dấu hiệu model chưa phản ánh đúng thực tế; nên sửa kiểu dữ liệu hoặc thêm kiểm tra.
+
+**"Field bắt buộc thì khai `string?` hay `string = string.Empty`?"**
+
+`string?` nói null là trạng thái hợp lệ: sai ý nghĩa, và mọi chỗ dùng phải check null vô ích. Field luôn có giá trị thì khai `string X { get; set; } = string.Empty;` kèm `[Required]` (mặc định từ chối cả chuỗi rỗng). PayoutHub: `PayoutOptions.DefaultCurrency`, xem [Options pattern](/aspnet-core/options-pattern).
 :::
 
 ## Pattern matching và switch expression {#pattern-matching}

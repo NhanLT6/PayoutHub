@@ -21,18 +21,18 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Tại sao không còn HttpContext.Current?](/dotnet/framework-vs-core#httpcontext-current)
 - [Config hoạt động thế nào? Thay Web.config bằng gì?](/dotnet/framework-vs-core#configuration)
 
-### [Câu hỏi trả bài kinh điển](/dotnet/classic-questions)
+### [OOP & C# cơ bản](/dotnet/oop-fundamentals)
 
-- [4 tính chất của OOP](/dotnet/classic-questions#oop)
-- [Abstract class vs interface](/dotnet/classic-questions#abstract-vs-interface)
-- [Overriding vs overloading vs new (method hiding)](/dotnet/classic-questions#override-overload-new)
-- [const vs readonly vs static readonly](/dotnet/classic-questions#const-readonly)
-- [struct vs class vs record](/dotnet/classic-questions#struct-class-record)
-- [String immutable nghĩa là gì? == vs Equals vs ReferenceEquals](/dotnet/classic-questions#string-equality)
-- [ref vs out vs in](/dotnet/classic-questions#ref-out-in)
-- [SOLID](/dotnet/classic-questions#solid)
-- [Design pattern hay bị hỏi (và chỗ chúng có sẵn trong .NET)](/dotnet/classic-questions#design-patterns)
-- [DRY, KISS, YAGNI](/dotnet/classic-questions#dry-kiss-yagni)
+- [4 tính chất của OOP](/dotnet/oop-fundamentals#oop)
+- [Abstract class vs interface](/dotnet/oop-fundamentals#abstract-vs-interface)
+- [Overriding vs overloading vs new (method hiding)](/dotnet/oop-fundamentals#override-overload-new)
+- [const vs readonly vs static readonly](/dotnet/oop-fundamentals#const-readonly)
+- [struct vs class vs record](/dotnet/oop-fundamentals#struct-class-record)
+- [String immutable nghĩa là gì? == vs Equals vs ReferenceEquals](/dotnet/oop-fundamentals#string-equality)
+- [ref vs out vs in](/dotnet/oop-fundamentals#ref-out-in)
+- [SOLID](/dotnet/oop-fundamentals#solid)
+- [Design pattern hay bị hỏi (và chỗ chúng có sẵn trong .NET)](/dotnet/oop-fundamentals#design-patterns)
+- [DRY, KISS, YAGNI](/dotnet/oop-fundamentals#dry-kiss-yagni)
 
 ### [C# hiện đại](/dotnet/modern-csharp)
 
@@ -90,6 +90,17 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Nhiều implementation cho một interface, keyed services, decorator](/aspnet-core/dependency-injection#multiple-implementations)
 - [Constructor có quá nhiều dependency](/aspnet-core/dependency-injection#too-many-dependencies)
 
+### [Options pattern](/aspnet-core/options-pattern#interview)
+
+- [Validate config khi khởi động thế nào?](/aspnet-core/options-pattern#options-validation)
+- [IOptions vs IOptionsSnapshot vs IOptionsMonitor](/aspnet-core/options-pattern#options-interfaces)
+- [Finance muốn đổi MinAmount mà không restart](/aspnet-core/options-pattern#options-runtime-change)
+
+### [Logging](/aspnet-core/logging#interview)
+
+- [Logging đúng cách: message template hay string interpolation?](/aspnet-core/logging#logging)
+- [User báo lỗi 500, tìm log tương ứng thế nào?](/aspnet-core/logging#find-log-500)
+
 ### [Middleware](/aspnet-core/middleware#interview)
 
 - [Middleware là gì? Thứ tự có quan trọng không?](/aspnet-core/middleware#middleware)
@@ -99,17 +110,19 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 
 - [Model binding, validation và xử lý lỗi](/aspnet-core/exception-handling#validation-errors)
 
+### [Health check](/aspnet-core/health-checks#interview)
+
+- [Liveness và readiness khác nhau thế nào? Check DB đặt ở đâu?](/aspnet-core/health-checks#liveness-vs-readiness)
+
 ### Chưa có câu phỏng vấn riêng
 
 - [Result pattern](/aspnet-core/result-pattern)
-- [Health check](/aspnet-core/health-checks)
 
 ### [Câu hỏi khác](/aspnet-core/questions)
 
 - [App ASP.NET Core khởi động thế nào?](/aspnet-core/questions#startup)
-- [Controller hay Minimal API?](/aspnet-core/questions#controllers-vs-minimal)
+- [Controller hay Minimal API? Dùng cho app lớn được không?](/aspnet-core/questions#controllers-vs-minimal)
 - [Thiết kế REST API: status code và các quy ước](/aspnet-core/questions#rest-design)
-- [Logging đúng cách](/aspnet-core/questions#logging)
 - [Gọi API bên ngoài: IHttpClientFactory và resilience](/aspnet-core/questions#httpclientfactory)
 - [Caching trong ASP.NET Core](/aspnet-core/questions#caching)
 - ["API chậm dần khi traffic tăng, bạn xử lý thế nào?"](/aspnet-core/questions#slow-api)

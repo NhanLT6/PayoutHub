@@ -7,7 +7,7 @@ Kết thúc phiên học.
 1. Thêm một mục mới vào cuối `docs/progress/learning-log.md`, theo đúng mẫu ở đầu file, tối đa khoảng 15 dòng:
    - Ngày và milestone
    - Đã làm
-   - Khái niệm đã chạm (link tới câu trong handbook)
+   - Khái niệm đã chạm (link tới câu trên site)
    - Chỗ yếu
    - Câu phỏng vấn đáng nhớ
    - Kết quả quiz / mock nếu có

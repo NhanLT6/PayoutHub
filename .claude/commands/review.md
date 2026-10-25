@@ -15,7 +15,7 @@ Liệt kê vấn đề theo mức độ nghiêm trọng, nặng nhất trước.
 - Thiết kế: vi phạm SOLID, hoặc ngược lại là **quá tay** (abstraction thừa)
 - Bảo mật: thiếu authorization, lộ thông tin trong lỗi trả về
 
-Mỗi vấn đề ghi rõ: vị trí (file:dòng), vì sao là vấn đề, link handbook liên quan. **Không tự sửa code.**
+Mỗi vấn đề ghi rõ: vị trí (file:dòng), vì sao là vấn đề, link tới mục liên quan trên site. **Không tự sửa code.**
 
 Nếu code ổn thì nói thẳng là ổn, không cố tìm lỗi.
 

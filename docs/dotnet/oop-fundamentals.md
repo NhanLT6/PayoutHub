@@ -1,8 +1,8 @@
 ---
-title: "Câu hỏi trả bài kinh điển"
+title: "OOP & C# cơ bản"
 ---
 
-# Câu hỏi trả bài kinh điển
+# OOP & C# cơ bản
 
 Loại câu "X là gì, khác Y thế nào". Đáp ngắn, đúng, rồi chuyển sang ví dụ. Ở đây ưu tiên những chỗ người ta hay trả lời sai.
 

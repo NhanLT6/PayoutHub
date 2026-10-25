@@ -10,6 +10,7 @@ Phạm vi:
 - `full`: 45–60 phút, phủ toàn bộ. Có phần mở đầu "kể về project gần đây" và ít nhất một câu thiết kế hệ thống.
 
 Cách làm:
+0. Lấy chất liệu từ mục `## Câu hỏi phỏng vấn {#interview}` của các trang chủ đề trong `docs/<nhóm>/` (và `<nhóm>/questions.md`), mục lục ở `docs/reference/index.md`, cộng với milestone tương ứng trong `docs/progress/plan.md`.
 1. Hỏi Nhan muốn phỏng vấn bằng tiếng Anh hay tiếng Việt.
 2. Hỏi **từng câu một**. Trộn ba loại câu:
    - Câu trả bài, ví dụ "Scoped khác Singleton thế nào?"
@@ -22,5 +23,5 @@ Cách làm:
    - Có nối sang ví dụ thật không
    - Rõ ràng và ngắn gọn
 
-   Sau đó nêu 3 điểm cần ôn nhất, kèm link tới câu tương ứng trong handbook. Với câu trả lời yếu nhất, đưa ra phiên bản mẫu.
+   Sau đó nêu 3 điểm cần ôn nhất, kèm link tới câu tương ứng trên site. Với câu trả lời yếu nhất, đưa ra phiên bản mẫu.
 5. Ghi kết quả vào `docs/progress/learning-log.md`.

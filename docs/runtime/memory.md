@@ -15,13 +15,17 @@ Compiler (Roslyn) dịch C# ra **IL** kèm metadata trong file .dll. Lúc chạy
 ::: info Bản chất
 - **Tiered compilation**: lần đầu JIT nhanh nhưng tối ưu ít (tier 0); method nào gọi nhiều thì được JIT lại tối ưu hơn (tier 1). Từ .NET 8, **Dynamic PGO** bật mặc định: JIT dùng dữ liệu chạy thật để tối ưu.
 - **ReadyToRun**: biên dịch sẵn một phần ra mã máy để khởi động nhanh hơn, vẫn có JIT.
-- **Native AOT** (.NET 7+): biên dịch hết ra mã máy, không có JIT. Khởi động rất nhanh, nhẹ, nhưng giới hạn reflection và dynamic code.
+- **Native AOT** (.NET 7+): biên dịch hết ra mã máy lúc publish, không có IL + JIT lúc chạy. Lợi: khởi động gần như tức thì, ít RAM, không cần cài runtime → hợp serverless, container cần scale nhanh, CLI. Giá: hạn chế reflection và sinh code động (trimming cắt code không thấy được dùng).
 :::
 
 ::: warning Bẫy & follow-up
 **"Vì sao lần gọi API đầu tiên sau khi deploy chậm?"**
 
 JIT, load assembly, khởi tạo DI, mở connection pool, warm cache. Giảm bằng ReadyToRun, warm-up endpoint hoặc health check trước khi nhận traffic.
+
+**"ASP.NET Core app nào cũng publish Native AOT được?"**
+
+Không. MVC Controllers **không** hỗ trợ AOT vì dựa nhiều vào reflection. Minimal API hỗ trợ, nhờ source generator sinh code binding lúc compile. Đây là một lý do để chọn [Minimal API](/aspnet-core/questions#controllers-vs-minimal).
 :::
 
 ## Value type vs reference type, stack vs heap <Badge type="warning" text="hay bị trả lời sai" /> {#value-vs-reference}

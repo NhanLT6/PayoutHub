@@ -31,7 +31,7 @@ Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc
 2. **Khi review:** chỉ ra vấn đề, giải thích vì sao, và dẫn link tới câu liên quan trên site (vd [Deadlock](/runtime/async#deadlock)). Không tự sửa trừ khi được nhờ.
 3. **Nhắc kiến thức đúng lúc:** khi một khái niệm xuất hiện tự nhiên trong lúc code (DI lifetime, ConfigureAwait, N+1, ...), nhắc lại 2–4 câu kèm link tới đúng mục trên site. Không giảng dài.
 4. **Câu hỏi bên lề:** trả lời ngay trong chat. Chỉ ghi vào `docs/progress/learning-log.md` nếu đó là chỗ yếu hoặc câu phỏng vấn đáng nhớ.
-5. **Giữ scope:** ý tưởng mới không phục vụ mục tiêu học thì ghi vào mục "Parking lot" trong `docs/progress/plan.md`, nhắc Nhan một câu, rồi quay lại milestone đang làm. Ngân sách: khoảng 1 tháng, tối đa khoảng 3 giờ mỗi ngày, có thể ngắt quãng.
+5. **Giữ scope:** ý tưởng mới không phục vụ mục tiêu học thì ghi vào mục "Parking lot" trong `docs/progress/plan.md`, nhắc Nhan một câu, rồi quay lại milestone đang làm. Ngân sách: khoảng 4,5 tuần (M1–M8), tối đa khoảng 3 giờ mỗi ngày, có thể ngắt quãng.
 6. **Trung thực:** code chưa tốt thì nói thẳng. Không khen xã giao. Nếu Nhan đề xuất hướng over-engineered, phản biện.
 
 ## Tài liệu
@@ -40,13 +40,12 @@ Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc
 |---|---|
 | `docs/progress/plan.md` | Milestone, checklist, lab. Nguồn sự thật về tiến độ |
 | `docs/progress/learning-log.md` | Nhật ký từng phiên: làm gì, khái niệm nào, chỗ yếu, kết quả quiz |
-| `docs/reference/interview-notes.md` | Câu hỏi phỏng vấn đáng nhớ phát sinh khi làm, kèm ý chính và ví dụ từ project. Thêm câu mới khi có câu hay; `/quiz` và `/mock` có thể lấy câu từ đây |
 | `docs/reference/glossary.md` | Từ viết tắt và thuật ngữ. Khi giải thích dùng một viết tắt mới (AOT, REPR, HMAC...), thêm 1 dòng vào đây |
-| `docs/<nhóm>/*.md` | Mỗi chủ đề một trang (bài học + câu phỏng vấn), chia folder theo nhóm: `dotnet/`, `runtime/`, `aspnet-core/`. Xem mục "Site document" bên dưới |
+| `docs/<nhóm>/*.md` | Mỗi chủ đề một trang (bài học + câu phỏng vấn), chia folder theo nhóm: `dotnet/`, `runtime/`, `aspnet-core/`. Câu phỏng vấn mới phát sinh khi làm ghi thẳng vào mục `## Câu hỏi phỏng vấn {#interview}` của trang chủ đề tương ứng (chưa có bài học thì vào `<nhóm>/questions.md`), rồi thêm link vào `docs/reference/index.md`. `/quiz` và `/mock` lấy câu từ các mục phỏng vấn này. Xem mục "Site document" bên dưới |
 | `docs/reference/index.md` | Mục lục câu hỏi: mọi câu phỏng vấn trên site, gom theo chủ đề |
 | `docs/index.md` | Trang home của site document: điểm vào để điều hướng mọi tài liệu |
 
-- **Link, không dùng mã mục:** nhắc tới một câu hỏi hay một mục bài học thì viết thành link tới đúng heading (`[Filter](/aspnet-core/middleware#filters)`), để Nhan bấm là tới. Trong `<p>`/HTML thì dùng `<a href>` vì markdown không chạy bên trong.
+- **Link, không dùng mã mục:** nhắc tới một câu hỏi hay một mục bài học thì viết thành link tới đúng heading (`[Filter](/aspnet-core/middleware#filters)`), để Nhan bấm là tới. Trong `<p>`/HTML thì dùng `<a :href="$withBase('/aspnet-core/middleware#filters')">` vì markdown không chạy bên trong, và khi deploy dưới một base path (vd GitHub Pages) VitePress không tự thêm base cho HTML thô.
 
 ### Site document (VitePress)
 
@@ -57,7 +56,12 @@ docs/
                             mỗi folder = một nhóm sidebar
     <chủ đề>.md             mỗi chủ đề một trang (vd aspnet-core/middleware.md)
     questions.md            câu hỏi của nhóm chưa có bài học riêng
-  reference/                index.md (mục lục câu hỏi), interview-notes.md, glossary.md
+                            hiện có:
+                              dotnet/       framework-vs-core, oop-fundamentals, modern-csharp, collections-linq
+                              runtime/      memory, async
+                              aspnet-core/  dependency-injection, options-pattern, logging, middleware,
+                                            exception-handling, result-pattern, health-checks, questions
+  reference/                index.md (mục lục câu hỏi), glossary.md
   progress/                 plan.md, learning-log.md
   public/                   ảnh, file tĩnh (chỉ tạo khi cần)
   .vitepress/
@@ -81,7 +85,7 @@ docs/
 - Giáo trình **adaptive**: khi Nhan học được điều mới hoặc hiểu sai một chỗ, sửa hoặc bổ sung vào **đúng phần nội dung chính** đang nói về điều đó (thêm hình, thêm dòng vào bảng "Dễ nhầm", thêm vào khối "Bẫy & follow-up"), để tài liệu đọc liền mạch. Không dồn mọi câu hỏi mới xuống "Hỏi đáp". "Hỏi đáp" chỉ dành cho câu hỏi đào sâu thật sự tách riêng. Đọc lại cả trang trước khi thêm để tránh lặp và manh mún.
 - **Code mẫu copy được:** ví dụ một class (handler, middleware, service...) thì viết **cả class**: `using`, `namespace`, khai báo class + interface nó implement, constructor. Không chỉ trích một method. Kèm dòng đăng ký trong `Program.cs`. Nhiều file liên quan thì dùng `::: code-group` với tên file làm tab.
 - So sánh trước/sau: component `<Compare :labels="['A', 'B']">` với `<template #a>` / `<template #b>`. Code nhiều biến thể: `::: code-group`. Sơ đồ đơn giản: khối ```` ```mermaid ````.
-- Bẫy Markdown + Vue: generic ngoài backtick (`Span<T>`) làm build lỗi; luôn bọc trong backtick. Frontmatter có dấu `:` trong giá trị thì đặt trong ngoặc kép. Markdown không chạy bên trong thẻ HTML (`<p>`), ở đó dùng `<a href>`.
+- Bẫy Markdown + Vue: generic ngoài backtick (`Span<T>`) làm build lỗi; luôn bọc trong backtick. Frontmatter có dấu `:` trong giá trị thì đặt trong ngoặc kép. Markdown không chạy bên trong thẻ HTML (`<p>`), ở đó dùng `<a :href="$withBase('/...')">`.
 - Chủ đề chưa có trang (EF Core, Testing, Auth...) thì giải thích trực tiếp hoặc viết trang mới, không link bừa.
 
 ## Đầu mỗi phiên
@@ -108,7 +112,7 @@ Khi Nhan gõ `/wrap` hoặc nói đã xong: cập nhật `docs/progress/learning
 - API chính dùng **Controllers** (để luyện filter, model binding). `FakeBank` dùng Minimal API.
 - Không thêm package khi chưa nói lý do. Được dùng: EF Core, xUnit, `Microsoft.AspNetCore.Mvc.Testing`, `Microsoft.Extensions.Http.Resilience`, và tuỳ chọn `Testcontainers.MsSql`.
 - **Không** dùng MediatR, AutoMapper, generic repository: viết tay để hiểu.
-- **Không** microservices. Chỉ có một API cộng với `FakeBank` mô phỏng nhà cung cấp thanh toán bên ngoài.
+- **Không** tách thêm service. Chỉ có `PayoutHub.Api` cộng với `FakeBank` mô phỏng nhà cung cấp thanh toán bên ngoài. M8 đóng gói đúng hai service này vào container, chạy trên Kubernetes local, và học khái niệm microservices (sync/async, service discovery, API gateway, distributed tracing) trên chính chúng; không tạo service mới.
 
 ## Cấu trúc solution
 

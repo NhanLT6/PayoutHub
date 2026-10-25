@@ -139,5 +139,5 @@ Dùng hai dấu gạch dưới: `Payout__MinAmount=100`, `ConnectionStrings__Def
 
 **"Inject `IOptionsSnapshot` vào singleton được không?"**
 
-Không: nó là scoped, sẽ lỗi scope validation. Singleton cần giá trị mới nhất thì dùng `IOptionsMonitor`.
+Không: nó là scoped, sẽ lỗi scope validation. Singleton cần giá trị mới nhất thì dùng `IOptionsMonitor`. Chi tiết và timeline ở [Options pattern](/aspnet-core/options-pattern#options-interfaces).
 :::

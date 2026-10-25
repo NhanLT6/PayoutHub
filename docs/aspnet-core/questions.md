@@ -4,7 +4,7 @@ title: "Câu hỏi ASP.NET Core khác"
 
 # Câu hỏi ASP.NET Core khác
 
-Các câu ASP.NET Core chưa có bài học riêng. Khi học tới chủ đề nào, câu đó được chuyển sang trang chủ đề của nó (như [Middleware](/aspnet-core/middleware) hay [Exception handling](/aspnet-core/exception-handling)).
+Các câu ASP.NET Core chưa có bài học riêng. Khi học tới chủ đề nào, câu đó được chuyển sang trang chủ đề của nó (như [Middleware](/aspnet-core/middleware), [Logging](/aspnet-core/logging) hay [Options pattern](/aspnet-core/options-pattern)).
 
 ## App ASP.NET Core khởi động thế nào? {#startup}
 
@@ -36,10 +36,10 @@ app.Run();
 Bên dưới là **Generic Host**: thứ quản lý DI, config, logging và vòng đời của các `IHostedService`. Worker service hay console app dùng cùng host này, chỉ khác là không có web server. Mẫu cũ `Startup.cs` với `ConfigureServices`/`Configure` vẫn chạy được, chỉ là được gộp vào Program.cs từ .NET 6.
 :::
 
-## Controller hay Minimal API? {#controllers-vs-minimal}
+## Controller hay Minimal API? Minimal API có dùng cho app lớn được không? {#controllers-vs-minimal}
 
 ::: tip Trả lời nhanh
-Cả hai đều chạy trên cùng routing và DI. Minimal API (.NET 6+) gọn, nhẹ, khởi động nhanh, hợp với service nhỏ và endpoint đơn giản. Controller có sẵn nhiều thứ (filter, model binding phức tạp, conventions), quen thuộc với team lớn. Từ .NET 8, Minimal API đã đủ cho hầu hết trường hợp; chọn theo quy mô và thói quen của team.
+Cả hai chạy trên cùng routing, middleware và DI, đều dùng được cho app lớn. Khác nhau ở chỗ ai đặt cấu trúc: **Controllers áp sẵn cấu trúc** (convention, filter, model binding); **Minimal API phải tự đặt** (chia theo feature, `MapGroup`, `IEndpointFilter`, `TypedResults`). Minimal API bắt buộc khi cần Native AOT.
 :::
 
 ::: info Bản chất
@@ -55,6 +55,43 @@ payouts.MapPost("/", async (CreatePayoutRequest req, IPayoutService svc) =>
     return Results.Created($"/api/payouts/{id}", new { id });
 });
 ```
+
+| Controllers | Minimal API |
+|---|---|
+| `[Route]`, `[Authorize]` ở cấp class | `MapGroup()` + `.RequireAuthorization()` |
+| Action filter | `IEndpointFilter` + `.AddEndpointFilter<T>()` |
+| Inject qua constructor, dùng chung mọi action | Inject qua tham số từng handler |
+| `IActionResult` | `Results<Ok<T>, NotFound>` + `TypedResults` (OpenAPI biết chính xác kiểu trả về) |
+| `[ApiController]` tự trả 400 khi model sai | `AddValidation()` (.NET 10) |
+| Không hỗ trợ Native AOT | Hỗ trợ AOT (dùng source generator) |
+:::
+
+::: details Ở dự án thật
+PayoutHub: API chính dùng Controllers để luyện filter và model binding; FakeBank chỉ vài endpoint nên dùng Minimal API.
+
+Câu trả lời mẫu: "Team lớn, nhiều người mới, chưa có convention → Controllers, vì framework áp cấu trúc thay team. Minimal API khi team đã thống nhất cách tổ chức, hoặc cần AOT."
+:::
+
+::: warning Bẫy & follow-up
+**"Minimal API ở app lớn thì tổ chức thế nào cho khỏi loạn?"**
+
+Chia theo feature, mỗi feature một extension method `MapXxxEndpoints`. Feature nhỏ: một file chứa cả route lẫn handler. Feature lớn: mỗi endpoint một file theo REPR. Giữ trật tự bằng convention viết thành tài liệu, code mẫu, review chặt; có thể thêm architecture test hoặc dùng FastEndpoints.
+
+```
+src/PayoutHub.Api/
+├── Program.cs                  ← đăng ký service, gọi app.MapPayoutEndpoints()
+├── Endpoints/
+│   └── Payouts/
+│       ├── PayoutEndpoints.cs  ← khai báo các route của /payouts, gắn auth/filter chung
+│       ├── GeneratePayouts.cs  ← POST /payouts/generate: gom conversion thành payout theo kỳ
+│       └── ApprovePayout.cs    ← POST /payouts/{id}/approve: Finance duyệt một payout
+└── Filters/
+    └── AuditFilter.cs          ← ghi log ai đã gọi endpoint nào (IEndpointFilter)
+```
+
+**"Vậy Controllers an toàn hơn?"**
+
+Không hẳn: Controllers cũng xuống cấp được, kiểu controller phình to vài nghìn dòng. Minimal API linh hoạt hơn nhưng không có convention thì loạn nhanh khi team đông. Chọn theo team, không theo độ "mới".
 :::
 
 ## Thiết kế REST API: status code và các quy ước {#rest-design}
@@ -83,28 +120,6 @@ payouts.MapPost("/", async (CreatePayoutRequest req, IPayoutService svc) =>
 **"PUT và PATCH khác nhau thế nào?"**
 
 PUT thay toàn bộ resource bằng nội dung gửi lên; PATCH chỉ sửa một phần.
-:::
-
-## Logging đúng cách {#logging}
-
-::: tip Trả lời nhanh
-Inject `ILogger<T>` và dùng **structured logging**: message template có placeholder, giá trị đi kèm thành field riêng để lọc và tìm kiếm trong hệ thống log (Seq, Elastic, Application Insights).
-:::
-
-::: info Bản chất
-```csharp
-// Đúng: PayoutId và Amount là field riêng, lọc được
-logger.LogInformation("Payout {PayoutId} approved, amount {Amount}", payout.Id, payout.Amount);
-
-// Sai: thành một chuỗi phẳng, không lọc theo PayoutId được, và luôn tốn công ghép chuỗi
-logger.LogInformation($"Payout {payout.Id} approved, amount {payout.Amount}");
-```
-:::
-
-::: warning Bẫy & follow-up
-**"Cái gì không được log?"**
-
-Mật khẩu, token, số thẻ, thông tin cá nhân nhạy cảm. Cẩn thận khi log nguyên object request.
 :::
 
 ## Gọi API bên ngoài: `IHttpClientFactory` và resilience {#httpclientfactory}

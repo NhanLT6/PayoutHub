@@ -4,7 +4,7 @@ title: "Dependency Injection"
 
 # Dependency Injection
 
-Phần đầu là bài học kèm hình. [Câu hỏi phỏng vấn](#interview) nằm ở cuối, để ôn nhanh. Liên quan: [SOLID](/dotnet/classic-questions#solid) (chữ D).
+Phần đầu là bài học kèm hình. [Câu hỏi phỏng vấn](#interview) nằm ở cuối, để ôn nhanh. Liên quan: [SOLID](/dotnet/oop-fundamentals#solid) (chữ D).
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="dInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="dOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="dBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
@@ -184,6 +184,10 @@ public class DailyReportJob(IServiceScopeFactory scopes) : BackgroundService
 **"Scoped inject transient có sao không?"**
 
 Không sao. Transient sống theo scoped đã giữ nó. Câu "scoped không được dùng transient" trong bản cheatsheet trước là sai.
+
+**"Singleton cần config mới nhất thì inject `IOptionsSnapshot` được không?"**
+
+Không: Snapshot là scoped, đúng loại captive dependency ở bảng trên. Dùng `IOptionsMonitor`: nó là singleton và không giữ service scoped nào, xem [Options pattern](/aspnet-core/options-pattern#options-interfaces).
 :::
 
 ### Container dispose service thế nào? {#disposal}
@@ -244,8 +248,31 @@ Chỉ đăng ký nếu chưa có ai đăng ký interface đó. Thư viện dùng
 Khoảng 5–6 dependency trở lên thường là dấu hiệu class đang làm quá nhiều việc (SRP). Cách xử lý là tách class theo trách nhiệm, không phải gom các dependency vào một object "bao tải" để constructor trông ngắn lại.
 :::
 
+::: info Bản chất
+Theo thứ tự nên làm:
+
+1. **Tách controller theo trách nhiệm (SRP)**: sửa gốc rễ.
+2. **Inject vào tham số action** cho dependency chỉ một action dùng (`[FromServices]`; từ .NET 7 với `[ApiController]` không cần ghi attribute).
+3. **Gom vào service có nghiệp vụ thật** (`PayoutApprovalService`), không phải class "bao tải" chỉ để chứa service.
+
+Hai cách nghe hợp lý nhưng không giải quyết được:
+
+- **Constructor overloading**: chạy được nhưng vô dụng. Container chọn constructor **trước khi** action chạy, không biết request gọi action nào; nó lấy constructor nhiều tham số nhất mà resolve được hết, hai constructor ngang nhau thì ném exception.
+- **Property injection**: container mặc định không hỗ trợ (cần Autofac); ẩn dependency, dễ null.
+:::
+
 ::: details Ở dự án thật
 Web Forms ngày trước không có constructor injection cho page, nên code hay tự `new` service ngay trong page. Từ .NET Framework 4.7.2 đã có thể bật DI cho Web Forms qua `HttpRuntime.WebObjectActivator`. Biết chi tiết này cho thấy bạn hiểu cả hai thế giới, và nó là bước đệm hợp lý trước khi migrate: đưa logic về các service được inject, sau này mang sang .NET mới gần như nguyên vẹn.
+:::
+
+::: warning Bẫy & follow-up
+**"Inject `IServiceProvider` rồi tự lấy service trong action cho gọn constructor?"**
+
+Không: `HttpContext.RequestServices` trong action là service locator, dependency bị giấu chứ không mất đi.
+
+**"Chuyển sang Minimal API, mỗi handler chỉ inject thứ nó cần, vậy là hết vấn đề?"**
+
+Chỉ **giấu triệu chứng**. Một feature cần 10 dependency vẫn là thiết kế có vấn đề, dù chúng nằm ở tham số handler thay vì constructor.
 :::
 
 ## Hỏi đáp
