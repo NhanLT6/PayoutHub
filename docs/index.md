@@ -1,5 +1,7 @@
 ---
 layout: home
+# Không bọc nội dung trong VPHomeContent (có padding riêng), để mục lục thẳng hàng với hero
+markdownStyles: false
 
 hero:
   name: PayoutHub

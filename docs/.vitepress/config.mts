@@ -4,6 +4,8 @@ import { nav, sidebar } from './navigation'
 
 export default withMermaid(defineConfig({
   lang: 'vi-VN',
+  // Deploy lên GitHub Pages: https://nhanlt6.github.io/PayoutHub/
+  base: '/PayoutHub/',
   title: 'PayoutHub',
   description: 'Học lại .NET bằng cách build một backend thật',
   cleanUrls: true,
