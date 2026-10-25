@@ -22,6 +22,8 @@ builder.Logging.AddJsonConsole(options =>
     options.IncludeScopes = true;
 });
 
+builder.Services.AddHealthChecks();
+
 WebApplication app = builder.Build();
 
 app.UseExceptionHandler();
@@ -33,8 +35,8 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.MapGet("/", () => "Hello World!");
-
 app.MapGet("/boom", IActionResult () => throw new Exception("test exception"));
+app.MapHealthChecks("/health");
 
 PayoutOptions payout = app.Services.GetRequiredService<IOptions<PayoutOptions>>().Value;
 app.Logger.LogInformation("Payout config: {MinAmount} {Currency}", payout.MinAmount, payout.DefaultCurrency);

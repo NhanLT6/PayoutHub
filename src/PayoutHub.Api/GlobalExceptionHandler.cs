@@ -3,7 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace PayoutHub.Api;
 
-public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IProblemDetailsService problemDetailsService, IHostEnvironment hostEnvironment) : IExceptionHandler
+public class GlobalExceptionHandler(
+    ILogger<GlobalExceptionHandler> logger,
+    IProblemDetailsService problemDetailsService,
+    IHostEnvironment hostEnvironment
+) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
