@@ -189,13 +189,9 @@ struct ApproveStateMachine : IAsyncStateMachine
 
 Trong lúc DB đang chạy query: **không có thread nào** của app ngồi chờ request này. Chỉ có vài object trên heap, và OS giữ một yêu cầu đọc socket đang chờ.
 
-```
-Thread #7  ██ pipeline ██ action → FindAsync ┐ trả về pool → phục vụ request khác …
-(không thread nào)                           └──── chờ SQL Server (I/O) ────┐
-Thread #12                                                                  └ ██ MoveNext: Approve(), SaveChangesAsync ┐ …
-```
-
 </FlowStep>
+
+<Timeline :duration="12" :markers="[{ at: 7.5, text: 'SQL trả lời' }]" :lanes="[{ label: 'Thread #7', sub: 'pool thread', segments: [{ from: 0, to: 3, text: 'pipeline + action → FindAsync', kind: 'busy' }, { from: 3, to: 12, text: 'về pool → phục vụ request khác …', kind: 'free' }] }, { label: 'không thread', sub: 'chỉ có Task trên heap', segments: [{ from: 3, to: 7.5, text: 'chờ SQL Server (I/O)', kind: 'io' }] }, { label: 'Thread #12', sub: 'pool thread', segments: [{ from: 7.5, to: 12, text: 'MoveNext: Approve(), SaveChangesAsync …', kind: 'busy' }] }]" caption="Cam = thread đang bận vì request này. Xanh = thread rảnh, đi làm việc khác. Khung nét đứt = đang chờ I/O mà không thread nào bị giữ." />
 
 <FlowStep :n="9" title="SQL Server chạy query" layer="SQL Server" thread="không có thread" tone="free">
 
@@ -336,7 +332,7 @@ await Task.Run(() => db.SaveChanges());   // trông async, thực chất vẫn c
 
 ## Async, concurrency, parallelism: 3 thứ khác nhau {#async-concurrency-parallelism}
 
-Nhìn cùng một kiểu hình: **mỗi core là một hàng**, thời gian chạy từ trái sang phải. `█` = core đang chạy code của việc đó.
+Nhìn cùng một kiểu hình: **mỗi core là một hàng**, thời gian chạy từ trái sang phải. Mỗi thanh = core đang chạy code của việc đó.
 
 - **Concurrency**: nhiều việc cùng **đang dở dang** trong một khoảng thời gian (chồng lấn về thời gian). Không cần chạy cùng một tích tắc. Làm được trên **1 core**.
 - **Parallelism**: nhiều việc **chạy thật cùng một tích tắc** trên **nhiều core**. Parallelism là một dạng của concurrency.
@@ -344,16 +340,13 @@ Nhìn cùng một kiểu hình: **mỗi core là một hàng**, thời gian ch�
 
 **Mẹo nhớ: căn bếp.** Dịch ra tiếng Việt ("đồng thời", "song song") gần như cùng nghĩa nên dễ lẫn; nhớ bằng hình thì chắc hơn.
 
-```
-🧑‍🍳 Concurrency: 1 đầu bếp lo 3 món
-   bắc nồi canh ──▶ trong lúc chờ sôi: thái rau ──▶ chiên trứng ──▶ quay lại nêm canh
-   → cả 3 món đều "đang dở dang", nhưng mỗi tích tắc chỉ 1 người làm 1 việc
+<div class="kitchen-cards">
+<div class="kitchen-card"><div class="kitchen-emoji">🧑‍🍳 🍲🥬🍳</div><div class="kitchen-title">Concurrency</div><div class="kitchen-sub">1 đầu bếp, 3 món</div><p>Bắc nồi canh, trong lúc chờ sôi thì thái rau, chiên trứng, rồi quay lại nêm canh.</p><p>Cả 3 món đều <strong>dở dang</strong>, nhưng mỗi tích tắc chỉ 1 người làm 1 việc.</p></div>
+<div class="kitchen-card"><div class="kitchen-emoji">🧑‍🍳🧑‍🍳🧑‍🍳</div><div class="kitchen-title">Parallelism</div><div class="kitchen-sub">3 đầu bếp</div><p>Mỗi người 1 món, nấu <strong>cùng lúc</strong>.</p><p>Cần đủ người (core) và đủ bếp lò.</p></div>
+<div class="kitchen-card"><div class="kitchen-emoji">🍲⏰</div><div class="kitchen-title">Async</div><div class="kitchen-sub">nồi có chuông</div><p>Đầu bếp <strong>không</strong> đứng nhìn nồi nước sôi: làm việc khác, chuông kêu (OS báo I/O xong) mới quay lại.</p><p>Sync / <code>.Result</code> = đứng canh nồi.</p></div>
+</div>
 
-🧑‍🍳🧑‍🍳🧑‍🍳 Parallelism: 3 đầu bếp, mỗi người 1 món, nấu CÙNG LÚC
-
-⏰ Async: đầu bếp KHÔNG đứng nhìn nồi nước sôi. Nồi có chuông (OS báo I/O xong):
-   làm việc khác, chuông kêu mới quay lại.  Sync / .Result = đứng canh nồi.
-```
+<Timeline :duration="10" :markers="[{ at: 8, text: '⏰ chuông kêu' }]" :lanes="[{ label: 'Đầu bếp', sub: '1 thread', segments: [{ from: 0, to: 1.5, text: 'bắc nồi', kind: 'cpu' }, { from: 1.5, to: 4.5, text: 'thái rau', kind: 'other' }, { from: 4.5, to: 7.5, text: 'chiên trứng', kind: 'other' }, { from: 8, to: 10, text: 'nêm canh', kind: 'cpu' }] }, { label: 'Nồi canh', sub: 'không ai canh', segments: [{ from: 1.5, to: 8, text: 'đang sôi, tự chạy (I/O)', kind: 'io' }] }]" caption="Một đầu bếp, ba món cùng dở dang: concurrency. Nồi tự sôi trong lúc đầu bếp làm việc khác: async." />
 
 | Trong bếp | Trong .NET |
 |---|---|
@@ -366,17 +359,7 @@ Nhìn cùng một kiểu hình: **mỗi core là một hàng**, thời gian ch�
 
 > *Concurrency = một người tung hứng nhiều quả bóng. Parallelism = nhiều người, mỗi người một quả. Async = cách để không phải cầm quả bóng trong lúc chờ.*
 
-```
-Tuần tự (sequential):          Core 1  A████████B████████              B chỉ bắt đầu khi A xong
-
-Concurrent, 1 core, xen kẽ:    Core 1  A██B██A██B██A██B██              cả hai cùng dở dang, không cái nào chạy cùng tích tắc
-
-Concurrent nhờ async I/O:      Core 1  A█ gửi query ┐ B████████ ┌ A█ xong
-                               (không thread)       └ A chờ DB ┘      A chờ mà không chiếm core/thread nào
-
-Parallel, 2 core:              Core 1  A████████
-                               Core 2  B████████                       chạy thật cùng lúc
-```
+<Timeline :duration="16" :lanes="[{ group: 'Tuần tự: B chỉ bắt đầu khi A xong', label: 'Core 1', segments: [{ from: 0, to: 8, text: 'A', kind: 'cpu' }, { from: 8, to: 16, text: 'B', kind: 'other' }] }, { group: 'Concurrent, 1 core, xen kẽ: cả hai cùng dở dang, không cái nào chạy cùng tích tắc', label: 'Core 1', segments: [{ from: 0, to: 2, text: 'A', kind: 'cpu' }, { from: 2, to: 4, text: 'B', kind: 'other' }, { from: 4, to: 6, text: 'A', kind: 'cpu' }, { from: 6, to: 8, text: 'B', kind: 'other' }, { from: 8, to: 10, text: 'A', kind: 'cpu' }, { from: 10, to: 12, text: 'B', kind: 'other' }, { from: 12, to: 14, text: 'A', kind: 'cpu' }, { from: 14, to: 16, text: 'B', kind: 'other' }] }, { group: 'Concurrent nhờ async I/O: A chờ mà không chiếm core/thread nào', label: 'Core 1', segments: [{ from: 0, to: 2, text: 'A gửi query', kind: 'cpu' }, { from: 2, to: 10, text: 'B', kind: 'other' }, { from: 10, to: 12, text: 'A xong', kind: 'cpu' }] }, { group: 'Concurrent nhờ async I/O: A chờ mà không chiếm core/thread nào', label: 'không thread', segments: [{ from: 2, to: 10, text: 'A chờ DB', kind: 'io' }] }, { group: 'Parallel, 2 core: chạy thật cùng lúc', label: 'Core 1', segments: [{ from: 0, to: 8, text: 'A', kind: 'cpu' }] }, { group: 'Parallel, 2 core: chạy thật cùng lúc', label: 'Core 2', segments: [{ from: 0, to: 8, text: 'B', kind: 'other' }] }]" caption="Màu brand = việc A, xám = việc B, khung nét đứt = A đang chờ I/O (không chiếm core hay thread nào)." />
 
 |  | **Không parallel** | **Có parallel** |
 |---|---|---|
@@ -424,21 +407,12 @@ Cùng action nhưng viết đồng bộ: `db.Payouts.Find(id)` và `db.SaveChang
 <Compare :labels="['Sync', 'Async']" caption="Sync: Thread #7 bị giữ suốt lúc chờ DB. Async: Thread #7 chỉ bận lúc CPU thực sự chạy code.">
 <template #a>
 
-```
-Thread #7  ██ pipeline ██ Find ░░░░ bị chặn, chờ SELECT ░░░░ ██ Approve ██ SaveChanges ░░░░ bị chặn, chờ UPDATE ░░░░ ██ 204
-           ↑ suốt cả request, Thread #7 không làm được gì khác
-```
+<Timeline plain :duration="18" :markers="[{ at: 9, text: 'SELECT xong' }, { at: 17, text: 'UPDATE xong' }]" :lanes="[{ label: 'Thread #7', sub: 'bị giữ cả request', segments: [{ from: 0, to: 3, text: 'pipeline + Find', kind: 'busy' }, { from: 3, to: 9, text: 'bị chặn, chờ DB (SELECT)', kind: 'wait' }, { from: 9, to: 11, text: 'Approve()', kind: 'busy' }, { from: 11, to: 17, text: 'bị chặn, chờ DB (UPDATE)', kind: 'wait' }, { from: 17, to: 18, text: '204', kind: 'busy' }] }]" />
 
 </template>
 <template #b>
 
-```
-Thread #7  ██ pipeline ██ FindAsync ┐ về pool → phục vụ request khác …
-(không thread nào)                  └── chờ SELECT ──┐
-Thread #12                                           └ ██ Approve ██ SaveChangesAsync ┐ về pool …
-(không thread nào)                                                                    └── chờ UPDATE ──┐
-Thread #9                                                                                              └ ██ 204
-```
+<Timeline plain :duration="18" :markers="[{ at: 9, text: 'SELECT xong' }, { at: 17, text: 'UPDATE xong' }]" :lanes="[{ label: 'Thread #7', segments: [{ from: 0, to: 3, text: 'pipeline + FindAsync', kind: 'busy' }, { from: 3, to: 18, text: 'về pool → phục vụ request khác …', kind: 'free' }] }, { label: 'không thread', segments: [{ from: 3, to: 9, text: 'chờ SELECT', kind: 'io' }, { from: 11, to: 17, text: 'chờ UPDATE', kind: 'io' }] }, { label: 'Thread #12', segments: [{ from: 9, to: 11, text: 'Approve()', kind: 'busy' }, { from: 11, to: 18, text: 'về pool …', kind: 'free' }] }, { label: 'Thread #9', segments: [{ from: 17, to: 18, text: '204', kind: 'busy' }] }]" />
 
 </template>
 </Compare>

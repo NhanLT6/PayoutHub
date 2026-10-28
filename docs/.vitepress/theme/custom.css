@@ -49,3 +49,15 @@
 .mermaid-zoom::after { content: 'Kéo để di chuyển · cuộn chuột hoặc +/- để zoom · Esc hoặc bấm để đóng';
   position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); font-size: 13px;
   color: var(--vp-c-text-2); background: var(--vp-c-bg-soft); padding: 4px 12px; border-radius: 8px; }
+
+/* Thẻ hình "căn bếp" (runtime/async-flow): 3 thẻ cạnh nhau, xếp dọc trên điện thoại */
+.vp-doc .kitchen-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+.vp-doc .kitchen-card { background: var(--vp-c-bg-soft); border: 1px solid var(--vp-c-divider);
+  border-radius: 10px; padding: 14px 14px 10px; border-top: 3px solid var(--vp-c-brand-1); }
+.vp-doc .kitchen-card:nth-child(2) { border-top-color: var(--vp-c-green-1); }
+.vp-doc .kitchen-card:nth-child(3) { border-top-color: var(--vp-c-warning-1); }
+.vp-doc .kitchen-emoji { font-size: 30px; line-height: 1.3; letter-spacing: 2px; }
+.vp-doc .kitchen-title { font-weight: 700; margin-top: 6px; color: var(--vp-c-text-1); }
+.vp-doc .kitchen-sub { font-size: 13px; color: var(--vp-c-text-2); }
+.vp-doc .kitchen-card p { font-size: 14px; line-height: 1.55; margin: 8px 0 0; }
+@media (max-width: 639px) { .vp-doc .kitchen-cards { grid-template-columns: 1fr; } }
