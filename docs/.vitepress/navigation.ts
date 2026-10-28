@@ -28,6 +28,7 @@ export const sidebar: DefaultTheme.Sidebar = [
     items: [
       { text: 'Memory & GC', link: '/runtime/memory' },
       { text: 'Async & Concurrency', link: '/runtime/async' },
+      { text: 'Async: từ nút bấm tới DB', link: '/runtime/async-flow' },
     ],
   },
   {

@@ -6,6 +6,9 @@ title: "Async & Concurrency"
 
 Chủ đề hỏi sâu nhất và cũng có nhiều chỗ liên quan trực tiếp tới Web Forms 4.8, nên kinh nghiệm hiện tại của bạn là lợi thế ở phần này.
 
+::: tip Mới học async? Đọc [Async từ nút bấm tới database](/runtime/async-flow) trước: một luồng thật, giải thích từng keyword tại chỗ.
+:::
+
 ## Async/await giải quyết vấn đề gì? {#why-async}
 
 ::: tip Trả lời nhanh

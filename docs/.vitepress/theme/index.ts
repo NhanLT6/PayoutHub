@@ -1,6 +1,7 @@
 import DefaultTheme from 'vitepress/theme'
 import { withBase, type Theme } from 'vitepress'
 import Compare from './components/Compare.vue'
+import FlowStep from './components/FlowStep.vue'
 import HomeToc from './components/HomeToc.vue'
 import './custom.css'
 
@@ -11,6 +12,7 @@ export default {
     // Viết <a :href="$withBase('/path')"> thay vì href="/path".
     app.config.globalProperties.$withBase = withBase
     app.component('Compare', Compare)
+    app.component('FlowStep', FlowStep)
     app.component('HomeToc', HomeToc)
     if (typeof window !== 'undefined') enableDiagramZoom()
   },
