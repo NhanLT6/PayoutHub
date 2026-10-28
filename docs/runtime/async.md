@@ -237,6 +237,36 @@ catch
 Task bị fire-and-forget mà lỗi sẽ không làm sập app (từ .NET 4.5); lỗi chỉ đi vào sự kiện `TaskScheduler.UnobservedTaskException`, nghĩa là bị nuốt im lặng nếu không ai log.
 :::
 
+**Await từng cái vs `Task.WhenAll`:** khác nhau trước hết ở **thời gian**.
+
+```
+await trong vòng lặp:  A████ ──▶ B████ ──▶ C████     tổng = A + B + C  (tuần tự)
+Task.WhenAll:          A████
+                       B████                          tổng ≈ max(A, B, C) (đồng thời)
+                       C████
+```
+
+Task (C#) và Promise (JS) đều **hot**: chạy ngay khi được tạo. Vì vậy kết quả phụ thuộc vào *lúc tạo task*:
+
+```csharp
+// (a) tạo + await trong vòng lặp → tuần tự; A lỗi thì B, C chưa bao giờ chạy
+foreach (var id in ids) await CallAsync(id);
+
+// (b) tạo trước, await từng cái → đã chạy đồng thời; A lỗi thì vòng lặp dừng,
+//     nhưng B, C vẫn chạy tiếp và lỗi của chúng không ai đọc
+var tasks = ids.Select(CallAsync).ToList();
+foreach (var t in tasks) await t;
+```
+
+| Dễ nhầm | C# | JS/TS |
+|---|---|---|
+| Chờ tất cả | `Task.WhenAll`: **chờ tất cả xong** rồi mới ném lỗi đầu tiên | `Promise.all`: **fail-fast**, reject ngay ở lỗi đầu tiên |
+| Lấy kết quả từng cái kể cả lỗi | đọc `task.Status` / `task.Exception` sau `WhenAll` | `Promise.allSettled` |
+
+::: warning Bẫy
+Không `Task.WhenAll` nhiều query trên **cùng một `DbContext`**: DbContext không thread-safe, EF ném *"A second operation was started on this context"*.
+:::
+
 ## `CancellationToken` {#cancellation}
 
 ::: tip Trả lời nhanh

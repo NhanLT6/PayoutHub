@@ -38,3 +38,14 @@
 .VPDocAsideOutline ul.nested { display: none; }
 .VPDocAsideOutline li:has(> a.outline-link.active) > ul.nested,
 .VPDocAsideOutline li:has(ul.nested a.outline-link.active) > ul.nested { display: block; }
+
+/* Sơ đồ mermaid: bấm để phóng to, kéo/zoom được (xem enableDiagramZoom trong theme/index.ts) */
+.vp-doc .mermaid { cursor: zoom-in; }
+.mermaid-zoom { position: fixed; inset: 0; z-index: 1000; overflow: hidden; cursor: grab;
+  background: var(--vp-c-bg); touch-action: none; user-select: none; }
+.mermaid-zoom:active { cursor: grabbing; }
+.mermaid-zoom svg { position: absolute; top: 0; left: 0; max-width: none !important;
+  transform-origin: 0 0; }
+.mermaid-zoom::after { content: 'Kéo để di chuyển · cuộn chuột hoặc +/- để zoom · Esc hoặc bấm để đóng';
+  position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); font-size: 13px;
+  color: var(--vp-c-text-2); background: var(--vp-c-bg-soft); padding: 4px 12px; border-radius: 8px; }

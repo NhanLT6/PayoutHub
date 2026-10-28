@@ -36,6 +36,43 @@ Mỗi milestone kết thúc bằng `/mock Mx` (10–15 phút), rồi `/wrap`.
 
 Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; M8 bỏ bước Kubernetes, chỉ làm Docker compose và học phần khái niệm microservices. Không cắt M3 và M4, vì đây là phần quan trọng nhất cho phỏng vấn.
 
+## Ôn theo 2 job: PhoenixDX và ASW (từ 28/10/2026) {#job-plan}
+
+Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần chắc chắn bị hỏi trước**, sau đó tới microservices (gap của PhoenixDX), Angular để cuối (gap của ASW). Các milestone PayoutHub bên dưới giữ nguyên, giờ dùng làm **nguồn ví dụ code** khi cần, không còn đi theo thứ tự milestone.
+
+**Mỗi buổi (~3h):** 10' hỏi lại điểm yếu buổi trước → học bằng sơ đồ (link trang có sẵn) → một bài code nhỏ hoặc tự giải thích thành tiếng → 10' câu phỏng vấn bằng tiếng Anh.
+
+### Tầng A: chắc chắn bị hỏi (cả 2 job)
+
+| Buổi | Chủ đề | Nội dung chính | Có sẵn |
+|---|---|---|---|
+| A1 | C# và OOP | value vs reference, struct/class/record, string, OOP + SOLID (ví dụ `Conversion`, `Money`), always-valid entity | [OOP](/dotnet/oop-fundamentals#oop), [Memory](/runtime/memory) |
+| A2 | Async/await sâu | Task, thread pool, `.Result` deadlock/starvation, `ConfigureAwait`, `CancellationToken`, `Task.WhenAll`, concurrency vs parallelism | [Async](/runtime/async) |
+| A3 | ASP.NET Core / .NET 8 | hosting, DI lifetimes, middleware, options, logging, minimal API vs controller, `BackgroundService`, exception handling | M1 đã làm: chỉ hỏi lại |
+| A4 | Migration Framework → .NET 8 | khác biệt hosting/DI/config, thay `System.Web`, EF6 → EF Core, strangler fig / side-by-side, câu chuyện thật của bạn | [Framework vs .NET](/dotnet/framework-vs-core) + phần mới |
+| A5 | EF Core + SQL | tracking/`AsNoTracking`, N+1, projection, pagination, migration, `rowversion`, index, transaction/isolation, data modeling | PayoutHub M2: làm xong `DbContext` tại đây |
+| A6 | REST API + test | status code, versioning, method idempotent, JWT + policy, unit vs integration test (`WebApplicationFactory`) | [REST](/aspnet-core/questions#rest-design) |
+| | **Mock A** | 30' trộn A1–A6 | |
+
+### Tầng B: microservices (PhoenixDX)
+
+| Buổi | Chủ đề | Nội dung chính | PayoutHub |
+|---|---|---|---|
+| B1 | Monolith → microservices | bounded context (DDD), data ownership, strangler fig, khi nào **không** tách | Api ↔ FakeBank |
+| B2 | Event-driven + Azure Service Bus | queue vs topic/subscription, at-least-once, idempotent consumer, dead-letter, retry, outbox, saga, eventual consistency | `Channel` + worker, outbox (M4/M5) |
+| B3 | Resilience, observability, Azure | retry/timeout/circuit breaker, health check, OpenTelemetry (log/trace/metric); App Service vs Functions vs Azure SQL; CI/CD cơ bản | M4 typed `HttpClient` |
+| | **Mock PhoenixDX** | 30' theo JD PhoenixDX | |
+
+### Tầng C: ASW
+
+| Buổi | Chủ đề | Nội dung chính |
+|---|---|---|
+| C1 | Angular cơ bản (đối chiếu từ Vue/React) | component, standalone/module, service + DI, RxJS, routing, reactive forms, change detection |
+| C2 | Scrum + domain y tế | IME, claims, HIPAA đọc lướt; câu chuyện My Fertility Health |
+| | **Mock ASW** | 30' theo JD ASW |
+
+**Nếu có lịch phỏng vấn:** job nào có lịch trước thì nhảy sang tầng của job đó sau khi xong A4 (A4 dùng cho cả 2 job).
+
 ---
 
 ## M1: Khung solution (khoảng 1–2 ngày)
@@ -73,10 +110,10 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; 
   → Không cộng nhầm USD với EUR; so sánh theo giá trị nhờ record ([struct / class / record](/dotnet/oop-fundamentals#struct-class-record)). Map vào EF bằng owned type / complex type.
 - [ ] `DbContext` cấu hình bằng Fluent API, migration
   → Cấu hình (độ dài cột, precision của `decimal`, index, quan hệ) đặt ở Infrastructure, không gắn attribute vào entity của Core. Migration thay cho việc chạy script SQL bằng tay.
-- [ ] `DatabaseHealthCheck` (gọi `db.Database.CanConnectAsync(ct)`), gắn tag `ready`; tách `/health/live` và `/health/ready`
+- [ ] *(sau phỏng vấn)* `DatabaseHealthCheck` (gọi `db.Database.CanConnectAsync(ct)`), gắn tag `ready`; tách `/health/live` và `/health/ready`
   → Live dùng `Predicate = _ => false` (không check gì), ready chỉ chạy check tag `ready`. Tự tắt SQL Server rồi gọi cả hai endpoint: live vẫn 200, ready 503.
   → Nhắc lại từ mock M1: trả lời được "DB sập thì readiness làm gì" (gỡ khỏi traffic, không restart, DB hồi thì tự vào lại), xem [Liveness và readiness](/aspnet-core/health-checks#liveness-vs-readiness).
-- [ ] Middleware audit: ghi mỗi request (method, path, status, thời gian) vào bảng qua `PayoutDbContext`, viết **cả hai kiểu**: convention class và `IMiddleware`
+- [ ] Middleware audit: ghi mỗi request (method, path, status, thời gian) vào bảng qua `PayoutDbContext`, viết **cả hai kiểu**: convention class và `IMiddleware` (trước phỏng vấn: code 1 kiểu, kiểu kia nói miệng)
   → Tự quyết định `PayoutDbContext` đặt ở constructor hay tham số `InvokeAsync` cho từng kiểu, và kiểu nào phải đăng ký DI. Thử đặt sai (DbContext vào constructor của convention class) để thấy lỗi lúc start ở Development.
   → Nhắc lại từ mock M1: [Instance sống bao lâu](/aspnet-core/middleware#middleware-lifetime) (constructor convention chạy 1 lần; `IMiddleware` tạo mới mỗi request qua `IMiddlewareFactory`), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency). Scope validation chỉ bật mặc định ở **Development**, Production thì lỗi lọt qua.
 - [ ] Seed: khoảng 50 merchant, 2.000 affiliate, 100.000 conversion
@@ -133,9 +170,9 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; 
   → Retry `POST` mà bên kia đã xử lý rồi thì FakeBank trả lại kết quả cũ, không chuyển lần nữa. Đây là cách bảo đảm rule "không chuyển tiền hai lần".
 - [ ] `CancellationToken` đi xuyên suốt các tầng
   → Từ controller/worker → service → EF/HttpClient. Client huỷ request hoặc app tắt thì công việc dừng thay vì chạy tiếp vô ích.
-- [ ] Chạy cả batch bằng `Parallel.ForEachAsync` có giới hạn số luồng đồng thời
+- [ ] *(sau phỏng vấn, 27/10 chỉ nói miệng)* Chạy cả batch bằng `Parallel.ForEachAsync` có giới hạn số luồng đồng thời
   → `MaxDegreeOfParallelism` để không bắn 2.000 request cùng lúc vào FakeBank. Phân biệt concurrency với parallelism ([Concurrency vs parallelism](/runtime/async#concurrency-vs-parallelism)).
-- [ ] (Làm sau cùng, khoảng nửa ngày) Thử Aspire ở mức làm quen
+- [ ] *(sau phỏng vấn)* (Làm sau cùng, khoảng nửa ngày) Thử Aspire ở mức làm quen
   → Thêm AppHost chạy cùng lúc Api, FakeBank và SQL Server bằng một lần F5, rồi mở dashboard xem trace một lần approve: request đi từ Api qua worker sang FakeBank tốn bao lâu ở mỗi chặng. Chỉ cần hiểu AppHost, ServiceDefaults và dashboard dùng để làm gì; không chuyển hết cấu hình sang Aspire. Làm sau các bước trên vì Aspire cài sẵn health check, retry và telemetry, mà những thứ đó cần tự làm tay một lần cho hiểu.
 
 **Lab:**
@@ -146,6 +183,8 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; 
 **Ôn:** [cả chương Async & Concurrency](/runtime/async), [IHttpClientFactory](/aspnet-core/questions#httpclientfactory)
 
 ## M5: Webhook và độ tin cậy (khoảng 3 ngày)
+
+> Trước phỏng vấn: chỉ học khái niệm qua hỏi đáp. Phần code làm *(sau phỏng vấn)*.
 
 **Mục tiêu:** nhận kết quả từ hệ thống ngoài một cách an toàn, chịu được gửi trùng và gửi sai thứ tự.
 **Xong khi:** webhook giả mạo bị từ chối; cùng một event gửi 2 lần chỉ xử lý 1 lần; event cũ đến muộn không ghi đè trạng thái mới.
@@ -166,6 +205,8 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; 
 
 ## M6: Test (khoảng 2–3 ngày)
 
+> Trước phỏng vấn: chỉ học khái niệm qua hỏi đáp. Phần code làm *(sau phỏng vấn)*.
+
 **Mục tiêu:** có lưới an toàn cho các rule quan trọng, chứng minh được bằng test rằng bug concurrency đã được sửa.
 **Xong khi:** `dotnet test` xanh; test bắt được lỗi duyệt 2 lần khi revert phần sửa ở M3.
 
@@ -181,6 +222,8 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; 
 
 ## M7: Báo cáo và hiệu năng (khoảng 2–3 ngày)
 
+> Trước phỏng vấn: chỉ học khái niệm qua hỏi đáp. Phần code làm *(sau phỏng vấn)*.
+
 **Mục tiêu:** query báo cáo nặng chạy trong SQL, xuất file lớn mà bộ nhớ không phình.
 **Xong khi:** báo cáo đúng số liệu; export 100.000 dòng mà bộ nhớ gần như không tăng theo số dòng.
 
@@ -193,6 +236,8 @@ Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; 
 **Ôn:** [GC](/runtime/memory#gc), [Theo dõi GC](/runtime/memory#gc-diagnostics), [IDisposable](/runtime/memory#idisposable), [Memory leak](/runtime/memory#memory-leak), [Span, ArrayPool](/runtime/memory#span-memory), [Bẫy O(n²)](/dotnet/collections-linq#hidden-on2)
 
 ## M8: Container, Kubernetes và microservices (khoảng 3–4 ngày) {#m8}
+
+> Trước phỏng vấn: chỉ học khái niệm microservices qua hỏi đáp; bỏ thực hành Docker/K8s *(sau phỏng vấn)*.
 
 **Mục tiêu:** chạy PayoutHub và FakeBank như hai service thật trong container và trên Kubernetes local; thấy tận mắt probe hoạt động; nói được các khái niệm microservices bằng chính hai service này.
 **Xong khi:** `docker compose up` chạy cả Api, FakeBank và SQL Server; cùng image đó chạy trên kind/minikube với Deployment + Service; tắt DB thì pod Api thành not-ready mà không bị restart, bật lại thì tự nhận traffic; giải thích được sync HTTP vs async messaging, service discovery, API gateway, distributed tracing bằng ví dụ PayoutHub ↔ FakeBank.

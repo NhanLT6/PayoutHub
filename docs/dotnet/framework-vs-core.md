@@ -141,3 +141,85 @@ Dùng hai dấu gạch dưới: `Payout__MinAmount=100`, `ConnectionStrings__Def
 
 Không: nó là scoped, sẽ lỗi scope validation. Singleton cần giá trị mới nhất thì dùng `IOptionsMonitor`. Chi tiết và timeline ở [Options pattern](/aspnet-core/options-pattern#options-interfaces).
 :::
+
+## Migrate một app .NET Framework lên .NET 8 thế nào? <Badge type="warning" text="cả 2 job hỏi" /> {#migration-strategy}
+
+::: tip Trả lời nhanh
+Không **big-bang**. Chuyển dần theo **strangler fig**: dựng một app ASP.NET Core mới đứng trước (reverse proxy bằng **YARP**); route nào đã chuyển thì vào app mới, còn lại proxy về app cũ. Thứ tự: thư viện dùng chung sang **.NET Standard 2.0** / multi-target trước, rồi data access (EF6 → EF Core), rồi từng nhóm endpoint. Cần chia sẻ session/auth giữa hai app thì dùng **System.Web adapters**. Bước nào cũng phải deploy được và rollback được.
+:::
+
+::: info Bản chất
+```
+Giai đoạn 1            Giai đoạn 2                 Giai đoạn 3
+client                 client                      client
+  │                      │                           │
+YARP (ASP.NET Core)    YARP                        ASP.NET Core app
+  │ mọi route            ├─ /payouts → app mới        (app cũ đã tắt)
+  ▼                      └─ còn lại  → app cũ
+app cũ (IIS)
+```
+
+**Thay gì:**
+
+| .NET Framework | .NET 8 |
+|---|---|
+| `System.Web`, `HttpContext.Current` | `HttpContext` được truyền vào / `IHttpContextAccessor` ([chi tiết](/dotnet/framework-vs-core#httpcontext-current)) |
+| `Web.config` | `appsettings.json` + Options pattern ([chi tiết](/dotnet/framework-vs-core#configuration)) |
+| `Global.asax`, HTTP modules | `Program.cs` + middleware |
+| MVC 5 / Web API 2 | ASP.NET Core MVC (controller MVC và API đã gộp làm một) |
+| EF6 (EDMX) | EF Core: code-first, hoặc `dotnet ef dbcontext scaffold` từ DB có sẵn |
+| WCF server | gRPC / REST, hoặc CoreWCF nếu client không đổi được |
+| Session, Forms auth | Cookie auth; chia sẻ với app cũ qua System.Web adapters |
+
+**Tool**: **.NET Upgrade Assistant** (extension Visual Studio / CLI) chuyển csproj sang SDK-style, đổi package, và dựng sẵn project ASP.NET Core + YARP cho kiểu migrate từng bước.
+
+**Dễ nhầm: EF6 → EF Core không phải đổi namespace là xong**
+
+| EF6 | EF Core |
+|---|---|
+| Lazy loading bật mặc định | Tắt; muốn có phải cài Proxies và bật tay. Thiếu `Include` là navigation bị null |
+| Có EDMX designer | Không có EDMX; model nằm trong code |
+| Query không dịch được sang SQL thì có thể lặng lẽ chạy trên memory | Từ EF Core 3: ném exception (chỉ cho phép ở projection cuối) |
+| `GroupBy` tương đối thoải mái | `GroupBy` chỉ dịch tốt khi đi kèm aggregate (`Count`, `Sum`...) |
+:::
+
+::: details Ở dự án thật
+Nói thật về phạm vi: cả hai lần đều mới ở giai đoạn đầu.
+
+- **Jabil**: chuyển data layer của một project từ SQL Server sang **PostgreSQL** bằng EF Core. Reverse-engineer schema có sẵn bằng `dotnet ef dbcontext scaffold`, chỉnh config (tên kiểu snake_case qua `EFCore.NamingConventions`, `UseSnakeCaseNamingConvention()`, sửa nhỏ schema cho hợp Postgres), rồi tạo DB Postgres mới từ model đó bằng **EF Core migrations**. Stored procedure nhỏ viết lại thành method C#/LINQ; SP lớn giữ nguyên logic, port sang Postgres và gọi bằng `FromSql`, map vào class kết quả **keyless** (`HasNoKey()`).
+- **Commission Factory**: nghiên cứu kế hoạch migrate từng bước (strangler) và Vue cho front end, chưa triển khai. Phần làm thật là một app .NET Core nhỏ, mới từ đầu, cho các trang legal notice.
+
+```text
+In my last projects the migrations were at an early stage, so I'll be honest about scope.
+At Jabil I moved the data layer of one project from SQL Server to PostgreSQL with EF Core:
+I scaffolded the existing schema, switched to snake_case naming, and created the new
+database from that model with migrations. My rule for stored procedures was simple:
+small ones became C# and LINQ so they are testable, large ones stayed in the database,
+ported to Postgres and called through FromSql into keyless result types.
+To continue, I'd use the strangler pattern: put YARP in front, move shared libraries to
+netstandard2.0, migrate endpoint by endpoint, and verify data with counts and parallel reports.
+```
+:::
+
+::: warning Bẫy & follow-up
+**"Sao không viết lại một lần cho nhanh?"**
+
+Big-bang rủi ro cao: phải đóng băng tính năng hàng tháng, lỗi dồn hết vào một ngày go-live, và gần như không rollback được. Strangler thì mỗi bước nhỏ, lỗi ở route nào trả route đó về app cũ.
+
+**"Kiểm tra data migration đúng thế nào?"**
+
+So số dòng và checksum từng bảng giữa hai DB; chạy song song hai hệ thống một thời gian và so các report quan trọng (vd tổng payout theo tháng).
+
+**"Từ SQL Server sang Postgres hay vấp gì?"**
+
+- Tên không quote bị chuyển thành chữ thường; tên PascalCase phải quote khắp nơi → dùng snake_case.
+- `datetime` → `timestamp` / `timestamptz`; Npgsql map `DateTime` UTC vào `timestamptz`, lẫn `Kind` là lỗi.
+- `IDENTITY` → identity column / sequence; sau khi copy data phải reset giá trị sequence.
+- SQL Server thường không phân biệt hoa thường khi so sánh, Postgres thì có → `citext`, `ILIKE` hoặc collation.
+- `nvarchar` → `text` / `varchar`.
+- Procedure Postgres không trả result set như SP SQL Server; SP trả dữ liệu thường port thành **function** `RETURNS TABLE`.
+
+**"Session/auth chia sẻ giữa app cũ và app mới thế nào?"**
+
+System.Web adapters có **remote app session** và **remote authentication**: app mới gọi sang app cũ để đọc session và user đã login, nên người dùng không phải login lại khi route chuyển sang app mới.
+:::

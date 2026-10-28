@@ -8,6 +8,7 @@ import type { DefaultTheme } from 'vitepress'
 export const nav: DefaultTheme.NavItem[] = [
   { text: 'Mục lục', link: '/reference/' },
   { text: 'Plan', link: '/progress/plan' },
+  { text: 'Bản đồ dự án', link: '/progress/project-map' },
 ]
 
 export const sidebar: DefaultTheme.Sidebar = [
@@ -53,7 +54,8 @@ export const sidebar: DefaultTheme.Sidebar = [
   {
     text: 'Tiến độ',
     items: [
-      { text: 'Plan (M1–M7)', link: '/progress/plan' },
+      { text: 'Plan (M1–M8)', link: '/progress/plan' },
+      { text: 'Bản đồ dự án', link: '/progress/project-map' },
       { text: 'Learning log', link: '/progress/learning-log' },
     ],
   },

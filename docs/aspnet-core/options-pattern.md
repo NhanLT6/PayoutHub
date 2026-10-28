@@ -82,7 +82,16 @@ Có, nhưng vì lý do khác. `Program.cs` có dòng log đọc `IOptions<Payout
 
 ## 3. Ba interface: đọc giá trị lúc nào {#three-interfaces}
 
-Cả ba cùng đọc một `PayoutOptions`. Khác nhau ở **lifetime** và **thời điểm tính lại giá trị**. Hình dưới: file config đổi `MinAmount` từ 1000 sang 500 **giữa** request 1.
+Cả ba cùng đọc một `PayoutOptions`. Khác nhau ở **lifetime** và **thời điểm tính lại giá trị**.
+
+**Mẹo nhớ theo tên: ảnh chụp và camera.**
+
+| Tên | Hình dung | Lifetime |
+|---|---|---|
+| `IOptions` | **1 tấm ảnh** chụp lúc app mở, treo tới khi restart | Singleton |
+| `IOptionsSnapshot` | *snapshot* = **ảnh chụp nhanh**: mỗi request chụp 1 tấm mới, dùng nguyên tấm đó tới hết request | Scoped |
+| `IOptionsMonitor` | *monitor* = **màn hình camera trực tiếp**: nhìn lúc nào thấy lúc đó (`CurrentValue`), có chuông báo khi đổi (`OnChange`) | Singleton |
+ Hình dưới: file config đổi `MinAmount` từ 1000 sang 500 **giữa** request 1.
 
 <div class="fig">
 <svg viewBox="0 0 720 300" role="img" aria-label="Timeline: IOptions giữ 1000 mãi, IOptionsSnapshot cố định trong từng request, IOptionsMonitor đổi ngay ở lần đọc sau"><g font-size="12" text-anchor="middle"><rect class="boxAcc" x="190" y="20" width="290" height="26" rx="6"/><text x="335" y="38" class="accT">request 1</text><rect class="boxAcc" x="510" y="20" width="190" height="26" rx="6"/><text x="605" y="38" class="accT">request 2</text></g><line class="lnBad dash" x1="400" y1="14" x2="400" y2="262"/><text x="400" y="282" font-size="12" text-anchor="middle" class="badT">file đổi: MinAmount 1000 → 500</text><g font-size="13" class="mono"><text x="20" y="92">IOptions</text><text x="20" y="162">IOptionsSnapshot</text><text x="20" y="232">IOptionsMonitor</text></g><g font-size="11" class="muted"><text x="20" y="108">singleton · tính 1 lần</text><text x="20" y="178">scoped · 1 lần mỗi request</text><text x="20" y="248">singleton · mỗi lần đọc</text></g><rect class="box" x="190" y="76" width="510" height="34" rx="6"/><g font-size="12" text-anchor="middle" class="mono"><text x="290" y="98">1000</text><text x="560" y="98" class="badT">vẫn 1000 tới khi restart</text></g><rect class="boxOk" x="190" y="146" width="290" height="34" rx="6"/><rect class="boxOk" x="510" y="146" width="190" height="34" rx="6"/><g font-size="12" text-anchor="middle" class="mono"><text x="335" y="168">1000 suốt request 1</text><text x="605" y="168">500</text></g><line class="lnMuted" x1="190" y1="226" x2="700" y2="226"/><g class="boxAcc"><circle cx="230" cy="226" r="7"/><circle cx="300" cy="226" r="7"/><circle cx="370" cy="226" r="7"/><circle cx="450" cy="226" r="7"/><circle cx="560" cy="226" r="7"/><circle cx="650" cy="226" r="7"/></g><g font-size="12" text-anchor="middle" class="mono"><text x="230" y="210">1000</text><text x="300" y="210">1000</text><text x="370" y="210">1000</text><text x="450" y="210" class="badT">500</text><text x="560" y="210">500</text><text x="650" y="210">500</text></g><text x="335" y="252" font-size="11" text-anchor="middle" class="badT">request 1 thấy cả 1000 lẫn 500</text></svg>

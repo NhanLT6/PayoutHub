@@ -94,6 +94,70 @@ src/PayoutHub.Api/
 Không hẳn: Controllers cũng xuống cấp được, kiểu controller phình to vài nghìn dòng. Minimal API linh hoạt hơn nhưng không có convention thì loạn nhanh khi team đông. Chọn theo team, không theo độ "mới".
 :::
 
+## Chạy job nền thế nào, và dừng gọn khi app tắt ra sao? <Badge type="warning" text="hay bị hỏi" /> {#background-service}
+
+::: tip Trả lời nhanh
+Kế thừa `BackgroundService`, viết vòng lặp trong `ExecuteAsync(stoppingToken)`, đăng ký bằng `AddHostedService<T>()`. Khi app tắt (Ctrl+C, SIGTERM khi deploy), host **cancel `stoppingToken`** và chờ tối đa `HostOptions.ShutdownTimeout` (mặc định 30 giây). Job dừng gọn nếu truyền token đó xuống mọi lời gọi async. Service là singleton, nên cần `DbContext` thì tạo scope mỗi vòng qua `IServiceScopeFactory`.
+:::
+
+::: info Bản chất
+**Job nền chạy *bên trong* cùng process với web app**, không phải chương trình riêng như Windows Service hay Task Scheduler ở .NET Framework. Nên deploy (tắt process cũ) thì job đang chạy dở cũng tắt theo.
+
+```
+.NET Framework                             ASP.NET Core
+┌ IIS: web app ┐  ┌ Windows Service ┐    ┌──────── 1 process (PayoutHub.Api.exe) ────────┐
+│ xử lý request│  │ hoặc Task       │    │ Host                                           │
+└──────────────┘  │ Scheduler       │    │  ├─ Kestrel: xử lý request      ┐ dùng chung  │
+                  └─────────────────┘    │  └─ PayoutWorker: job nền       ┘ DI, config, │
+   2 chương trình, sống chết riêng       │                                   logging     │
+                                         └────────────────────────────────────────────────┘
+                                           app tắt = job tắt theo
+```
+
+```
+App start ──▶ StartAsync ──▶ ExecuteAsync chạy nền ─────────────────────▶ app nhận traffic song song
+                                │ while (!token.IsCancellationRequested)
+                                │   using scope = CreateScope()   ← DbContext mới mỗi vòng
+                                │   làm việc(token)
+                                │   await timer.WaitForNextTickAsync(token)
+SIGTERM / Ctrl+C ──▶ host cancel stoppingToken ──▶ await đang chờ ném OperationCanceledException
+                     chờ tối đa ShutdownTimeout (30s) ──▶ quá hạn thì bị bỏ, app thoát
+```
+
+```csharp
+public class PayoutWorker(IServiceScopeFactory scopes, ILogger<PayoutWorker> logger) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        while (await timer.WaitForNextTickAsync(stoppingToken))
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<PayoutDbContext>();
+            await ProcessBatchAsync(db, stoppingToken);   // token đi xuống EF, HttpClient
+        }
+    }
+}
+```
+
+| Dễ nhầm | |
+|---|---|
+| `IHostedService` | Interface gốc: chỉ có `StartAsync` / `StopAsync`, tự quản vòng lặp |
+| `BackgroundService` | Lớp tiện ích implement `IHostedService`, bạn chỉ viết `ExecuteAsync` |
+| `Task.Delay` trong vòng lặp | Chạy được, nhưng lệch giờ dần vì cộng thêm thời gian xử lý; `PeriodicTimer` (.NET 6+) giữ nhịp đều |
+:::
+
+::: details Ở dự án thật
+PayoutHub M4: request approve chỉ đẩy `payoutId` vào `Channel`, `PayoutWorker` đọc bằng `await foreach (var id in reader.ReadAllAsync(stoppingToken))` rồi gọi FakeBank. Với job theo lịch phức tạp (cron, retry, dashboard) thì dùng Hangfire/Quartz; trên Azure thì có thể tách ra **Azure Functions** timer trigger hoặc Service Bus trigger.
+:::
+
+::: warning Bẫy & follow-up
+- **Exception không bắt trong `ExecuteAsync`**: từ .NET 6, mặc định **dừng cả app** (`BackgroundServiceExceptionBehavior.StopHost`). Bọc try/catch quanh từng vòng, log lỗi, rồi chạy tiếp.
+- **Chạy nhiều instance (scale ra 2 pod)**: mỗi instance đều chạy job, nên job phải idempotent hoặc có lock/queue phân phối.
+- **Quên truyền `stoppingToken`**: app phải chờ hết 30 giây mới tắt, deploy chậm và có thể bị kill giữa chừng.
+- **"Deploy khi job đang chạy dở batch thì sao?"** Host cancel token, chờ tối đa `ShutdownTimeout` rồi thoát, item đang làm có thể bị cắt giữa chừng. An toàn = (1) dùng token để **ngừng nhận item mới**, kiểm tra token *giữa* các item, làm xong item hiện tại; batch dài thì tăng `builder.Services.Configure<HostOptions>(o => o.ShutdownTimeout = TimeSpan.FromSeconds(60))`. (2) **Resumable + idempotent**: mỗi item lưu trạng thái riêng ngay khi xong, restart thì chỉ lấy item chưa xong, gọi ra ngoài kèm Idempotency-Key để retry không chuyển tiền 2 lần. Dễ nhầm: chờ lâu hơn là `HostOptions`, không phải `IOptionsMonitor`.
+:::
+
 ## Thiết kế REST API: status code và các quy ước {#rest-design}
 
 ::: info Bản chất
