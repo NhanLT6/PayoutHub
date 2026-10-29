@@ -17,7 +17,9 @@ const active = ref(0)
         type="button"
         :aria-pressed="active === i"
         @click="active = i"
-      >{{ label }}</button>
+      >
+        {{ label }}
+      </button>
     </div>
     <div class="fig">
       <div v-for="(label, i) in props.labels" v-show="active === i" :key="label">
@@ -29,15 +31,34 @@ const active = ref(0)
 </template>
 
 <style scoped>
-.compare-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0 0; }
+.compare-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 16px 0 0;
+}
 .compare-tabs button {
-  font-size: 14px; border: 1px solid var(--vp-c-divider); background: var(--vp-c-bg);
-  color: var(--vp-c-text-1); border-radius: 999px; padding: 3px 14px; cursor: pointer;
-  transition: background .15s, border-color .15s;
+  font-size: 14px;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  border-radius: 999px;
+  padding: 3px 14px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .compare-tabs button[aria-pressed="true"] {
-  background: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); color: var(--vp-c-white);
+  background: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-white);
 }
-.compare-tabs button:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
-.compare .fig { margin-top: 8px; }
+.compare-tabs button:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+.compare .fig {
+  margin-top: 8px;
+}
 </style>

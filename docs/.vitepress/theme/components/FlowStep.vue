@@ -12,24 +12,31 @@
 import { computed } from 'vue'
 import StepIcon from './StepIcon.vue'
 
-const props = defineProps<{ n: number; title: string; layer: string; thread?: string; tone?: 'busy' | 'free'; icon?: string }>()
+const props = defineProps<{
+  n: number
+  title: string
+  layer: string
+  thread?: string
+  tone?: 'busy' | 'free'
+  icon?: string
+}>()
 
 // Mỗi tầng một màu, chỉ dùng biến màu của theme để tự đổi theo light/dark.
 const layerColors: Record<string, string> = {
-  'Browser': 'indigo',
-  'Network': 'gray',
+  Browser: 'indigo',
+  Network: 'gray',
   'OS kernel': 'gray',
-  'Kestrel': 'purple',
+  Kestrel: 'purple',
   'ASP.NET Core': 'purple',
   '.NET runtime': 'purple',
   'Your code': 'green',
   'EF Core': 'yellow',
-  'SqlClient': 'yellow',
+  SqlClient: 'yellow',
   'SQL Server': 'red',
   // aspnet-core/api-security
-  'Edge': 'indigo',
-  'Gateway': 'purple',
-  'Monitoring': 'gray',
+  Edge: 'indigo',
+  Gateway: 'purple',
+  Monitoring: 'gray',
 }
 const color = computed(() => layerColors[props.layer] ?? 'gray')
 </script>
@@ -45,7 +52,13 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
         </div>
         <div class="flow-title">{{ title }}</div>
         <div class="flow-chips">
-          <span class="flow-layer" :style="{ color: color === 'gray' ? 'var(--vp-c-text-2)' : `var(--vp-c-${color}-1)`, background: `var(--vp-c-${color}-soft)` }">{{ layer }}</span>
+          <span
+            class="flow-layer"
+            :style="{ color: color === 'gray' ? 'var(--vp-c-text-2)' : `var(--vp-c-${color}-1)`, background: `var(--vp-c-${color}-soft)` }"
+            >{{
+              layer
+            }}</span
+          >
           <span v-if="thread" class="flow-thread" :class="tone">{{ thread }}</span>
         </div>
       </div>
@@ -62,7 +75,7 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
 }
 /* Đường ray: kéo hết chiều cao của bước, nên các bước liền nhau nối thành một đường. */
 .flow-step::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 15px;
   top: 0;
@@ -70,10 +83,19 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
   width: 2px;
   background: var(--vp-c-divider);
 }
-.flow-step:not(.flow-step + .flow-step) { margin-top: 24px; }
-.flow-step:not(.flow-step + .flow-step)::before { top: 16px; }
-.flow-step:not(:has(+ .flow-step)) { margin-bottom: 24px; }
-.flow-step:not(:has(+ .flow-step))::before { bottom: auto; height: 16px; }
+.flow-step:not(.flow-step + .flow-step) {
+  margin-top: 24px;
+}
+.flow-step:not(.flow-step + .flow-step)::before {
+  top: 16px;
+}
+.flow-step:not(:has(+ .flow-step)) {
+  margin-bottom: 24px;
+}
+.flow-step:not(:has(+ .flow-step))::before {
+  bottom: auto;
+  height: 16px;
+}
 
 .flow-node {
   position: absolute;
@@ -99,11 +121,23 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
   border-top: 1px dashed var(--vp-c-divider);
   padding-top: 8px;
 }
-.flow-step:not(.flow-step + .flow-step) .flow-grid { border-top: none; }
+.flow-step:not(.flow-step + .flow-step) .flow-grid {
+  border-top: none;
+}
 
-.flow-title { font-weight: 600; line-height: 1.4; color: var(--vp-c-text-1); }
-.flow-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.flow-layer, .flow-thread {
+.flow-title {
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--vp-c-text-1);
+}
+.flow-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.flow-layer,
+.flow-thread {
   font-size: 12px;
   line-height: 20px;
   padding: 0 8px;
@@ -115,17 +149,35 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
   color: var(--vp-c-text-2);
   border: 1px solid var(--vp-c-divider);
 }
-.flow-thread.busy { color: var(--vp-c-warning-1); border-color: var(--vp-c-warning-1); background: var(--vp-c-warning-soft); }
-.flow-thread.free { color: var(--vp-c-green-1); border-color: var(--vp-c-green-1); background: var(--vp-c-green-soft); }
+.flow-thread.busy {
+  color: var(--vp-c-warning-1);
+  border-color: var(--vp-c-warning-1);
+  background: var(--vp-c-warning-soft);
+}
+.flow-thread.free {
+  color: var(--vp-c-green-1);
+  border-color: var(--vp-c-green-1);
+  background: var(--vp-c-green-soft);
+}
 
 /* Bỏ margin thừa của đoạn đầu/cuối trong nội dung markdown */
-.flow-body { min-width: 0; }
-.flow-body > :deep(:first-child) { margin-top: 0; }
-.flow-body > :deep(:last-child) { margin-bottom: 0; }
+.flow-body {
+  min-width: 0;
+}
+.flow-body > :deep(:first-child) {
+  margin-top: 0;
+}
+.flow-body > :deep(:last-child) {
+  margin-bottom: 0;
+}
 
 /* Có hình: bỏ đường ray + chấm số bên trái, hình nằm đầu cột trái kèm nhãn "Bước n" */
-.flow-step.has-icon { padding-left: 0; }
-.flow-step.has-icon::before { display: none; }
+.flow-step.has-icon {
+  padding-left: 0;
+}
+.flow-step.has-icon::before {
+  display: none;
+}
 .flow-pic {
   position: relative;
   width: fit-content;
@@ -150,17 +202,31 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
 
 /* Màn hình ≥1024px: hình to gấp ~1,5 (198×132), cột trái giãn theo cho vừa hình */
 @media (min-width: 1024px) {
-  .flow-pic { --si-w: 198px; }
-  .flow-grid { grid-template-columns: minmax(230px, 28%) 1fr; }
+  .flow-pic {
+    --si-w: 198px;
+  }
+  .flow-grid {
+    grid-template-columns: minmax(230px, 28%) 1fr;
+  }
 }
 @media (min-width: 1440px) {
-  .flow-grid { grid-template-columns: minmax(230px, 24%) 1fr; }
+  .flow-grid {
+    grid-template-columns: minmax(230px, 24%) 1fr;
+  }
 }
 
 @media (max-width: 639px) {
-  .flow-grid { grid-template-columns: 1fr; gap: 8px; }
+  .flow-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
   /* Điện thoại: hình nằm trên nội dung, rộng theo màn hình, căn giữa */
-  .flow-pic { width: auto; --si-w: min(100%, 240px); }
-  .flow-pic :deep(.si) { margin: 0 auto; }
+  .flow-pic {
+    width: auto;
+    --si-w: min(100%, 240px);
+  }
+  .flow-pic :deep(.si) {
+    margin: 0 auto;
+  }
 }
 </style>

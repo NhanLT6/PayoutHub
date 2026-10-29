@@ -33,13 +33,13 @@ app.MapControllers();
 app.Run();
 ```
 
-Bên dưới là **Generic Host**: thứ quản lý DI, config, logging và vòng đời của các `IHostedService`. Worker service hay console app dùng cùng host này, chỉ khác là không có web server. Mẫu cũ `Startup.cs` với `ConfigureServices`/`Configure` vẫn chạy được, chỉ là được gộp vào Program.cs từ .NET 6.
+Bên dưới là <T>Generic Host</T>, thứ quản lý <T>DI</T>, config, logging và vòng đời của các `IHostedService`. Worker service hay console app dùng cùng host này, chỉ khác là không có web server (<T>Kestrel</T>). Mẫu cũ `Startup.cs` với `ConfigureServices`/`Configure` vẫn chạy được, chỉ là được gộp vào Program.cs từ .NET 6.
 :::
 
 ## Controller hay Minimal API? Minimal API có dùng cho app lớn được không? {#controllers-vs-minimal}
 
 ::: tip Trả lời nhanh
-Cả hai chạy trên cùng routing, middleware và DI, đều dùng được cho app lớn. Khác nhau ở chỗ ai đặt cấu trúc: **Controllers áp sẵn cấu trúc** (convention, filter, model binding); **Minimal API phải tự đặt** (chia theo feature, `MapGroup`, `IEndpointFilter`, `TypedResults`). Minimal API bắt buộc khi cần Native AOT.
+Cả hai chạy trên cùng routing, middleware và DI, đều dùng được cho app lớn. Khác nhau ở chỗ ai đặt cấu trúc: **Controllers áp sẵn cấu trúc** (convention, filter, model binding); **Minimal API phải tự đặt** (chia theo feature, `MapGroup`, `IEndpointFilter`, `TypedResults`). Minimal API bắt buộc khi cần <T>Native AOT</T>.
 :::
 
 ::: info Bản chất
@@ -75,7 +75,7 @@ Câu trả lời mẫu: "Team lớn, nhiều người mới, chưa có conventio
 ::: warning Bẫy & follow-up
 **"Minimal API ở app lớn thì tổ chức thế nào cho khỏi loạn?"**
 
-Chia theo feature, mỗi feature một extension method `MapXxxEndpoints`. Feature nhỏ: một file chứa cả route lẫn handler. Feature lớn: mỗi endpoint một file theo REPR. Giữ trật tự bằng convention viết thành tài liệu, code mẫu, review chặt; có thể thêm architecture test hoặc dùng FastEndpoints.
+Chia theo feature, mỗi feature một extension method `MapXxxEndpoints`. Feature nhỏ: một file chứa cả route lẫn handler. Feature lớn: mỗi endpoint một file theo <T>REPR</T>. Giữ trật tự bằng convention viết thành tài liệu, code mẫu, review chặt; có thể thêm architecture test hoặc dùng FastEndpoints.
 
 ```
 src/PayoutHub.Api/
@@ -97,7 +97,7 @@ Không hẳn: Controllers cũng xuống cấp được, kiểu controller phình
 ## Chạy job nền thế nào, và dừng gọn khi app tắt ra sao? <Badge type="warning" text="hay bị hỏi" /> {#background-service}
 
 ::: tip Trả lời nhanh
-Kế thừa `BackgroundService`, viết vòng lặp trong `ExecuteAsync(stoppingToken)`, đăng ký bằng `AddHostedService<T>()`. Khi app tắt (Ctrl+C, SIGTERM khi deploy), host **cancel `stoppingToken`** và chờ tối đa `HostOptions.ShutdownTimeout` (mặc định 30 giây). Job dừng gọn nếu truyền token đó xuống mọi lời gọi async. Service là singleton, nên cần `DbContext` thì tạo scope mỗi vòng qua `IServiceScopeFactory`.
+Kế thừa `BackgroundService`, viết vòng lặp trong `ExecuteAsync(stoppingToken)`, đăng ký bằng `AddHostedService<T>()`. Khi app tắt (Ctrl+C, <T>SIGTERM</T> khi deploy), host **cancel `stoppingToken`** và chờ tối đa `HostOptions.ShutdownTimeout` (mặc định 30 giây). Job dừng gọn (<T>graceful shutdown</T>) nếu truyền token đó xuống mọi lời gọi async. Service là singleton, nên cần `DbContext` thì tạo scope mỗi vòng qua `IServiceScopeFactory`.
 :::
 
 ::: info Bản chất
@@ -153,7 +153,7 @@ PayoutHub M4: request approve chỉ đẩy `payoutId` vào `Channel`, `PayoutWor
 
 ::: warning Bẫy & follow-up
 - **Exception không bắt trong `ExecuteAsync`**: từ .NET 6, mặc định **dừng cả app** (`BackgroundServiceExceptionBehavior.StopHost`). Bọc try/catch quanh từng vòng, log lỗi, rồi chạy tiếp.
-- **Chạy nhiều instance (scale ra 2 pod)**: mỗi instance đều chạy job, nên job phải idempotent hoặc có lock/queue phân phối.
+- **Chạy nhiều instance (scale ra 2 pod)**: mỗi instance đều chạy job, nên job phải <T>idempotent</T> hoặc có lock/queue phân phối.
 - **Quên truyền `stoppingToken`**: app phải chờ hết 30 giây mới tắt, deploy chậm và có thể bị kill giữa chừng.
 - **"Deploy khi job đang chạy dở batch thì sao?"** Host cancel token, chờ tối đa `ShutdownTimeout` rồi thoát, item đang làm có thể bị cắt giữa chừng. An toàn = (1) dùng token để **ngừng nhận item mới**, kiểm tra token *giữa* các item, làm xong item hiện tại; batch dài thì tăng `builder.Services.Configure<HostOptions>(o => o.ShutdownTimeout = TimeSpan.FromSeconds(60))`. (2) **Resumable + idempotent**: mỗi item lưu trạng thái riêng ngay khi xong, restart thì chỉ lấy item chưa xong, gọi ra ngoài kèm Idempotency-Key để retry không chuyển tiền 2 lần. Dễ nhầm: chờ lâu hơn là `HostOptions`, không phải `IOptionsMonitor`.
 :::
@@ -175,7 +175,7 @@ PayoutHub M4: request approve chỉ đẩy `payoutId` vào `Channel`, `PayoutWor
 | 429 Too Many Requests | Vượt rate limit |
 | 500 / 503 | Lỗi server / service tạm thời không phục vụ được |
 
-- **Idempotent**: GET, PUT, DELETE gọi nhiều lần cho cùng kết quả. POST thì không, nên với thao tác nhạy cảm (tạo payout, thanh toán) dùng **idempotency key** gửi kèm request để retry không tạo bản ghi trùng.
+- <T>Idempotent</T>: GET, PUT, DELETE gọi nhiều lần cho cùng kết quả. POST thì không, nên với thao tác nhạy cảm (tạo payout, thanh toán) dùng <T>idempotency key</T> gửi kèm request để retry không tạo bản ghi trùng.
 - URL là danh từ số nhiều: `/payouts/42`, hành động nghiệp vụ đặc biệt có thể là `POST /payouts/42/approve`.
 - Phân trang: `?page=2&pageSize=50`, hoặc cursor cho dữ liệu lớn. Versioning: qua URL `/v1/` hoặc header.
 :::
@@ -212,9 +212,9 @@ public class SeoDataClient(HttpClient http)
 ::: warning Bẫy & follow-up
 **"Retry có nguy hiểm không?"**
 
-Có, với request không idempotent (POST tạo đơn, chuyển tiền): retry có thể tạo bản ghi trùng. Chỉ retry tự động cho GET hoặc khi có idempotency key. Thêm backoff và jitter để không dồn dập vào service đang lỗi.
+Có, với request không idempotent (POST tạo đơn, chuyển tiền): retry có thể tạo bản ghi trùng. Chỉ retry tự động cho GET hoặc khi có idempotency key. Thêm <T k="backoff">backoff và jitter</T> để không dồn dập vào service đang lỗi.
 
-**"Circuit breaker để làm gì?"**
+**"<T>Circuit breaker</T> để làm gì?"**
 
 Khi service phía sau lỗi liên tục, ngắt mạch: fail ngay trong một khoảng thời gian thay vì tiếp tục chờ timeout, để không làm cạn thread và không đè thêm tải lên service đang lỗi. Hết thời gian thì thử lại vài request (half-open).
 :::
@@ -225,8 +225,8 @@ Khi service phía sau lỗi liên tục, ngắt mạch: fail ngay trong một kh
 | Loại | Dùng khi |
 |---|---|
 | `IMemoryCache` | Một instance, dữ liệu nhỏ, chấp nhận mỗi server một bản |
-| `IDistributedCache` (Redis, SQL) | Nhiều instance cần thấy cùng dữ liệu, cache sống qua lần deploy |
-| `HybridCache` (.NET 9) | Gộp cả hai tầng, có sẵn chống stampede |
+| `IDistributedCache` (<T>Redis</T>, SQL) | Nhiều instance cần thấy cùng dữ liệu, cache sống qua lần deploy |
+| `HybridCache` (.NET 9) | Gộp cả hai tầng, có sẵn chống <T>cache stampede</T> |
 | Output caching (.NET 7) | Cache nguyên response của endpoint phía server |
 :::
 
@@ -237,7 +237,7 @@ Cache của một key nóng vừa hết hạn, hàng trăm request cùng lúc th
 
 **"Khó nhất của cache là gì?"**
 
-Invalidation: khi dữ liệu gốc đổi thì xóa cache thế nào cho đúng và kịp. Trả lời thực tế: chọn TTL theo mức độ chấp nhận dữ liệu cũ của nghiệp vụ, và xóa chủ động ở luồng ghi với dữ liệu quan trọng.
+Invalidation: khi dữ liệu gốc đổi thì xóa cache thế nào cho đúng và kịp. Trả lời thực tế: chọn <T>TTL</T> theo mức độ chấp nhận dữ liệu cũ của nghiệp vụ, và xóa chủ động ở luồng ghi với dữ liệu quan trọng.
 :::
 
 ## "API chậm dần khi traffic tăng, bạn xử lý thế nào?" <Badge type="warning" text="câu tình huống" /> {#slow-api}
@@ -247,11 +247,11 @@ Invalidation: khi dữ liệu gốc đổi thì xóa cache thế nào cho đúng
 :::
 
 ::: info Các bước
-1. **Khoanh vùng**: endpoint nào, từ lúc nào, có trùng với deploy hay đợt traffic nào không. Xem trace (Application Insights, OpenTelemetry) để biết thời gian nằm ở code, DB hay API ngoài.
-2. **Database** là nghi phạm số một: query chậm, thiếu index, N+1, lock/blocking. Xem execution plan, Query Store.
-3. **Thread pool starvation**: CPU thấp mà latency cao, queue length tăng. Tìm `.Result`/`.Wait()` và I/O đồng bộ.
+1. **Khoanh vùng**: endpoint nào, từ lúc nào, có trùng với deploy hay đợt traffic nào không. Xem trace (<T>Application Insights</T>, <T>OpenTelemetry</T>) để biết thời gian nằm ở code, DB hay API ngoài.
+2. **Database** là nghi phạm số một: query chậm, thiếu index, <T>N+1</T>, lock/blocking. Xem <T>execution plan</T>, Query Store.
+3. <T>Thread pool starvation</T>: CPU thấp mà latency cao, queue length tăng. Tìm `.Result`/`.Wait()` và I/O đồng bộ.
 4. **Dependency ngoài**: API bên thứ ba chậm kéo theo mình. Thêm timeout, circuit breaker, cache.
-5. **Memory/GC**: % time in GC cao, cấp phát lớn.
+5. **Memory/<T>GC</T>**: % time in GC cao, cấp phát lớn.
 6. Sau khi đã sửa được nút thắt: cache, phân trang, đẩy việc nặng ra background, rồi mới tới scale ngang.
 :::
 

@@ -10,7 +10,7 @@ Config thành class có kiểu, được validate và inject qua DI. Đọc trư
 
 ## 1. Từ section config tới class có kiểu
 
-**Options pattern**: bind một **section** của `IConfiguration` vào một class (POCO), rồi inject class đó qua DI dưới dạng `IOptions<T>` (hoặc Snapshot / Monitor). Thay cho `ConfigurationManager.AppSettings["MinAmount"]` kiểu Web.config: không còn chuỗi magic, không tự parse, có validate.
+<T>Options pattern</T> bind một **section** của <T>IConfiguration</T> vào một <T>POCO</T>, rồi inject class đó qua <T>DI</T> dưới dạng `IOptions<T>` (hoặc Snapshot / Monitor). Nó thay cho `ConfigurationManager.AppSettings["MinAmount"]` kiểu <T>Web.config</T>: không còn <T>magic string</T>, không tự parse, có validate.
 
 <div class="fig">
 <svg viewBox="0 0 720 150" role="img" aria-label="Section Payout trong appsettings được bind vào PayoutOptions, validate, rồi inject vào service"><g font-size="13" class="mono" text-anchor="middle"><rect class="box" x="10" y="30" width="150" height="70" rx="8"/><text x="85" y="56">appsettings.json</text><text x="85" y="76" font-size="12" class="muted">"Payout": { … }</text><rect class="boxAcc" x="200" y="30" width="150" height="70" rx="8"/><text x="275" y="56">PayoutOptions</text><text x="275" y="76" font-size="12" class="accT">bind theo tên property</text><rect class="boxOk" x="390" y="30" width="150" height="70" rx="8"/><text x="465" y="56">validate</text><text x="465" y="76" font-size="12" class="okT">[Range], [Required]</text><rect class="box" x="580" y="30" width="130" height="70" rx="8"/><text x="645" y="56">PayoutService</text><text x="645" y="76" font-size="11" class="muted">IOptions&lt;PayoutOptions&gt;</text></g><line class="ln" x1="160" y1="65" x2="196" y2="65" marker-end="url(#oInk)"/><line class="ln" x1="350" y1="65" x2="386" y2="65" marker-end="url(#oInk)"/><line class="ln" x1="540" y1="65" x2="576" y2="65" marker-end="url(#oInk)"/><g font-size="12" text-anchor="middle" class="mono muted"><text x="180" y="128">BindConfiguration</text><text x="370" y="128">ValidateDataAnnotations</text><text x="560" y="128">inject qua DI</text></g></svg>
@@ -60,7 +60,7 @@ Từng mắt xích:
 
 - **`AddOptions<T>()`**: đăng ký hạ tầng options, trả về **`OptionsBuilder<T>`** để nối tiếp cấu hình.
 - **`BindConfiguration(section)`**: lấy `IConfiguration` từ DI, bind section vào `T` theo tên property (không phân biệt hoa thường). Key thiếu thì property giữ giá trị mặc định; sai kiểu (`"MinAmount": "abc"`) thì ném lỗi lúc bind.
-- **`ValidateDataAnnotations()`**: chạy `[Range]`, `[Required]`... trên object vừa bind.
+- **`ValidateDataAnnotations()`**: chạy các <T>data annotations</T> như `[Range]`, `[Required]` trên object vừa bind.
 - **`ValidateOnStart()`**: chuyển thời điểm validate về lúc khởi động. Xem mục 2.
 
 `[Range]` không nhận `decimal` trực tiếp vì tham số của attribute không được là `decimal`, nên phải viết `Range(typeof(decimal), "min", "max")`. `MinimumIsExclusive = true` (.NET 8+) loại trừ cận dưới: `MinAmount = 0` bị từ chối. Cận trên đặt hợp lý (không phải `decimal.MaxValue`) để chặn gõ thừa số 0.
@@ -245,7 +245,7 @@ Lưu `MinAmount` trong bảng có `EffectiveFrom`: Finance tự đổi, có audi
 ::: warning Bẫy & follow-up
 **"`OnChange` có bị gọi hai lần không?"**
 
-Có thể: file watcher của hệ điều hành hay bắn nhiều event cho một lần lưu file. Handler trong `OnChange` phải chịu được bị gọi lặp (idempotent), không gửi email hay ghi DB mỗi lần gọi.
+Có thể: file watcher của hệ điều hành hay bắn nhiều event cho một lần lưu file. Handler trong `OnChange` phải chịu được bị gọi lặp (<T>idempotent</T>), không gửi email hay ghi DB mỗi lần gọi.
 :::
 
 ## Hỏi đáp

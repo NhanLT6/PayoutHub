@@ -30,7 +30,13 @@ const zones = [
 ]
 
 // Cột nội dung ở 1440px rộng khoảng 830px: viewBox ~1056 nên chữ 15px hiện ra khoảng 12px.
-const W = 76, W_LAST = 100, GAP = 5, ZGAP = 10, X0 = 62, GY = 66, GH = 112
+const W = 76,
+  W_LAST = 100,
+  GAP = 5,
+  ZGAP = 10,
+  X0 = 62,
+  GY = 66,
+  GH = 112
 const gw = (i: number) => (i === gates.length - 1 ? W_LAST : W)
 const pos: number[] = []
 let x = X0
@@ -39,8 +45,9 @@ gates.forEach((g, i) => {
   pos.push(x)
 })
 const zoneBox = zones.map((z, zi) => {
-  const idx = gates.map((g, i) => (g.zone === zi ? i : -1)).filter(i => i >= 0)
-  const x0 = pos[idx[0]], x1 = pos[idx[idx.length - 1]] + gw(idx[idx.length - 1])
+  const idx = gates.map((g, i) => (g.zone === zi ? i : -1)).filter((i) => i >= 0)
+  const x0 = pos[idx[0]],
+    x1 = pos[idx[idx.length - 1]] + gw(idx[idx.length - 1])
   return { ...z, x: x0 - 4, w: x1 - x0 + 8 }
 })
 const appEnd = zoneBox[2].x + zoneBox[2].w
@@ -48,16 +55,29 @@ const dbX = pos[pos.length - 1] + W_LAST + 12
 const VW = dbX + 60
 const stroke = (c: string) => (c === 'gray' ? 'var(--vp-c-text-2)' : `var(--vp-c-${c}-1)`)
 const soft = (c: string) => `var(--vp-c-${c}-soft)`
-const kindColor: Record<Kind, string> = { deny: 'var(--vp-c-red-1)', allow: 'var(--vp-c-green-1)', limit: 'var(--vp-c-warning-1)' }
-const kindText: Record<Kind, string> = { deny: 'blocklist (pattern)', allow: 'allowlist / deny by default', limit: 'threshold / behavior' }
+const kindColor: Record<Kind, string> = {
+  deny: 'var(--vp-c-red-1)',
+  allow: 'var(--vp-c-green-1)',
+  limit: 'var(--vp-c-warning-1)',
+}
+const kindText: Record<Kind, string> = {
+  deny: 'blocklist (pattern)',
+  allow: 'allowlist / deny by default',
+  limit: 'threshold / behavior',
+}
 </script>
 
 <template>
   <div class="so-wrap">
-    <svg class="so" :viewBox="`0 0 ${VW} 340`" role="img" aria-label="Bản đồ tổng quan: 11 lớp chiều vào, 3 lớp chiều ra">
+    <svg
+      class="so"
+      :viewBox="`0 0 ${VW} 340`"
+      role="img"
+      aria-label="Bản đồ tổng quan: 11 lớp chiều vào, 3 lớp chiều ra"
+    >
       <!-- nhãn làn -->
-      <text class="t tb lane-t" :x="X0 - 4" y="20">INBOUND · request →  (nặng: 11 lớp)</text>
-      <text class="t tb lane-t" :x="X0 - 4" y="240">← OUTBOUND · response  (nhẹ)</text>
+      <text class="t tb lane-t" :x="X0 - 4" y="20">INBOUND · request → (nặng: 11 lớp)</text>
+      <text class="t tb lane-t" :x="X0 - 4" y="240">← OUTBOUND · response (nhẹ)</text>
 
       <!-- vùng -->
       <g v-for="z in zoneBox" :key="z.label">
@@ -84,11 +104,32 @@ const kindText: Record<Kind, string> = { deny: 'blocklist (pattern)', allow: 'al
       <a v-for="(g, i) in gates" :key="g.n" class="gate" :href="`#step-${g.n}`">
         <title>Bước {{ g.n }}: {{ g.a }} {{ g.b }} (chặn {{ g.blocks }})</title>
         <rect class="gate-bg" :x="pos[i]" :y="GY" :width="gw(i)" :height="GH" rx="7" />
-        <rect class="gate-box" :x="pos[i]" :y="GY" :width="gw(i)" :height="GH" rx="7" :style="{ fill: soft(g.color), stroke: stroke(g.color) }" />
+        <rect
+          class="gate-box"
+          :x="pos[i]"
+          :y="GY"
+          :width="gw(i)"
+          :height="GH"
+          rx="7"
+          :style="{ fill: soft(g.color), stroke: stroke(g.color) }"
+        />
         <circle :cx="pos[i] + 15" :cy="GY + 16" r="10" :style="{ fill: stroke(g.color) }" />
         <text class="t s tb on" :x="pos[i] + 15" :y="GY + 20" text-anchor="middle">{{ g.n }}</text>
-        <rect v-if="g.kind === 'deny'" :x="pos[i] + gw(i) - 18" :y="GY + 10" width="10" height="10" :style="{ fill: kindColor.deny }" />
-        <circle v-else-if="g.kind === 'allow'" :cx="pos[i] + gw(i) - 13" :cy="GY + 15" r="5.5" :style="{ fill: kindColor.allow }" />
+        <rect
+          v-if="g.kind === 'deny'"
+          :x="pos[i] + gw(i) - 18"
+          :y="GY + 10"
+          width="10"
+          height="10"
+          :style="{ fill: kindColor.deny }"
+        />
+        <circle
+          v-else-if="g.kind === 'allow'"
+          :cx="pos[i] + gw(i) - 13"
+          :cy="GY + 15"
+          r="5.5"
+          :style="{ fill: kindColor.allow }"
+        />
         <path v-else :d="`M${pos[i] + gw(i) - 13} ${GY + 8} l7 7 l-7 7 l-7 -7 z`" :style="{ fill: kindColor.limit }" />
         <text class="t tb cue" :x="pos[i] + gw(i) / 2" :y="GY + 50" text-anchor="middle">{{ g.a }}</text>
         <text class="t cue2" :x="pos[i] + gw(i) / 2" :y="GY + 68" text-anchor="middle">{{ g.b }}</text>
@@ -126,7 +167,15 @@ const kindText: Record<Kind, string> = { deny: 'blocklist (pattern)', allow: 'al
       <a class="gate" href="#step-13">
         <title>Bước 13: audit log và alert</title>
         <rect class="gate-bg" :x="zoneBox[3].x" y="222" :width="VW - zoneBox[3].x - 8" height="66" rx="7" />
-        <rect class="gate-box" :x="zoneBox[3].x" y="222" :width="VW - zoneBox[3].x - 8" height="66" rx="7" style="fill: var(--vp-c-default-soft); stroke: var(--vp-c-text-2)" />
+        <rect
+          class="gate-box"
+          :x="zoneBox[3].x"
+          y="222"
+          :width="VW - zoneBox[3].x - 8"
+          height="66"
+          rx="7"
+          style="fill: var(--vp-c-default-soft); stroke: var(--vp-c-text-2)"
+        />
         <path :d="`M${VW - 24} 230 l7 7 l-7 7 l-7 -7 z`" :style="{ fill: kindColor.limit }" />
         <text class="t s tb" :x="zoneBox[3].x + 10" y="244">13 · audit + alert</text>
         <text class="t xs muted" :x="zoneBox[3].x + 10" y="262">who · what · when</text>
@@ -157,33 +206,114 @@ const kindText: Record<Kind, string> = { deny: 'blocklist (pattern)', allow: 'al
   overflow-x: auto;
 }
 /* Rộng tối thiểu để chữ đọc được; màn hình hẹp thì cuộn ngang bên trong khung, không cuộn cả trang */
-.so { display: block; width: 100%; min-width: 760px; height: auto; }
+.so {
+  display: block;
+  width: 100%;
+  min-width: 760px;
+  height: auto;
+}
 
 /* class + data-v thắng `.vp-doc svg text` trong custom.css */
-.so .t { font-family: var(--vp-font-family-base); font-size: 14px; fill: var(--vp-c-text-1); }
-.so .t.s { font-size: 13.5px; }
-.so .t.xs { font-size: 12.5px; }
-.so .t.tb { font-weight: 700; }
-.so .t.muted { fill: var(--vp-c-text-2); }
-.so .t.bad { fill: var(--vp-c-red-1); }
-.so .t.on { fill: var(--vp-c-white); }
-.so .t.cue { font-size: 15px; }
-.so .t.cue2 { font-size: 13px; font-family: var(--vp-font-family-mono); fill: var(--vp-c-text-2); }
-.so .t.lane-t { font-size: 12.5px; letter-spacing: .06em; fill: var(--vp-c-text-2); }
+.so .t {
+  font-family: var(--vp-font-family-base);
+  font-size: 14px;
+  fill: var(--vp-c-text-1);
+}
+.so .t.s {
+  font-size: 13.5px;
+}
+.so .t.xs {
+  font-size: 12.5px;
+}
+.so .t.tb {
+  font-weight: 700;
+}
+.so .t.muted {
+  fill: var(--vp-c-text-2);
+}
+.so .t.bad {
+  fill: var(--vp-c-red-1);
+}
+.so .t.on {
+  fill: var(--vp-c-white);
+}
+.so .t.cue {
+  font-size: 15px;
+}
+.so .t.cue2 {
+  font-size: 13px;
+  font-family: var(--vp-font-family-mono);
+  fill: var(--vp-c-text-2);
+}
+.so .t.lane-t {
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  fill: var(--vp-c-text-2);
+}
 
-.so .zone { fill: var(--vp-c-bg); stroke: var(--vp-c-divider); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.so .lane-in { stroke: var(--vp-c-brand-1); stroke-width: 12; opacity: .28; stroke-linecap: round; }
-.so .head-in { fill: var(--vp-c-brand-1); opacity: .5; }
-.so .lane-out { stroke: var(--vp-c-text-3); stroke-width: 2; fill: none; }
-.so .head-out { fill: var(--vp-c-text-3); }
-.so .tap { stroke: var(--vp-c-text-3); stroke-width: 1.5; stroke-dasharray: 3 4; }
-.so .end { fill: var(--vp-c-indigo-soft); stroke: var(--vp-c-indigo-1); stroke-width: 1.5; }
-.so .db { fill: var(--vp-c-red-soft); stroke: var(--vp-c-red-1); stroke-width: 1.5; }
-.so .gate-bg { fill: var(--vp-c-bg); }
-.so .gate-box { stroke-width: 1.6; }
-.so .out-box { fill: var(--vp-c-default-soft); stroke: var(--vp-c-text-3); stroke-width: 1.2; }
-.so .sep { stroke: var(--vp-c-divider); stroke-width: 1; }
-.so .gate { cursor: pointer; text-decoration: none; }
-.so .gate:hover .gate-box, .so .gate:hover .out-box { stroke-width: 3; }
-.so .gate:focus-visible { outline: 2px solid var(--vp-c-brand-1); }
+.so .zone {
+  fill: var(--vp-c-bg);
+  stroke: var(--vp-c-divider);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.so .lane-in {
+  stroke: var(--vp-c-brand-1);
+  stroke-width: 12;
+  opacity: 0.28;
+  stroke-linecap: round;
+}
+.so .head-in {
+  fill: var(--vp-c-brand-1);
+  opacity: 0.5;
+}
+.so .lane-out {
+  stroke: var(--vp-c-text-3);
+  stroke-width: 2;
+  fill: none;
+}
+.so .head-out {
+  fill: var(--vp-c-text-3);
+}
+.so .tap {
+  stroke: var(--vp-c-text-3);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+.so .end {
+  fill: var(--vp-c-indigo-soft);
+  stroke: var(--vp-c-indigo-1);
+  stroke-width: 1.5;
+}
+.so .db {
+  fill: var(--vp-c-red-soft);
+  stroke: var(--vp-c-red-1);
+  stroke-width: 1.5;
+}
+.so .gate-bg {
+  fill: var(--vp-c-bg);
+}
+.so .gate-box {
+  stroke-width: 1.6;
+}
+.so .out-box {
+  fill: var(--vp-c-default-soft);
+  stroke: var(--vp-c-text-3);
+  stroke-width: 1.2;
+}
+.so .sep {
+  stroke: var(--vp-c-divider);
+  stroke-width: 1;
+}
+.so .gate {
+  cursor: pointer;
+  text-decoration: none;
+}
+.so .gate:hover .gate-box,
+.so .gate:hover .out-box {
+  stroke-width: 3;
+}
+.so .gate:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+}
 </style>

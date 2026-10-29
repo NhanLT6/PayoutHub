@@ -16,13 +16,13 @@ Giải phóng thread trong lúc chờ I/O (DB, HTTP, file), để thread đó ph
 :::
 
 ::: info Bản chất
-|  | I/O-bound | CPU-bound |
+|  | <T k="io-bound">I/O-bound</T> | <T k="cpu-bound">CPU-bound</T> |
 |---|---|---|
 | Ví dụ | Query DB, gọi API, đọc file | Tính toán, nén, resize ảnh, parse lớn |
 | Thời gian đi đâu | Chờ thiết bị/mạng trả lời | CPU đang tính |
 | Công cụ | `async`/`await` với API async thật | `Parallel`, PLINQ, `Task.Run` (ở app UI) |
 
-Trong lúc chờ một I/O async, **không có thread nào bị block** để chờ cả. Hệ điều hành báo lại khi dữ liệu về (I/O completion port), lúc đó mới cần một thread để chạy tiếp phần code sau `await`.
+Trong lúc chờ một I/O async, **không có thread nào bị block** để chờ cả. Hệ điều hành báo lại khi dữ liệu về (<T>IOCP</T>), lúc đó mới cần một thread để chạy tiếp phần code sau `await`.
 :::
 
 ::: details Ở dự án thật
@@ -32,15 +32,15 @@ Một page Web Forms đồng bộ gọi API bên ngoài mất 3 giây giữ nguy
 ## `await` thực sự chạy thế nào? <Badge type="warning" text="câu &quot;under the hood&quot;" /> {#how-await-works}
 
 ::: tip Trả lời nhanh
-Compiler biến method `async` thành một state machine. Tại mỗi `await`, nếu task chưa xong, method lưu lại trạng thái, đăng ký "phần còn lại" làm continuation rồi trả về một Task chưa hoàn thành cho caller, trả thread lại. Khi task xong, continuation được lên lịch chạy tiếp từ đúng chỗ đã dừng.
+Compiler biến method `async` thành một <T>state machine</T>. Tại mỗi `await`, nếu task chưa xong, method lưu lại trạng thái, đăng ký "phần còn lại" làm <T>continuation</T> rồi trả về một <T>Task</T> chưa hoàn thành cho caller, trả thread lại. Khi task xong, continuation được lên lịch chạy tiếp từ đúng chỗ đã dừng.
 :::
 
 ::: info Bản chất: từng bước
 1. Compiler sinh một struct implement `IAsyncStateMachine`; biến local trở thành field của nó.
 2. Method chạy **đồng bộ** trên thread của caller cho tới `await` đầu tiên.
-3. Tại `await`: lấy awaiter của task. Nếu `IsCompleted` đã là true thì chạy tiếp luôn, không đổi thread (fast path).
+3. Tại `await`: lấy <T>awaiter</T> của task. Nếu `IsCompleted` đã là true thì chạy tiếp luôn, không đổi thread (<T>fast path</T>).
 4. Nếu chưa xong: lưu số state, đăng ký continuation, return. Lúc này state machine mới bị đưa lên heap.
-5. Khi task xong: continuation được post về **SynchronizationContext** đã capture (UI thread, ASP.NET Framework); nếu không có thì chạy trên thread pool.
+5. Khi task xong: continuation được post về <T>SynchronizationContext</T> đã capture (UI thread, ASP.NET Framework); nếu không có thì chạy trên thread pool.
 6. State machine nhảy tới đúng state, chạy tiếp; cuối cùng set kết quả hoặc exception vào Task đã trả về cho caller.
 :::
 
@@ -67,7 +67,7 @@ Compiler cảnh báo CS1998, method chạy đồng bộ hoàn toàn mà vẫn t�
 ::: info Bản chất
 - Ở app UI: `Task.Run` để việc nặng không làm đơ UI thread. Hợp lý.
 - Ở ASP.NET Core: request vốn đã chạy trên thread pool. Bọc `Task.Run` quanh I/O hay "cho nhanh" chỉ là đổi thread này lấy thread khác cộng thêm overhead.
-- Thread pool thêm thread khá chậm khi bị thiếu. Đây là gốc của chuyện thread pool starvation (xem câu deadlock bên dưới).
+- <T>Thread pool</T> thêm thread khá chậm khi bị thiếu. Đây là gốc của chuyện <T>thread pool starvation</T> (xem câu deadlock bên dưới).
 :::
 
 ::: warning Bẫy & follow-up
@@ -94,7 +94,7 @@ public class PayoutWorker(Channel<int> queue, IServiceScopeFactory scopes) : Bac
 ## Concurrency vs parallelism {#concurrency-vs-parallelism}
 
 ::: tip Trả lời nhanh
-**Concurrency**: nhiều việc cùng đang dở dang, có thể xen kẽ nhau trên ít thread (thường là chờ I/O). **Parallelism**: nhiều việc thật sự chạy cùng lúc trên nhiều core (việc CPU). Parallelism là một dạng của concurrency, nhưng không phải ngược lại.
+<T>Concurrency</T>: nhiều việc cùng đang dở dang, có thể xen kẽ nhau trên ít thread (thường là chờ I/O). <T>Parallelism</T>: nhiều việc thật sự chạy cùng lúc trên nhiều core (việc CPU). Parallelism là một dạng của concurrency, nhưng không phải ngược lại.
 :::
 
 ::: info Bản chất
@@ -124,13 +124,13 @@ Sai công cụ: nó dành cho việc CPU, và với code async bên trong sẽ t
 
 **"Chạy 3 query song song trên cùng một DbContext?"**
 
-Lỗi "A second operation was started on this context". DbContext không thread-safe. Mỗi task phải có context riêng (qua `IDbContextFactory`), hoặc chạy tuần tự.
+Lỗi "A second operation was started on this context". <T>DbContext</T> không thread-safe. Mỗi task phải có context riêng (qua `IDbContextFactory`), hoặc chạy tuần tự.
 :::
 
 ## SynchronizationContext và `ConfigureAwait(false)` {#configureawait}
 
 ::: tip Trả lời nhanh
-SynchronizationContext quyết định phần code sau `await` chạy ở đâu. App UI (WinForms, WPF) và ASP.NET Framework có context riêng; ASP.NET Core và console app thì không có. `ConfigureAwait(false)` nghĩa là "không cần quay lại context cũ", chạy tiếp trên thread pool là được.
+<T>SynchronizationContext</T> quyết định phần code sau `await` chạy ở đâu. App UI (WinForms, WPF) và ASP.NET Framework có context riêng; ASP.NET Core và console app thì không có. <T k="configureawait">ConfigureAwait(false)</T> nghĩa là "không cần quay lại context cũ", chạy tiếp trên thread pool là được.
 :::
 
 ::: info Bản chất
@@ -161,7 +161,7 @@ Không. Nếu task đó đã xong sẵn, code chạy tiếp đồng bộ và v�
 ::: tip Trả lời nhanh
 Cần đủ 3 điều kiện cùng lúc:
 
-1. Có một SynchronizationContext chỉ cho **một thread chạy tại một thời điểm** (UI, ASP.NET Framework).
+1. Có một <T>SynchronizationContext</T> chỉ cho **một thread chạy tại một thời điểm** (UI, ASP.NET Framework).
 2. Code **block đồng bộ** để chờ một async method: `.Result`, `.Wait()`, `.GetAwaiter().GetResult()`.
 3. Bên trong async method đó có `await` **không** có `ConfigureAwait(false)`, nên continuation muốn quay về đúng context đó.
 
@@ -197,7 +197,7 @@ public async Task<Report> GetReportAsync()
 ::: warning Bẫy & follow-up
 **"ASP.NET Core có bị deadlock kiểu này không?"**
 
-Không, vì không có SynchronizationContext. Nhưng `.Result` vẫn xấu: nó block một thread pool thread. Dưới tải, nhiều request cùng block gây **thread pool starvation**: latency tăng vọt, request timeout, trong khi CPU thấp. Nhận biết qua `dotnet-counters`: _ThreadPool Queue Length_ tăng, _ThreadPool Thread Count_ tăng dần đều.
+Không, vì không có SynchronizationContext. Nhưng `.Result` vẫn xấu: nó block một thread pool thread. Dưới tải, nhiều request cùng block gây <T>thread pool starvation</T>: latency tăng vọt, request timeout, trong khi CPU thấp. Nhận biết qua `dotnet-counters`: _ThreadPool Queue Length_ tăng, _ThreadPool Thread Count_ tăng dần đều.
 
 **"`.GetAwaiter().GetResult()` khác `.Result` chỗ nào?"**
 
@@ -207,7 +207,7 @@ Cùng block, cùng deadlock. Khác duy nhất: ném exception gốc thay vì b�
 ## `async void` có vấn đề gì? {#async-void}
 
 ::: tip Trả lời nhanh
-Chỉ dùng cho event handler. Caller không await được nên không biết khi nào xong, và exception bên trong không bắt được từ phía caller: nó bị ném lên SynchronizationContext hoặc thread pool, có thể làm sập process.
+Chỉ dùng cho event handler. Caller không await được nên không biết khi nào xong, và exception bên trong không bắt được từ phía caller: nó bị ném lên <T>SynchronizationContext</T> hoặc thread pool, có thể làm sập process.
 :::
 
 ::: details Ở dự án thật
@@ -298,7 +298,7 @@ Có thể để lại dữ liệu ghi dở. Với bước commit cuối hoặc t
 ## `ValueTask` vs `Task` {#valuetask}
 
 ::: tip Trả lời nhanh
-`ValueTask` tránh cấp phát một object Task khi kết quả thường có sẵn ngay (ví dụ cache hit). Mặc định vẫn dùng `Task`; `ValueTask` chỉ cho hot path hoặc library.
+<T>ValueTask</T> tránh cấp phát một object Task khi kết quả thường có sẵn ngay (ví dụ cache hit). Mặc định vẫn dùng `Task`; `ValueTask` chỉ cho hot path hoặc library.
 :::
 
 ::: warning Bẫy & follow-up
@@ -310,7 +310,7 @@ Chỉ được await **một lần**; không await từ hai nơi cùng lúc; kh�
 ## Thread safety: race condition và các công cụ đồng bộ {#thread-safety}
 
 ::: tip Trả lời nhanh
-Race condition xảy ra khi nhiều thread đọc-sửa-ghi cùng dữ liệu và kết quả phụ thuộc vào thứ tự chạy. Dạng hay gặp nhất là "kiểm tra rồi mới làm" (check-then-act).
+<T>Race condition</T> xảy ra khi nhiều thread đọc-sửa-ghi cùng dữ liệu và kết quả phụ thuộc vào thứ tự chạy. Dạng hay gặp nhất là "kiểm tra rồi mới làm" (check-then-act).
 :::
 
 ::: info Bản chất

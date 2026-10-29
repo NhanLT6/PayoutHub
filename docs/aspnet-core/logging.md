@@ -10,7 +10,7 @@ Structured logging với `ILogger<T>`: log thành dữ liệu lọc được, kh
 
 ## 1. Message template và string interpolation {#message-template}
 
-**Structured logging**: mỗi dòng log là một bản ghi có field, không chỉ là một chuỗi. **Message template** là chuỗi cố định có placeholder (`{PayoutId}`); giá trị truyền kèm thành **field riêng** mà hệ thống log (Seq, Elastic, Application Insights) index được.
+Với <T>structured logging</T>, mỗi dòng log là bản ghi có field, không chỉ là một chuỗi. Bạn viết một <T>message template</T> cố định, giá trị truyền kèm thành **field riêng** để hệ thống log (<T>Seq</T>, Elastic, <T>Application Insights</T>) index được.
 
 ```csharp
 // Đúng: PayoutId và Amount là field riêng, lọc được
@@ -29,11 +29,11 @@ logger.LogInformation($"Payout {payout.Id} approved, amount {payout.Amount}");
 </template>
 </Compare>
 
-**Placeholder bind theo vị trí, không theo tên.** Tên trong `{}` chỉ là tên field. Đảo thứ tự tham số là log sai âm thầm: `{PayoutId}` mang giá trị của `Amount`. Analyzer **CA2017** báo khi số placeholder và số tham số lệch nhau, nhưng không bắt được đảo thứ tự.
+**Placeholder bind theo vị trí, không theo tên.** Tên trong `{}` chỉ là tên field. Đảo thứ tự tham số là log sai âm thầm: `{PayoutId}` mang giá trị của `Amount`. <T>Analyzer</T> **CA2017** báo khi số placeholder và số tham số lệch nhau, nhưng không bắt được đảo thứ tự.
 
 **Kiểu dữ liệu giữ nguyên.** Truyền `decimal` thì field là số. Truyền chuỗi đọc từ `IConfiguration` thì field là string, và `MinAmount > 500` có thể so sánh sai.
 
-**Category**: `ILogger<T>` lấy tên đầy đủ của `T` làm category (`PayoutHub.Api.GlobalExceptionHandler`). `Logging:LogLevel` lọc theo **tiền tố** category. PayoutHub, `appsettings.Development.json`:
+`ILogger<T>` lấy tên đầy đủ của `T` làm <T k="log category">category</T> (`PayoutHub.Api.GlobalExceptionHandler`). `Logging:LogLevel` lọc theo **tiền tố** category. PayoutHub, `appsettings.Development.json`:
 
 ```json
 {
@@ -63,7 +63,7 @@ builder.Logging.AddJsonConsole(options =>
 
 `WebApplication.CreateBuilder` đã thêm sẵn console provider với formatter dạng text. `AddJsonConsole` đổi formatter của provider đó sang JSON, nên mỗi dòng log là một object JSON (đúng dạng mà Seq/Elastic nuốt thẳng).
 
-**Log scope**: một bộ field gắn vào **mọi** dòng log ghi ra trong một đoạn code, mà không phải truyền vào từng lời gọi log. Mở bằng `logger.BeginScope(...)`, đóng khi `Dispose`.
+Để mọi dòng log trong một đoạn code mang chung field (vd id của request), dùng <T>log scope</T>: mở bằng `logger.BeginScope(...)`, đóng khi `Dispose`, không phải truyền field vào từng lời gọi log.
 
 <div class="fig">
 <svg viewBox="0 0 720 270" role="img" aria-label="Scope của request chứa TraceId và RequestPath; scope tự mở chứa PayoutId; dòng log bên trong mang cả hai"><rect class="boxAcc" x="20" y="16" width="680" height="236" rx="10"/><text x="36" y="40" font-size="13" font-weight="600" class="accT">Scope do ASP.NET Core mở cho mỗi request</text><text x="36" y="60" font-size="12" class="mono">TraceId, SpanId, ParentId, RequestId, RequestPath</text><rect class="boxOk" x="48" y="80" width="624" height="96" rx="10"/><text x="64" y="104" font-size="13" font-weight="600" class="okT">using (logger.BeginScope("Payout {PayoutId}", 42))</text><rect class="box" x="76" y="118" width="568" height="44" rx="6"/><text x="92" y="137" font-size="12" class="mono">logger.LogInformation("Approved")</text><text x="92" y="153" font-size="12" class="muted">dòng log mang: TraceId, RequestPath, PayoutId</text><rect class="box" x="48" y="192" width="624" height="44" rx="6"/><text x="64" y="211" font-size="12" class="mono">logger.LogWarning("Slow request")</text><text x="64" y="227" font-size="12" class="muted">ngoài scope tự mở: chỉ mang TraceId, RequestPath</text></svg>
@@ -94,7 +94,7 @@ ASP.NET Core tự mở scope cho mỗi request. `TraceId`/`SpanId`/`ParentId` c�
 <p class="fig-caption">Response chỉ lộ id, không lộ chi tiết lỗi. Chi tiết nằm ở server log. Hình đầy đủ phía client/server ở <a :href="$withBase('/aspnet-core/exception-handling')">Exception handling</a>.</p>
 </div>
 
-Trong .NET, một span là một **`System.Diagnostics.Activity`**. ASP.NET Core tạo Activity cho mỗi request; ProblemDetails mặc định ghi `traceId` từ Activity đó, scope của logger cũng lấy từ Activity đó, nên hai bên khớp nhau.
+Trong .NET, một span là một <T>Activity</T>. ASP.NET Core tạo Activity cho mỗi request; ProblemDetails mặc định ghi `traceId` từ Activity đó, scope của logger cũng lấy từ Activity đó, nên hai bên khớp nhau.
 
 ## 4. Dễ nhầm
 
@@ -131,7 +131,7 @@ PayoutHub: `GlobalExceptionHandler` log bằng `LogError(exception, "Error while
 ::: warning Bẫy & follow-up
 **"Log nhiều thì có chậm không? Mức senior làm gì?"**
 
-`[LoggerMessage]` source generator: khai báo method `partial`, compiler sinh code check `IsEnabled` trước, không boxing, không parse template lúc chạy, và báo lỗi compile nếu placeholder không khớp tham số. Analyzer CA1848 gợi ý chuyển sang cách này.
+`[LoggerMessage]` <T>source generator</T>: khai báo method `partial`, compiler sinh code check `IsEnabled` trước, không <T>boxing</T>, không parse template lúc chạy, và báo lỗi compile nếu placeholder không khớp tham số. <T>Analyzer</T> CA1848 gợi ý chuyển sang cách này.
 
 ```csharp
 public static partial class PayoutLog
@@ -145,13 +145,13 @@ public static partial class PayoutLog
 
 **"Cái gì không được log?"**
 
-Mật khẩu, token, số thẻ, số tài khoản ngân hàng của affiliate, thông tin cá nhân nhạy cảm. Cẩn thận khi log nguyên object request.
+Mật khẩu, token, số thẻ, số tài khoản ngân hàng của affiliate và mọi <T>PII</T>. Cẩn thận khi log nguyên object request.
 :::
 
 ### User báo lỗi 500, bạn tìm log tương ứng thế nào? {#find-log-500}
 
 ::: tip Trả lời nhanh
-ProblemDetails trả về `traceId` (W3C traceparent). User gửi id đó khi báo lỗi; mình lấy phần trace id 32 hex ở giữa và tìm theo field `TraceId` trong hệ thống log. Điều kiện: logger phải in scopes (`IncludeScopes = true`, mặc định tắt), vì `TraceId` nằm trong scope của request.
+ProblemDetails trả về `traceId` (W3C <T>traceparent</T>). User gửi id đó khi báo lỗi; mình lấy phần trace id 32 hex ở giữa và tìm theo field `TraceId` trong hệ thống log. Điều kiện: logger phải in scopes (`IncludeScopes = true`, mặc định tắt), vì `TraceId` nằm trong scope của request.
 :::
 
 ::: info Bản chất
@@ -159,7 +159,7 @@ Xem [hình các bước](#trace-a-500). Cấu trúc traceparent: `00-<trace-id 3
 :::
 
 ::: details Ở dự án thật
-PayoutHub: `AddJsonConsole(o => o.IncludeScopes = true)` trong `Program.cs`, gọi `/boom` là thấy cùng một trace id ở response và ở dòng log của `GlobalExceptionHandler`. Ở M4, `HttpClient` gọi FakeBank tự gửi header `traceparent`, nên một trace id nối log của PayoutHub với FakeBank (distributed tracing).
+PayoutHub: `AddJsonConsole(o => o.IncludeScopes = true)` trong `Program.cs`, gọi `/boom` là thấy cùng một trace id ở response và ở dòng log của `GlobalExceptionHandler`. Ở M4, `HttpClient` gọi FakeBank tự gửi header `traceparent`, nên một trace id nối log của PayoutHub với FakeBank (<T>distributed tracing</T>).
 :::
 
 ::: warning Bẫy & follow-up

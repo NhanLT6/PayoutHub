@@ -4,7 +4,7 @@ title: "Dependency Injection"
 
 # Dependency Injection
 
-Phần đầu là bài học kèm hình. [Câu hỏi phỏng vấn](#interview) nằm ở cuối, để ôn nhanh. Liên quan: [SOLID](/dotnet/oop-fundamentals#solid) (chữ D).
+Phần đầu là bài học kèm hình. [Câu hỏi phỏng vấn](#interview) nằm ở cuối, để ôn nhanh. Liên quan: <T>SOLID</T> (chữ D).
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="dInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="dOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="dBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
@@ -46,7 +46,7 @@ public class PayoutService(IPayoutRepository repo) { } // [!code highlight]
 
 ## 2. DI không cần container
 
-Container chỉ **tự động hoá** việc dưới đây. Tự viết tay một lần là hiểu container làm gì (gọi là **Pure DI**):
+Container chỉ **tự động hoá** việc dưới đây. Tự viết tay một lần là hiểu container làm gì (gọi là <T>Pure DI</T>):
 
 ```csharp
 // Composition root viết tay: Main tự new cả cây, từ lá lên gốc
@@ -57,7 +57,7 @@ var job     = new GeneratePayoutsJob(service);
 await job.RunAsync();
 ```
 
-Với 5 class thì viết tay được. Với 200 class, lifetime khác nhau và cần dispose đúng lúc, thì cần container.
+Với 5 class thì viết tay được. Chỗ duy nhất ghép object này gọi là <T>composition root</T>. Với 200 class, lifetime khác nhau và cần dispose đúng lúc, thì cần container.
 
 ## 3. Container bên trong làm gì
 
@@ -68,7 +68,7 @@ Với 5 class thì viết tay được. Với 200 class, lifetime khác nhau và
 
 **ServiceDescriptor**: một dòng đăng ký, gồm 3 thứ: _hỏi type nào_ (`IPayoutRepository`), _trả gì_ (class, factory hoặc instance có sẵn), _sống bao lâu_ (lifetime).
 
-**Resolve** là đệ quy: muốn tạo `PayoutsController` thì đọc constructor, thấy cần `IPayoutService`, đi resolve cái đó, cứ thế xuống tới lá. Tạo object từ lá ngược lên gốc.
+**Resolve** là đệ quy: muốn tạo `PayoutsController` thì đọc constructor, thấy cần `IPayoutService`, đi resolve cái đó, cứ thế xuống tới lá. Tạo object từ lá ngược lên gốc. Container dùng <T>reflection</T> để đọc constructor ở lần resolve đầu, các lần sau dùng công thức đã cache.
 
 <div class="fig">
 <svg viewBox="0 0 720 350" role="img" aria-label="Cây resolve PayoutsController, số là thứ tự tạo object"><g font-size="13" class="mono" text-anchor="middle"><rect class="box" x="250" y="16" width="220" height="48" rx="8"/><text x="360" y="37">PayoutsController</text><text x="360" y="55" font-size="11" class="muted">mỗi request</text><rect class="boxAcc" x="90" y="106" width="230" height="48" rx="8"/><text x="205" y="127">PayoutService</text><text x="205" y="145" font-size="11" class="accT">scoped · giữ trong scope</text><rect class="boxOk" x="400" y="106" width="230" height="48" rx="8"/><text x="515" y="127">ILogger&lt;PayoutsController&gt;</text><text x="515" y="145" font-size="11" class="okT">singleton · giữ ở root</text><rect class="boxAcc" x="20" y="196" width="220" height="48" rx="8"/><text x="130" y="217">SqlPayoutRepository</text><text x="130" y="235" font-size="11" class="accT">scoped</text><rect class="boxOk" x="260" y="196" width="170" height="48" rx="8"/><text x="345" y="217">TimeProvider</text><text x="345" y="235" font-size="11" class="okT">singleton</text><rect class="boxAcc" x="20" y="286" width="220" height="48" rx="8"/><text x="130" y="307">PayoutDbContext</text><text x="130" y="325" font-size="11" class="accT">scoped</text></g><g class="ln"><line x1="320" y1="64" x2="230" y2="102" marker-end="url(#dInk)"/><line x1="400" y1="64" x2="490" y2="102" marker-end="url(#dInk)"/><line x1="170" y1="154" x2="140" y2="192" marker-end="url(#dInk)"/><line x1="240" y1="154" x2="320" y2="192" marker-end="url(#dInk)"/><line x1="130" y1="244" x2="130" y2="282" marker-end="url(#dInk)"/></g><g font-size="12" font-weight="600" text-anchor="middle"><circle class="boxAcc" cx="252" cy="310" r="11"/><text x="252" y="314">1</text><circle class="boxAcc" cx="252" cy="220" r="11"/><text x="252" y="224">2</text><circle class="boxAcc" cx="442" cy="220" r="11"/><text x="442" y="224">3</text><circle class="boxAcc" cx="332" cy="130" r="11"/><text x="332" y="134">4</text><circle class="boxAcc" cx="642" cy="130" r="11"/><text x="642" y="134">5</text><circle class="boxAcc" cx="482" cy="40" r="11"/><text x="482" y="44">6</text></g><g font-size="12"><text x="470" y="270">Đi xuống: đọc constructor,</text><text x="470" y="286">hỏi tiếp từng tham số.</text><text x="470" y="310">Đi lên: đủ tham số thì new.</text><text x="470" y="326" class="muted">Số tròn = thứ tự object được tạo.</text></g></svg>
@@ -86,7 +86,7 @@ Với 5 class thì viết tay được. Với 200 class, lifetime khác nhau và
 
 ## 4. Ai gọi container: IoC trong ASP.NET Core
 
-Trong code của bạn **không có chỗ nào gọi `GetService`**. Framework tạo scope cho request, tìm controller, nhờ container dựng controller kèm toàn bộ dependency, rồi gọi action. Đó là IoC: bạn chỉ khai báo "tôi cần gì" ở constructor.
+Trong code của bạn **không có chỗ nào gọi `GetService`**. Framework tạo scope cho request, tìm controller, nhờ container dựng controller kèm toàn bộ dependency, rồi gọi action. Đó là <T>IoC</T>: bạn chỉ khai báo "tôi cần gì" ở constructor.
 
 <Compare :labels="['DI: được đưa vào', 'Service locator: tự đi xin']" caption="Cùng dùng container, khác nhau ở chỗ ai chủ động. Service locator đảo ngược lại IoC.">
 <template #a>
@@ -115,7 +115,7 @@ Trong code của bạn **không có chỗ nào gọi `GetService`**. Framework t
 ### Transient, Scoped, Singleton <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#lifetimes}
 
 ::: tip Trả lời nhanh
-**Transient**: tạo mới mỗi lần được yêu cầu. **Scoped**: một instance cho mỗi scope, trong web là mỗi request. **Singleton**: một instance cho cả vòng đời app, nên phải thread-safe.
+**Transient**: tạo mới mỗi lần được yêu cầu. **Scoped**: một instance cho mỗi scope, trong web là mỗi request. **Singleton**: một instance cho cả vòng đời app, nên phải <T>thread-safe</T>.
 :::
 
 ::: info Bản chất
@@ -130,12 +130,12 @@ Transient : mỗi lần xin là 1 object mới, kể cả trong cùng 1 request
 | Lifetime | Ví dụ hợp lý | Lưu ý |
 |---|---|---|
 | Transient | Service nhỏ, không state, rẻ để tạo | Cùng một request có thể có nhiều instance khác nhau |
-| Scoped | `DbContext`, unit of work, thông tin user hiện tại | Mọi service trong cùng request dùng chung một instance, nên chung một DbContext và một transaction |
+| Scoped | `DbContext`, <T>unit of work</T>, thông tin user hiện tại | Mọi service trong cùng request dùng chung một instance, nên chung một DbContext và một transaction |
 | Singleton | Cache, config đã nạp, client tốn chi phí khởi tạo | Có state thì phải thread-safe; không được giữ service scoped |
 :::
 
 ::: details Ở dự án thật
-Ví dụ dễ kể: đặt `DbContext` scoped để mọi repository trong một request dùng chung context, gọi `SaveChanges` một lần là ghi hết trong một transaction. Nếu lỡ để transient, mỗi repository một context, việc ghi bị chia ra nhiều transaction và không còn **atomic** nữa: có thể phần này đã ghi xong mà phần kia thì lỗi, dữ liệu dở dang.
+Ví dụ dễ kể: đặt `DbContext` scoped để mọi repository trong một request dùng chung context, gọi `SaveChanges` một lần là ghi hết trong một transaction. Nếu lỡ để transient, mỗi repository một context, việc ghi bị chia ra nhiều transaction và không còn <T>atomic</T> nữa: có thể phần này đã ghi xong mà phần kia thì lỗi, dữ liệu dở dang.
 :::
 
 ::: warning Bẫy & follow-up
@@ -199,13 +199,13 @@ Container chỉ dispose những object **nó tự tạo**, vào lúc scope chứ
 ::: warning Bẫy & follow-up
 **"Resolve transient `IDisposable` từ root provider thì sao?"**
 
-Container giữ tham chiếu để dispose lúc app tắt, nghĩa là mỗi lần resolve lại giữ thêm một object tới cuối đời app: memory leak. Luôn resolve trong một scope.
+Container giữ tham chiếu để dispose lúc app tắt, nghĩa là mỗi lần resolve lại giữ thêm một object tới cuối đời app: <T>memory leak</T>. Luôn resolve trong một scope.
 :::
 
 ### Nhiều implementation cho một interface, keyed services, decorator {#multiple-implementations}
 
 ::: tip Trả lời nhanh
-Đăng ký nhiều lần cùng một interface: inject `T` thì nhận bản đăng ký **cuối cùng**; inject `IEnumerable<T>` thì nhận tất cả. Từ .NET 8 có **keyed services** để chọn theo key. Container có sẵn không hỗ trợ decorator, phải tự đăng ký bằng factory hoặc dùng thư viện như Scrutor.
+Đăng ký nhiều lần cùng một interface: inject `T` thì nhận bản đăng ký **cuối cùng**; inject `IEnumerable<T>` thì nhận tất cả. Từ .NET 8 có **keyed services** để chọn theo key. Container có sẵn không hỗ trợ <T>decorator</T>, phải tự đăng ký bằng factory hoặc dùng thư viện như <T>Scrutor</T>.
 :::
 
 ::: info Bản chất
@@ -235,7 +235,7 @@ Cách decorator bằng factory ở trên hợp với môi trường hạn chế 
 ::: warning Bẫy & follow-up
 **"Inject `IServiceProvider` rồi tự `GetService` có ổn không?"**
 
-Đó là service locator, thường bị coi là anti-pattern vì che giấu dependency thật. Chấp nhận được ở tầng hạ tầng (factory, chọn theo key lúc runtime như trên), không nên rải trong business logic.
+Đó là <T>service locator</T>, thường bị coi là <T>anti-pattern</T> vì che giấu dependency thật. Chấp nhận được ở tầng hạ tầng (factory, chọn theo key lúc runtime như trên), không nên rải trong business logic.
 
 **"`TryAdd` để làm gì?"**
 
@@ -245,7 +245,7 @@ Chỉ đăng ký nếu chưa có ai đăng ký interface đó. Thư viện dùng
 ### Constructor có quá nhiều dependency {#too-many-dependencies}
 
 ::: tip Trả lời nhanh
-Khoảng 5–6 dependency trở lên thường là dấu hiệu class đang làm quá nhiều việc (SRP). Cách xử lý là tách class theo trách nhiệm, không phải gom các dependency vào một object "bao tải" để constructor trông ngắn lại.
+Khoảng 5–6 dependency trở lên thường là dấu hiệu class đang làm quá nhiều việc (<T>SRP</T>). Cách xử lý là tách class theo trách nhiệm, không phải gom các dependency vào một object "bao tải" để constructor trông ngắn lại.
 :::
 
 ::: info Bản chất
@@ -280,7 +280,7 @@ Chỉ **giấu triệu chứng**. Một feature cần 10 dependency vẫn là th
 ### Khái niệm
 
 ::: details "IoC và DI khác nhau thế nào?" (câu hay bị hỏi nhất)
-Trả lời mẫu: "IoC là nguyên lý đảo quyền điều khiển: framework gọi code của mình, như ASP.NET Core tự gọi controller hay Web Forms gọi `Page_Load`. DI là một cách cụ thể để làm IoC cho việc tạo dependency: class không tự `new` mà nhận qua constructor, ai đó bên ngoài tạo giúp. Container chỉ là công cụ tự động hoá DI."
+Trả lời mẫu: "<T>IoC</T> là nguyên lý đảo quyền điều khiển: framework gọi code của mình, như ASP.NET Core tự gọi controller hay Web Forms gọi `Page_Load`. <T>DI</T> là một cách cụ thể để làm IoC cho việc tạo dependency: class không tự `new` mà nhận qua constructor, ai đó bên ngoài tạo giúp. Container chỉ là công cụ tự động hoá DI."
 
 Follow-up hay gặp: "Cho ví dụ IoC mà không phải DI?" → event handler, template method (`BackgroundService.ExecuteAsync` do framework gọi), middleware `InvokeAsync`.
 :::
@@ -290,7 +290,7 @@ Có. Truyền dependency qua constructor và tự `new` ở `Main` là DI (Pure 
 :::
 
 ::: details "Có DI rồi thì có cần DIP không? Ngược lại?"
-Độc lập với nhau. Inject `SqlPayoutRepository` (class cụ thể) là DI nhưng vi phạm DIP: PayoutService vẫn phụ thuộc hạ tầng. Ngược lại, có interface do Core định nghĩa nhưng tự `new` qua factory là có DIP mà không DI. Hay dùng chung vì DI là cách gọn nhất để đưa implementation vào chỗ chỉ biết interface.
+Độc lập với nhau. Inject `SqlPayoutRepository` (class cụ thể) là DI nhưng vi phạm <T>DIP</T>: PayoutService vẫn phụ thuộc hạ tầng. Ngược lại, có interface do Core định nghĩa nhưng tự `new` qua factory là có DIP mà không DI. Hay dùng chung vì DI là cách gọn nhất để đưa implementation vào chỗ chỉ biết interface.
 :::
 
 ::: details "Composition root là gì? Ở PayoutHub nằm đâu?"
@@ -316,7 +316,7 @@ Lần resolve đầu tiên của mỗi service, container dùng reflection để
 :::
 
 ::: details "Sao container của Microsoft không có property injection như Autofac?"
-Cố ý giữ tối giản: chỉ constructor injection. Property injection làm dependency trông như tuỳ chọn, object có thể ở trạng thái thiếu dependency. Ngoài constructor, ASP.NET Core còn có **method injection** ở vài chỗ framework gọi: tham số `InvokeAsync` của middleware, `[FromServices]` trong action, tham số lambda của Minimal API.
+Cố ý giữ tối giản: chỉ constructor injection. Property injection làm dependency trông như tuỳ chọn, object có thể ở trạng thái thiếu dependency. Ngoài constructor, ASP.NET Core còn có <T>method injection</T> ở vài chỗ framework gọi: tham số `InvokeAsync` của middleware, `[FromServices]` trong action, tham số lambda của Minimal API.
 :::
 
 ::: details "Đăng ký sau Build() có tác dụng không?"

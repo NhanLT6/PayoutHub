@@ -21,7 +21,7 @@ Những gì đã thay đổi trong lúc bạn ở với C# 7.3 của .NET Framew
 ## Nullable reference types {#nullable}
 
 ::: tip Trả lời nhanh
-Bật `<Nullable>enable</Nullable>` thì compiler coi reference type mặc định là không được null; muốn cho phép null phải ghi `string?`. Compiler phân tích luồng code và cảnh báo khi có thể dereference null. Mục tiêu là bắt NullReferenceException lúc compile thay vì lúc chạy.
+Bật `<Nullable>enable</Nullable>` thì compiler coi reference type mặc định là không được null; muốn cho phép null phải ghi `string?`. Compiler phân tích luồng code và cảnh báo khi có thể <T>dereference</T> null. Mục tiêu là bắt <T>NullReferenceException</T> lúc compile thay vì lúc chạy.
 :::
 
 ::: info Bản chất
@@ -37,7 +37,7 @@ Console.WriteLine(name!.Length);    // '!' = "tin tôi đi", tắt cảnh báo
 :::
 
 ::: details Ở dự án thật
-Với codebase cũ, không bật một lần cho cả project vì sẽ ra hàng nghìn cảnh báo. Bật theo từng file bằng `#nullable enable`, bắt đầu từ code mới và các model ở biên (DTO, API contract).
+Với codebase cũ, không bật một lần cho cả project vì sẽ ra hàng nghìn cảnh báo. Bật theo từng file bằng `#nullable enable`, bắt đầu từ code mới và các model ở biên (<T>DTO</T>, API contract).
 :::
 
 ::: warning Bẫy & follow-up
@@ -80,7 +80,7 @@ if (result is { Status: PayoutStatus.Failed, Error: var err }) Log(err);
 
 Có. Nhánh đầu tiên khớp sẽ thắng. Trong ví dụ trên, merchant Enterprise mà không active vẫn ra 0.05 vì nhánh Tier đứng trước. Compiler báo lỗi nếu một nhánh không bao giờ tới được, nhưng không bắt được sai về nghiệp vụ.
 
-**"Khi nào vẫn nên dùng Strategy thay vì switch?"**
+**"Khi nào vẫn nên dùng <T>Strategy</T> thay vì switch?"**
 
 Khi mỗi nhánh là một khối logic lớn, cần dependency riêng, hoặc cần thêm nhánh mà không sửa chỗ này. Switch expression hợp với ánh xạ ngắn từ dữ liệu ra giá trị.
 :::
@@ -88,7 +88,7 @@ Khi mỗi nhánh là một khối logic lớn, cần dependency riêng, hoặc c
 ## Primary constructor, `required`, `init` {#primary-ctor}
 
 ::: tip Trả lời nhanh
-`init`: property chỉ gán được lúc khởi tạo. `required`: bắt buộc caller phải gán property đó trong object initializer. Primary constructor (C# 12): khai báo tham số ngay trên tên class, dùng được trong toàn bộ class; rất hợp với constructor injection.
+`init`: property chỉ gán được lúc khởi tạo. `required`: bắt buộc caller phải gán property đó trong <T>object initializer</T>. Primary constructor (C# 12): khai báo tham số ngay trên tên class, dùng được trong toàn bộ class; rất hợp với <T>constructor injection</T>.
 :::
 
 ::: info Bản chất
@@ -135,7 +135,7 @@ public string Name { get; set => field = value.Trim(); }  // C# 14: 'field' là 
 :::
 
 ::: warning Bẫy & follow-up
-**"Có nên dùng record làm entity cho EF Core không?"**
+**"Có nên dùng record làm entity cho <T>EF Core</T> không?"**
 
-Không nên. Record so sánh theo giá trị và khuyến khích bất biến, trong khi entity có identity (Id) và được EF track rồi sửa tại chỗ. Record hợp với DTO, request/response và value object.
+Không nên. Record so sánh theo giá trị và khuyến khích bất biến, trong khi entity có identity (Id) và được EF track rồi sửa tại chỗ. Record hợp với <T>DTO</T>, request/response và <T>value object</T>.
 :::

@@ -9,13 +9,13 @@ Phần "đánh đố" nhiều nhất. Phân biệt mid với senior nằm ở ch
 ## Code C# chạy như thế nào? CLR, IL, JIT {#clr-il-jit}
 
 ::: tip Trả lời nhanh
-Compiler (Roslyn) dịch C# ra **IL** kèm metadata trong file .dll. Lúc chạy, **CLR** load assembly, và **JIT** dịch IL ra mã máy ở lần đầu một method được gọi. CLR còn lo GC, type safety, exception handling và thread pool.
+Compiler (<T>Roslyn</T>) dịch C# ra <T>IL</T> kèm metadata trong file .dll. Lúc chạy, <T>CLR</T> load assembly, và <T>JIT</T> dịch IL ra mã máy ở lần đầu một method được gọi. CLR còn lo <T>GC</T>, type safety, exception handling và <T>thread pool</T>.
 :::
 
 ::: info Bản chất
-- **Tiered compilation**: lần đầu JIT nhanh nhưng tối ưu ít (tier 0); method nào gọi nhiều thì được JIT lại tối ưu hơn (tier 1). Từ .NET 8, **Dynamic PGO** bật mặc định: JIT dùng dữ liệu chạy thật để tối ưu.
-- **ReadyToRun**: biên dịch sẵn một phần ra mã máy để khởi động nhanh hơn, vẫn có JIT.
-- **Native AOT** (.NET 7+): biên dịch hết ra mã máy lúc publish, không có IL + JIT lúc chạy. Lợi: khởi động gần như tức thì, ít RAM, không cần cài runtime → hợp serverless, container cần scale nhanh, CLI. Giá: hạn chế reflection và sinh code động (trimming cắt code không thấy được dùng).
+- <T>Tiered compilation</T>: lần đầu JIT nhanh nhưng tối ưu ít (tier 0); method nào gọi nhiều thì được JIT lại tối ưu hơn (tier 1). Từ .NET 8, <T>Dynamic PGO</T> bật mặc định: JIT dùng dữ liệu chạy thật để tối ưu.
+- <T>ReadyToRun</T>: biên dịch sẵn một phần ra mã máy để khởi động nhanh hơn, vẫn có JIT.
+- <T>Native AOT</T> (.NET 7+): biên dịch hết ra mã máy lúc publish, không có IL + JIT lúc chạy. Lợi: khởi động gần như tức thì, ít RAM, không cần cài runtime → hợp serverless, container cần scale nhanh, CLI. Giá: hạn chế reflection và sinh code động (trimming cắt code không thấy được dùng).
 :::
 
 ::: warning Bẫy & follow-up
@@ -31,7 +31,7 @@ Không. MVC Controllers **không** hỗ trợ AOT vì dựa nhiều vào reflect
 ## Value type vs reference type, stack vs heap <Badge type="warning" text="hay bị trả lời sai" /> {#value-vs-reference}
 
 ::: tip Trả lời nhanh
-Value type chứa dữ liệu trực tiếp, gán là copy. Reference type chứa tham chiếu tới object trên managed heap, gán là copy tham chiếu. **Value type nằm ở đâu là tùy chỗ nó được khai báo**: biến local thường nằm trên stack, nhưng là field của class hoặc phần tử của array thì nằm trên heap, bên trong object đó.
+Value type chứa dữ liệu trực tiếp, gán là copy. Reference type chứa tham chiếu tới object trên managed <T>heap</T>, gán là copy tham chiếu. **Value type nằm ở đâu là tùy chỗ nó được khai báo**: biến local thường nằm trên <T>stack</T>, nhưng là field của class hoặc phần tử của array thì nằm trên heap, bên trong object đó.
 :::
 
 ::: info Bản chất
@@ -51,13 +51,13 @@ Stack: mỗi thread một vùng nhỏ (mặc định khoảng 1MB), cấp phát 
 :::
 
 ::: details Cách nói của senior
-"Câu 'value type nằm trên stack' là cách nói đơn giản hóa. Vị trí lưu là chi tiết cài đặt; cái quan trọng khi code là ngữ nghĩa copy. Ví dụ trong async method, các biến local bị đưa thành field của state machine, nên chúng cũng có thể lên heap."
+"Câu 'value type nằm trên stack' là cách nói đơn giản hóa. Vị trí lưu là chi tiết cài đặt; cái quan trọng khi code là ngữ nghĩa copy. Ví dụ trong async method, các biến local bị đưa thành field của <T>state machine</T>, nên chúng cũng có thể lên heap."
 :::
 
 ::: warning Bẫy & follow-up
 **"Struct luôn nằm trên stack đúng không?"**
 
-Không. Field của class, phần tử array, biến bị closure hoặc async capture, hoặc bị boxing đều nằm trên heap. Chỉ `ref struct` (như `Span<T>`) là bị ép chỉ được nằm trên stack.
+Không. Field của class, phần tử array, biến bị closure hoặc async capture, hoặc bị <T>boxing</T> đều nằm trên heap. Chỉ <T>ref struct</T> (như `Span<T>`) là bị ép chỉ được nằm trên stack.
 
 **"StackOverflowException khi nào?"**
 
@@ -67,7 +67,7 @@ Gần như luôn do đệ quy không có điểm dừng (kể cả property gọ
 ## Boxing / unboxing {#boxing}
 
 ::: tip Trả lời nhanh
-Boxing là bọc một value type vào object trên heap để dùng nó như `object` hoặc interface. Unboxing là lấy giá trị ra, cần ép đúng kiểu. Tốn chi phí vì cấp phát heap, copy dữ liệu và tạo việc cho GC.
+<T>Boxing</T> là bọc một value type vào object trên heap để dùng nó như `object` hoặc interface. Unboxing là lấy giá trị ra, cần ép đúng kiểu. Tốn chi phí vì cấp phát heap, copy dữ liệu và tạo việc cho GC.
 :::
 
 ::: info Bản chất: boxing hay ẩn ở đâu
@@ -92,13 +92,13 @@ Với value type, JIT sinh code riêng cho từng kiểu (`List<int>` có code r
 ## GC hoạt động thế nào? <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#gc}
 
 ::: tip Trả lời nhanh
-Managed heap được chia thành 3 generation. Object mới vào Gen0; sống sót qua một lần GC thì được đẩy lên Gen1, rồi Gen2. Khi GC chạy, nó tìm các object còn được tham chiếu từ các **root** (biến local đang dùng, static field, thanh ghi CPU, GC handle), đánh dấu chúng, phần còn lại là rác. Sau đó nó **compact**: dồn object còn sống lại cho heap liền mạch. Thu Gen0 rất thường xuyên và rẻ; Gen2 (full GC) hiếm và đắt.
+Managed heap được chia thành 3 <T k="generation">generation</T>. Object mới vào Gen0; sống sót qua một lần GC thì được đẩy lên Gen1, rồi Gen2. Khi GC chạy, nó tìm các object còn được tham chiếu từ các <T k="gc root">root</T> (biến local đang dùng, static field, thanh ghi CPU, GC handle), đánh dấu chúng, phần còn lại là rác. Sau đó nó <T>compact</T>: dồn object còn sống lại cho heap liền mạch. Thu Gen0 rất thường xuyên và rẻ; Gen2 (full GC) hiếm và đắt.
 :::
 
 ::: info Bản chất
 - **Giả thuyết generation**: phần lớn object chết trẻ (biến tạm trong một request). Nên chỉ quét vùng nhỏ chứa object mới là đủ dọn phần lớn rác.
-- **LOH** (Large Object Heap): object từ **85.000 byte** trở lên (thường là array lớn, string lớn). Chỉ được dọn cùng Gen2 và mặc định không compact, nên dễ bị phân mảnh.
-- **POH** (.NET 5+): vùng riêng cho object bị pin (truyền buffer cho native code), để chúng không cản việc compact.
+- <T>LOH</T> (Large Object Heap): object từ **85.000 byte** trở lên (thường là array lớn, string lớn). Chỉ được dọn cùng Gen2 và mặc định không compact, nên dễ bị phân mảnh.
+- <T>POH</T> (.NET 5+): vùng riêng cho object bị pin (truyền buffer cho native code), để chúng không cản việc compact.
 - Lúc GC chạy, các thread của app có thể bị tạm dừng. **Background GC** cho phép Gen2 chạy song song với app.
 :::
 
@@ -145,7 +145,7 @@ Workstation: một heap, ưu tiên pause ngắn, ít memory, mặc định cho a
 ## `IDisposable`, `using`, finalizer {#idisposable}
 
 ::: tip Trả lời nhanh
-GC chỉ dọn managed memory. Tài nguyên bên ngoài (DB connection, file handle, socket) phải được giải phóng chủ động qua `Dispose()`, thường bằng `using`. Finalizer chỉ là lưới an toàn cuối cho unmanaged resource: không biết lúc nào chạy, và làm object sống thêm ít nhất một vòng GC.
+GC chỉ dọn managed memory. Tài nguyên bên ngoài (DB connection, file handle, socket) phải được giải phóng chủ động qua `Dispose()`, thường bằng `using`. <T>Finalizer</T> chỉ là lưới an toàn cuối cho unmanaged resource: không biết lúc nào chạy, và làm object sống thêm ít nhất một vòng GC.
 :::
 
 ::: info Bản chất
@@ -173,7 +173,7 @@ Không. Mỗi lần dispose là đóng connection; socket kẹt ở TIME_WAIT, t
 
 **"DbContext có tự dispose không?"**
 
-Lấy từ DI thì container dispose khi hết scope (hết request). Tự `new` hoặc lấy qua `IDbContextFactory` thì phải tự `using`.
+Lấy từ <T>DI</T> thì container dispose khi hết scope (hết request). Tự `new` hoặc lấy qua `IDbContextFactory` thì phải tự `using`.
 :::
 
 ## Có GC rồi sao vẫn bị memory leak? {#memory-leak}
@@ -186,7 +186,7 @@ GC chỉ thu object không còn ai tham chiếu. Leak trong .NET nghĩa là vô 
 - Static collection hoặc cache tự viết, chỉ thêm không bao giờ xóa.
 - Đăng ký `event` mà không hủy: publisher sống lâu giữ luôn subscriber.
 - Singleton giữ object scoped (captive dependency).
-- `Timer` chưa dispose; closure capture object lớn.
+- `Timer` chưa dispose; <T>closure</T> capture object lớn.
 - Resource unmanaged chưa dispose.
 :::
 

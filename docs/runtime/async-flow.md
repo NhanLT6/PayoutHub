@@ -5,7 +5,7 @@ description: "Một request Approve payout đi qua từng tầng, từ browser t
 
 # Async từ nút bấm tới database
 
-Trang này đi theo **một** request thật từ đầu tới cuối. Mỗi keyword (thread, thread pool, Task, awaiter, state machine, continuation, SynchronizationContext...) được giải thích **đúng chỗ nó xuất hiện lần đầu**. Đọc xong trang này rồi mới quay lại [Async & Concurrency](/runtime/async) để luyện câu phỏng vấn.
+Trang này đi theo **một** request thật từ đầu tới cuối. Mỗi keyword (<T>thread</T>, <T>thread pool</T>, <T>Task</T>, <T>awaiter</T>, <T>state machine</T>, <T>continuation</T>, <T>SynchronizationContext</T>...) là một thuật ngữ có **gạch chấm**: rê chuột để xem nhanh, bấm để ghim card. Đọc xong trang này rồi mới quay lại [Async & Concurrency](/runtime/async) để luyện câu phỏng vấn.
 
 ## Kịch bản {#scenario}
 
@@ -36,11 +36,9 @@ Theo dõi hai thứ ở cột trái của mỗi bước: **tầng** đang xử l
 
 Browser gọi event handler JavaScript trên **UI thread** của tab. Mỗi tab chỉ có **một** thread chạy JS.
 
-`fetch(...)` không chờ server. Nó gửi yêu cầu cho tầng network của browser rồi **trả về ngay một Promise**: một object nghĩa là "kết quả sẽ có sau".
+`fetch(...)` không chờ server. Nó gửi yêu cầu cho tầng network của browser rồi **trả về ngay một <T>Promise</T>**: một object nghĩa là "kết quả sẽ có sau".
 
-Handler chạy tới `await` thì dừng, UI thread rảnh. Nhờ vậy spinner trên nút vẫn quay, user vẫn cuộn trang được.
-
-> **Event loop:** vòng lặp của browser. Lấy việc tiếp theo trong hàng đợi (click, timer, response mạng về) và chạy trên UI thread, từng việc một. `await` trong JS = "đăng ký phần còn lại vào hàng đợi, nhả thread". **.NET làm đúng ý tưởng này**, chỉ khác là có nhiều thread.
+Handler chạy tới `await` thì dừng, UI thread rảnh. Nhờ vậy spinner trên nút vẫn quay, user vẫn cuộn trang được. Phần còn lại của handler được xếp vào hàng đợi của <T>event loop</T>; **.NET làm đúng ý tưởng này**, chỉ khác là có nhiều thread.
 
 </FlowStep>
 
@@ -54,45 +52,41 @@ Phía .NET **chưa có ai chờ** request này: server còn chưa biết nó t�
 
 <FlowStep :n="3" title="OS nhận kết nối, báo cho Kestrel" layer="Kestrel" thread="không có thread" icon="gate" tone="free">
 
-**Kestrel** là web server có sẵn trong ASP.NET Core. Card mạng nhận byte, **kernel của OS** gom thành dữ liệu của socket.
+<T>Kestrel</T> là web server có sẵn trong ASP.NET Core. Card mạng nhận byte, **kernel của OS** gom thành dữ liệu của socket.
 
 Kestrel không dựng một thread ngồi canh từng socket. Nó dùng cơ chế **async I/O của OS**: "khi socket này có dữ liệu thì báo tôi".
 
-- Windows: **IOCP** (I/O Completion Port).
-- Linux: **epoll**.
+- Windows: <T>IOCP</T>.
+- Linux: <T>epoll</T>.
 
-Khi OS báo, runtime đưa việc "xử lý dữ liệu vừa tới" vào hàng đợi của **thread pool**.
-
-> **Thread:** đơn vị mà CPU thực sự chạy. Mỗi thread có **stack** riêng (mặc định cỡ 1 MB trên Windows). Tạo và huỷ thread tốn kém; số thread nhiều thì tốn RAM và CPU phải chuyển qua lại giữa chúng.
->
-> **Thread pool:** một nhóm worker thread .NET tạo sẵn và **dùng lại**. Có một hàng đợi việc; thread nào rảnh thì lấy việc tiếp theo ra chạy, xong lại quay về chờ việc. Khi việc dồn mà không có thread rảnh, pool **tăng thêm thread rất chậm** (thêm dần từng cái, có độ trễ), để không đẻ thread vô tội vạ.
+Khi OS báo, runtime đưa việc "xử lý dữ liệu vừa tới" vào hàng đợi của <T>thread pool</T>: nhóm <T>thread</T> tạo sẵn và dùng lại, thread nào rảnh thì lấy việc ra chạy.
 
 ::: info Lớp chặn trước Kestrel
 Request phải qua nhiều lớp trước khi tới code, mỗi lớp chặn một kiểu:
 
-1. **Router / NAT / security group**: chỉ cho traffic tới IP + port được mở.
+1. **Router / <T>NAT</T> / <T>security group</T>**: chỉ cho traffic tới IP + port được mở.
 2. **OS firewall**: luật cho phép / chặn theo port, IP, chương trình.
 3. **Kernel**: chỉ giao kết nối cho process đang **listen** trên port đó. Không ai listen → **connection refused**.
-4. **Reverse proxy / WAF** (nếu có): chặn pattern tấn công phổ biến, rate limit.
-5. **Kestrel**: **TLS**, giới hạn kích thước request, số kết nối, timeout.
-6. **AuthN / AuthZ middleware**: bạn là ai, bạn được làm gì.
+4. **<T>Reverse proxy</T> / <T>WAF</T>** (nếu có): chặn pattern tấn công phổ biến, rate limit.
+5. **Kestrel**: <T>TLS</T>, giới hạn kích thước request, số kết nối, timeout.
+6. **<T>AuthN</T> / <T>AuthZ</T> middleware**: bạn là ai, bạn được làm gì.
 7. **Input validation**: dữ liệu có hợp lệ không.
 
 **Dễ nhầm:** firewall quyết định **ai tới được port nào**, không biết nội dung request có độc hại không. Qua được firewall không có nghĩa là đáng tin: **không bao giờ tin input của client**.
 
-**PayoutHub:** endpoint Approve thì ai cũng gọi tới được, nhưng khi đã có auth, request thiếu JWT có role Finance sẽ nhận **401 / 403**. Webhook từ FakeBank được verify bằng **HMAC**.
+**PayoutHub:** endpoint Approve thì ai cũng gọi tới được, nhưng khi đã có auth, request thiếu <T>JWT</T> có role Finance sẽ nhận **401 / 403**. Webhook từ FakeBank được verify bằng <T>HMAC</T>.
 
-**IDOR:** JWT hợp lệ, đúng role, nhưng đổi `/payouts/42` thành `/payouts/43` của công ty khác: mọi lớp trên đều cho qua, chỉ code kiểm tra "object này có phải của bạn" mới chặn được.
+**<T>IDOR</T>:** mọi lớp trên đều cho qua, chỉ code kiểm tra "object này có phải của bạn" mới chặn được.
 
 Đi lại cả luồng này dưới góc nhìn bảo mật, từng lớp một: [Bảo mật API: một request đi qua những lớp nào](/aspnet-core/api-security).
 :::
 
 ::: details Chi tiết từng lớp
-- **NAT** (Network Address Translation): router có một IP public, chia cho nhiều máy bên trong. Từ ngoài muốn vào một máy bên trong thì phải có luật **port forwarding**. **Security group** là firewall của cloud (Azure NSG, AWS Security Group), vd "port 443 mở cho mọi nơi, port 1433 của SQL Server chỉ mở cho máy chạy app".
+- **NAT và security group:** router chỉ có một IP public nên từ ngoài vào máy bên trong cần luật port forwarding; security group là firewall của cloud, vd "port 443 mở cho mọi nơi, port 1433 của SQL Server chỉ mở cho máy chạy app".
 - **OS firewall** (Windows Defender Firewall, `nftables` / `iptables` trên Linux): lọc theo port, IP, chương trình. Đây là lý do lần đầu chạy app, Windows hỏi "Allow access?".
 - **Kernel và listen:** khi app khởi động, Kestrel **bind + listen** trên port (vd 5000). Kết nối tới một port không ai listen bị kernel từ chối ngay → **connection refused**. Bị firewall chặn thì gói thường bị bỏ im lặng → **timeout**. Phân biệt được hai lỗi này giúp debug: refused = app chưa chạy hoặc sai port; timeout = bị chặn trên đường.
-- **Reverse proxy** (nginx, YARP, Azure Application Gateway...): đứng trước Kestrel, nhận HTTPS từ internet rồi chuyển vào. **WAF** (Web Application Firewall) hiểu HTTP: soi URL, header, body tìm pattern SQL injection, XSS. Bắt được kiểu tấn công phổ biến, **không thay được** validation trong code.
-- **Kestrel:** giải mã **TLS** nếu không có proxy làm thay. `KestrelServerLimits` có `MaxRequestBodySize` (mặc định khoảng 28,6 MB), `MaxConcurrentConnections`, `RequestHeadersTimeout`... để chống request khổng lồ hoặc client cố tình gửi thật chậm.
+- **Reverse proxy** (nginx, YARP, Azure Application Gateway...) đứng trước Kestrel, nhận HTTPS từ internet rồi chuyển vào. **WAF** hiểu HTTP: soi URL, header, body tìm pattern <T>SQLi</T>, <T>XSS</T>. Bắt được kiểu tấn công phổ biến, **không thay được** validation trong code.
+- **Kestrel:** giải mã TLS nếu không có proxy làm thay. `KestrelServerLimits` có `MaxRequestBodySize` (mặc định khoảng 28,6 MB), `MaxConcurrentConnections`, `RequestHeadersTimeout`... để chống request khổng lồ hoặc client cố tình gửi thật chậm.
 - **AuthN / AuthZ:** `UseAuthentication` đọc JWT để biết user là ai (thiếu hoặc sai → **401**). `UseAuthorization` + `[Authorize(Roles = "Finance")]` quyết định có được làm không (không đủ quyền → **403**).
 - **Validation:** `[ApiController]` tự trả **400** khi model không hợp lệ; rule nghiệp vụ (payout đã Approved thì không approve lại) nằm trong domain. Mọi thứ client gửi lên (id, số tiền, status) đều có thể đã bị sửa.
 :::
@@ -106,9 +100,9 @@ Một worker rảnh của thread pool, gọi là **Thread #7**, nhận việc. T
 Thread #7 chạy lần lượt:
 
 1. Parse HTTP request, tạo `HttpContext`.
-2. [Middleware pipeline](/aspnet-core/middleware#middleware): logging, exception handling, auth, routing...
-3. Tạo **DI scope** cho request, tạo controller, inject `DbContext`.
-4. **Model binding**: lấy `id = 42` từ route, `ct` = token bị huỷ khi client đóng kết nối.
+2. <T>Middleware pipeline</T>: logging, exception handling, auth, routing...
+3. Tạo <T>DI scope</T> cho request, tạo controller, inject <T>DbContext</T>.
+4. <T>Model binding</T>: lấy `id = 42` từ route, `ct` = token bị huỷ khi client đóng kết nối.
 5. Gọi `Approve(42, ct)`.
 
 </FlowStep>
@@ -119,11 +113,7 @@ Thread #7 chạy lần lượt:
 
 `async` không tạo thread. Nó chỉ cho phép method **tạm dừng** ở `await`.
 
-> **Stack:** vùng nhớ riêng của mỗi thread. Mỗi lần gọi method, một **stack frame** được đẩy vào, chứa biến local và tham số (`id`, `ct`, `payout`). Method return là frame bị bỏ đi, biến local mất.
->
-> **Heap:** vùng nhớ chung cho object (`new ...`). Object sống chừng nào còn ai trỏ tới; **GC** dọn khi không còn ai. Xem thêm [stack vs heap](/runtime/memory#value-vs-reference).
-
-Ghi nhớ chỗ này: biến local nằm trên stack, mà stack sẽ bị bỏ khi method return. Bước 8 cần giải quyết đúng vấn đề đó.
+Ghi nhớ chỗ này: biến local (`id`, `ct`, `payout`) nằm trên <T>stack</T> của thread, mà stack frame sẽ bị bỏ khi method return. Object thì nằm trên <T>heap</T> và được <T>GC</T> dọn khi hết người tham chiếu (xem [stack vs heap](/runtime/memory#value-vs-reference)). Bước 8 cần giải quyết đúng vấn đề đó.
 
 </FlowStep>
 
@@ -131,25 +121,16 @@ Ghi nhớ chỗ này: biến local nằm trên stack, mà stack sẽ bị bỏ k
 
 Vẫn trên Thread #7:
 
-1. **EF Core** kiểm tra cache của DbContext. Chưa có entity 42, nên dịch thành SQL: `SELECT ... FROM Payouts WHERE Id = @p0`.
-2. **SqlClient** (driver của SQL Server) mượn connection từ connection pool, **ghi** request vào socket TCP.
+1. <T>EF Core</T> kiểm tra cache của DbContext. Chưa có entity 42, nên dịch thành SQL: `SELECT ... FROM Payouts WHERE Id = @p0`.
+2. <T>SqlClient</T> (driver của SQL Server) mượn connection từ <T>connection pool</T>, **ghi** request vào socket TCP.
 3. SqlClient bắt đầu một **async read** trên socket: "khi có byte trả về thì báo tôi" (lại là IOCP/epoll).
-4. Chưa có kết quả, nên `FindAsync` trả về ngay một **Task chưa hoàn thành**.
-
-> **Task:** object đại diện cho một việc **sẽ xong sau**, giống Promise bên JS. Nó có trạng thái (đang chờ / xong / lỗi / huỷ), giữ **kết quả** hoặc **exception**, và cho phép đăng ký "khi xong thì gọi cái này". Task **không phải thread**: Task chờ DB không chiếm thread nào. (`FindAsync` trả `ValueTask`, một biến thể nhẹ hơn của Task; ý tưởng giống hệt.)
+4. Chưa có kết quả, nên `FindAsync` trả về ngay một **<T>Task</T> chưa hoàn thành**: đại diện cho việc "sẽ xong sau", **không phải thread**, nên chờ DB không chiếm thread nào. (`FindAsync` thật ra trả <T>ValueTask</T>, ý tưởng giống hệt.)
 
 </FlowStep>
 
 <FlowStep :n="7" title="Gặp await: awaiter và state machine" layer="Your code" thread="Thread #7" icon="state" tone="busy">
 
-`await` không phải phép màu. Compiler dịch nó thành vài lời gọi trên **awaiter**.
-
-> **Awaiter:** object lấy từ `task.GetAwaiter()`. Có 3 thứ:
-> - `IsCompleted`: xong chưa?
-> - `OnCompleted(callback)`: "xong thì gọi callback này".
-> - `GetResult()`: lấy kết quả, hoặc **ném lại exception** nếu task lỗi.
->
-> **State machine:** compiler viết lại method `async` thành một **struct** có field `state` (đang dừng ở `await` nào) và method `MoveNext()` (chạy tiếp từ chỗ đó). Tham số và biến local trở thành **field** của struct.
+`await` không phải phép màu. Compiler dịch nó thành vài lời gọi trên <T>awaiter</T> (`IsCompleted`, `OnCompleted`, `GetResult`), và viết lại cả method thành một <T>state machine</T>: struct có field `state` và method `MoveNext()`. Tham số và biến local trở thành field của struct.
 
 Code compiler sinh cho `Approve`, **đơn giản hoá** (không phải code thật):
 
@@ -202,7 +183,7 @@ struct ApproveStateMachine : IAsyncStateMachine
 }
 ```
 
-**Fast path:** nếu `IsCompleted` đã là `true` (ví dụ entity 42 đã có sẵn trong DbContext), code chạy tiếp ngay trên Thread #7, **không dừng, không đổi thread**. Lần này DB chưa trả lời, nên đi nhánh chậm.
+<T>Fast path</T>: nếu `IsCompleted` đã là `true` (ví dụ entity 42 đã có sẵn trong DbContext), code chạy tiếp ngay trên Thread #7, **không dừng, không đổi thread**. Lần này DB chưa trả lời, nên đi nhánh chậm.
 
 </FlowStep>
 
@@ -215,7 +196,7 @@ struct ApproveStateMachine : IAsyncStateMachine
 3. **Return.** `Approve` trả về một `Task<IActionResult>` **chưa xong** cho MVC; MVC trả Task của nó cho Kestrel. Cả chuỗi chỉ còn lại "Task + callback" nằm trên heap.
 4. **Thread #7 quay về thread pool** và đi phục vụ request khác.
 
-> **Continuation:** "phần còn lại của method" sau `await`, được gói thành một callback. Ở đây nó chính là lời gọi `MoveNext()` lần nữa, với `state = 0`.
+<T>Continuation</T> ở đây chính là lời gọi `MoveNext()` lần nữa, với `state = 0`.
 
 Trong lúc DB đang chạy query: **không có thread nào** của app ngồi chờ request này. Chỉ có vài object trên heap, và OS giữ một yêu cầu đọc socket đang chờ.
 
@@ -246,9 +227,7 @@ Một worker rảnh nhận việc. Có thể là **Thread #12**, cũng có thể
 - `MoveNext()` → `switch (state)` nhảy tới `case 0`.
 - `a1.GetResult()` trả về entity. Nếu query lỗi (timeout, mất kết nối), **exception được ném ra ở đây**, đúng dòng `await` trong code của bạn, nên `try/catch` quanh `await` vẫn bắt được.
 
-**Câu hỏi: tại sao lại chạy trên "một pool thread bất kỳ"?** Vì ASP.NET Core **không có SynchronizationContext**.
-
-> **SynchronizationContext:** một "chính sách" tuỳ chọn trả lời câu "continuation phải chạy **ở đâu**?". Lúc `await`, nếu có context thì nó được capture, và continuation được **gửi về** context đó thay vì chạy ở đâu cũng được.
+**Câu hỏi: tại sao lại chạy trên "một pool thread bất kỳ"?** Vì ASP.NET Core **không có <T>SynchronizationContext</T>**: chính sách tuỳ chọn trả lời câu "continuation phải chạy ở đâu?". Bảng dưới cho thấy mỗi môi trường trả lời thế nào.
 
 | Môi trường | Context | Continuation chạy ở đâu |
 |---|---|---|
@@ -256,9 +235,9 @@ Một worker rảnh nhận việc. Có thể là **Thread #12**, cũng có thể
 | ASP.NET Framework (Web Forms, MVC 5) | `AspNetSynchronizationContext` | Mỗi request **một thread chạy tại một thời điểm**, khôi phục `HttpContext.Current`, culture |
 | ASP.NET Core | **Không có** | Thread pool thread nào rảnh |
 
-**`ConfigureAwait(false)`** = "không cần quay về context cũ". Rất quan trọng trong **library** và code UI/Web Forms (vì có context). Trong code app ASP.NET Core thì gần như không đổi gì, vì không có context để quay về. Chi tiết: [ConfigureAwait](/runtime/async#configureawait).
+**<T k="configureawait">ConfigureAwait(false)</T>** = "không cần quay về context cũ". Rất quan trọng trong **library** và code UI/Web Forms (vì có context). Trong code app ASP.NET Core thì gần như không đổi gì, vì không có context để quay về. Chi tiết: [ConfigureAwait](/runtime/async#configureawait).
 
-**Nối với deadlock kinh điển:** ở Web Forms, nếu thay `await` bằng `.Result`, request thread **bị chặn** chờ Task. Khi DB trả lời, continuation muốn quay về context của request, mà context chỉ cho đúng một thread chạy, đang bị `.Result` giữ. Thread chờ Task, Task chờ thread: [deadlock](/runtime/async#deadlock).
+**Nối với <T>deadlock</T> kinh điển:** ở Web Forms, nếu thay `await` bằng `.Result`, request thread **bị chặn** chờ Task. Khi DB trả lời, continuation muốn quay về context của request, mà context chỉ cho đúng một thread chạy, đang bị `.Result` giữ. Thread chờ Task, Task chờ thread: xem [deadlock](/runtime/async#deadlock).
 
 </FlowStep>
 
@@ -288,7 +267,7 @@ Cùng một vòng, lần này với `state = 1`:
 
 1. MVC chạy result filter, ghi response **204 No Content**.
 2. Kestrel ghi byte response ra socket (cũng là async write).
-3. Request kết thúc: **DI scope** bị dispose, kéo theo `DbContext` (connection trả về connection pool). Xem [lifetime](/aspnet-core/dependency-injection#lifetimes).
+3. Request kết thúc: DI scope bị dispose, kéo theo `DbContext` (connection trả về connection pool). Xem [lifetime](/aspnet-core/dependency-injection#lifetimes).
 4. Thread quay về pool.
 
 </FlowStep>
@@ -320,8 +299,8 @@ Chỉ cần một câu hỏi:
 
 > **Trong lúc chờ, CPU của máy mình có đang làm việc cho request này không?**
 >
-> - **Không**: đang chờ thứ ở ngoài (DB, mạng, đĩa) → **I/O-bound**. Ví dụ bước 8–10.
-> - **Có**: CPU đang tính → **CPU-bound**. Ví dụ bước 12.
+> - **Không**: đang chờ thứ ở ngoài (DB, mạng, đĩa) → <T k="io-bound">I/O-bound</T>. Ví dụ bước 8–10.
+> - **Có**: CPU đang tính → <T k="cpu-bound">CPU-bound</T>. Ví dụ bước 12.
 
 ```mermaid
 flowchart TD
@@ -364,9 +343,9 @@ await Task.Run(() => db.SaveChanges());   // trông async, thực chất vẫn c
 
 Nhìn cùng một kiểu hình: **mỗi core là một hàng**, thời gian chạy từ trái sang phải. Mỗi thanh = core đang chạy code của việc đó.
 
-- **Concurrency**: nhiều việc cùng **đang dở dang** trong một khoảng thời gian (chồng lấn về thời gian). Không cần chạy cùng một tích tắc. Làm được trên **1 core**.
-- **Parallelism**: nhiều việc **chạy thật cùng một tích tắc** trên **nhiều core**. Parallelism là một dạng của concurrency.
-- **Async**: kỹ thuật **không giữ thread khi chờ I/O**. Là công cụ để có concurrency cho việc I/O mà không tốn thread.
+- <T>Concurrency</T>: nhiều việc cùng **đang dở dang** trong một khoảng thời gian (chồng lấn về thời gian). Không cần chạy cùng một tích tắc. Làm được trên **1 core**.
+- <T>Parallelism</T>: nhiều việc **chạy thật cùng một tích tắc** trên **nhiều core**. Parallelism là một dạng của concurrency.
+- <T>Async</T>: kỹ thuật **không giữ thread khi chờ I/O**. Là công cụ để có concurrency cho việc I/O mà không tốn thread.
 
 **Mẹo nhớ: căn bếp.** Dịch ra tiếng Việt ("đồng thời", "song song") gần như cùng nghĩa nên dễ lẫn; nhớ bằng hình thì chắc hơn.
 
@@ -385,7 +364,7 @@ Nhìn cùng một kiểu hình: **mỗi core là một hàng**, thời gian ch�
 | Số bếp lò | **CPU core** (bao nhiêu người nấu được *cùng lúc*) |
 | Chờ nước sôi, chờ hàng giao | **I/O**: chờ DB, chờ API |
 | Thái, xào, nêm | **CPU-bound** |
-| Đầu bếp nào cũng đứng canh nồi, khách mới không ai tiếp | **Thread pool starvation** |
+| Đầu bếp nào cũng đứng canh nồi, khách mới không ai tiếp | **<T>Thread pool starvation</T>** |
 
 > *Concurrency = một người tung hứng nhiều quả bóng. Parallelism = nhiều người, mỗi người một quả. Async = cách để không phải cầm quả bóng trong lúc chờ.*
 
@@ -435,7 +414,7 @@ Không cho phần chờ: 3 call HTTP đang chờ thì chiếm 0 thread. Khi từ
 
 Có. Xen kẽ (OS chia lượt) hoặc async I/O đều cho concurrency trên 1 core. Chỉ parallelism mới cần nhiều core.
 
-**"Khi nào có race condition?"**
+**"Khi nào có <T>race condition</T>?"**
 
 Khi các việc **concurrent** cùng đọc-sửa-ghi một **state chung**, kể cả với async trên một thread tại một thời điểm. Ví dụ: 2 request cùng approve payout 42, cả hai đọc thấy `Pending` rồi cùng ghi. Sửa ở DB bằng `UPDATE ... WHERE Status = 'Pending'` hoặc rowversion. Xem [Thread safety](/runtime/async#thread-safety).
 :::
@@ -464,7 +443,7 @@ Cùng action nhưng viết đồng bộ: `db.Payouts.Find(id)` và `db.SaveChang
 **Vì sao điều này quan trọng dưới tải:**
 
 - Sync: 100 request đồng thời, mỗi cái chờ DB 1 giây → cần **~100 thread** cùng lúc, đa số chỉ ngồi chờ.
-- Thread pool **tăng thread rất chậm**. Request mới phải xếp hàng chờ thread, dù CPU gần như rảnh. Đó là **thread pool starvation**: latency vọt lên, timeout, CPU thấp. Xem [Deadlock và starvation](/runtime/async#deadlock).
+- Thread pool **tăng thread rất chậm**. Request mới phải xếp hàng chờ thread, dù CPU gần như rảnh. Đó là thread pool starvation: latency vọt lên, timeout, CPU thấp. Xem [Deadlock và starvation](/runtime/async#deadlock).
 - Async: 100 request đó trong lúc chờ DB chiếm **0 thread**. Vài thread là đủ chạy các đoạn CPU ngắn.
 
 Async **không làm một request nhanh hơn** (thậm chí thêm chút overhead). Nó giúp server **chịu được nhiều request đồng thời hơn** với cùng số thread.

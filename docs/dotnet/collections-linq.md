@@ -4,7 +4,7 @@ title: "Collections & LINQ"
 
 # Collections & LINQ
 
-Câu hỏi ở đây thường không dừng ở "khác nhau thế nào" mà hỏi tiếp "bên trong nó cài đặt ra sao" và "độ phức tạp bao nhiêu".
+Câu hỏi ở đây thường không dừng ở "khác nhau thế nào" mà hỏi tiếp "bên trong nó cài đặt ra sao" và "<T k="big-o">độ phức tạp</T> bao nhiêu".
 
 ## Độ phức tạp cần thuộc {#complexity}
 
@@ -12,18 +12,18 @@ Câu hỏi ở đây thường không dừng ở "khác nhau thế nào" mà h�
 |---|---|---|---|---|---|
 | `T[]` | O(1) | O(n) | không đổi kích thước | không | Vùng nhớ liên tục |
 | `List<T>` | O(1) | O(n) | O(1)* cuối, O(n) giữa | O(n) | Array, đầy thì cấp mảng gấp đôi và copy |
-| `Dictionary<K,V>` | O(1)* theo key | O(1)* | O(1)* | O(1)* | Hash table: bucket theo `GetHashCode`, so khớp bằng `Equals` |
+| `Dictionary<K,V>` | O(1)* theo key | O(1)* | O(1)* | O(1)* | <T>Hash table</T>: bucket theo `GetHashCode`, so khớp bằng `Equals` |
 | `HashSet<T>` | không | O(1)* | O(1)* | O(1)* | Như Dictionary nhưng chỉ có key |
 | `SortedDictionary` | O(log n) | O(log n) | O(log n) | O(log n) | Cây đỏ đen, luôn có thứ tự |
 | `LinkedList<T>` | O(n) | O(n) | O(1) nếu có node | O(1) nếu có node | Danh sách liên kết đôi |
 | `Queue` / `Stack` | chỉ phần tử đầu/đỉnh | O(1)* | O(1) | Array vòng / array |
 
-* trung bình hoặc amortized. Dictionary/HashSet tệ nhất là O(n) khi hash bị trùng nhiều.
+* trung bình hoặc <T>amortized</T>. Dictionary/HashSet tệ nhất là O(n) khi hash bị trùng nhiều.
 
 ## Dictionary hoạt động bên trong thế nào? {#dictionary}
 
 ::: tip Trả lời nhanh
-Gọi `GetHashCode()` của key để chọn bucket, rồi dùng `Equals()` để tìm đúng key trong bucket đó. Vì vậy tra cứu trung bình là O(1). Nếu nhiều key có cùng hash, chúng dồn vào cùng một chuỗi và tra cứu chậm dần tới O(n).
+Gọi `GetHashCode()` của key để chọn <T>bucket</T>, rồi dùng `Equals()` để tìm đúng key trong bucket đó. Vì vậy tra cứu trung bình là O(1). Nếu nhiều key có cùng hash, chúng dồn vào cùng một chuỗi và tra cứu chậm dần tới O(n).
 :::
 
 ::: warning Bẫy & follow-up
@@ -49,13 +49,13 @@ Tham số: nhận kiểu **tổng quát nhất** mà method cần (`IEnumerable<
 ::: warning Bẫy & follow-up
 **"Trả về `IEnumerable<T>` từ repository có vấn đề gì?"**
 
-Caller không biết dữ liệu đã nạp hay chưa. Nếu bên dưới là query chưa chạy, mỗi lần duyệt lại là một lần query DB, và có thể chạy sau khi DbContext đã bị dispose. Trả `IReadOnlyList` sau khi `ToListAsync()` thì rõ ràng hơn.
+Caller không biết dữ liệu đã nạp hay chưa. Nếu bên dưới là query chưa chạy, mỗi lần duyệt lại là một lần query DB, và có thể chạy sau khi <T>DbContext</T> đã bị <T>dispose</T>. Trả `IReadOnlyList` sau khi `ToListAsync()` thì rõ ràng hơn.
 :::
 
 ## `IEnumerable` vs `IQueryable` <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#ienumerable-vs-iqueryable}
 
 ::: tip Trả lời nhanh
-`IEnumerable` chạy LINQ trong memory, nhận delegate (`Func<T,bool>`). `IQueryable` nhận **expression tree** (`Expression<Func<T,bool>>`), một cấu trúc dữ liệu mô tả biểu thức, để provider như EF dịch sang SQL và lọc ngay trong database.
+`IEnumerable` chạy <T>LINQ</T> trong memory, nhận <T>delegate</T> (`Func<T,bool>`). `IQueryable` nhận <T>expression tree</T> (`Expression<Func<T,bool>>`), một cấu trúc dữ liệu mô tả biểu thức, để provider như <T k="ef core">EF</T> dịch sang SQL và lọc ngay trong database.
 :::
 
 ::: info Bản chất
@@ -104,7 +104,7 @@ min = 1000;                         // query dùng giá trị LÚC CHẠY, khôn
 var n = big.Count();                // lọc với 1000
 ```
 
-`yield return` cũng tạo ra deferred execution: compiler sinh một state machine iterator, mỗi lần `MoveNext()` mới chạy tới `yield` kế tiếp.
+`yield return` cũng tạo ra deferred execution: compiler sinh một <T>state machine</T> iterator, mỗi lần `MoveNext()` mới chạy tới `yield` kế tiếp.
 :::
 
 ::: warning Bẫy & follow-up
@@ -121,7 +121,7 @@ Biến `IEnumerable` đó đang bị duyệt nhiều lần. Nếu nguồn đắt
 | `First` / `Single` | `First` lấy phần tử đầu, dừng ngay khi gặp. `Single` khẳng định có đúng 1, phải quét tiếp để chắc không có cái thứ 2 (SQL dùng `TOP 2`). Không có phần tử: cả hai ném lỗi; bản `OrDefault` trả default. |
 | `Any()` / `Count() > 0` | `Any` dừng ở phần tử đầu tiên (SQL `EXISTS`); `Count` phải đếm hết. |
 | `Select` / `SelectMany` | `Select` biến mỗi phần tử thành 1 giá trị; `SelectMany` trải phẳng danh sách con (merchant → tất cả transaction). |
-| `GroupBy` / `ToLookup` | `GroupBy` deferred; `ToLookup` chạy ngay và cho tra cứu theo key nhiều lần. |
+| `GroupBy` / `ToLookup` | `GroupBy` <T k="deferred execution">deferred</T>; `ToLookup` chạy ngay và cho tra cứu theo key nhiều lần. |
 | `Distinct` / `DistinctBy` | `DistinctBy(x => x.Email)` (.NET 6) lọc trùng theo một thuộc tính. |
 :::
 
@@ -155,7 +155,7 @@ Có overhead (delegate, iterator, cấp phát) so với vòng lặp tay. Với c
 ## Big-O và các bẫy O(n²) ẩn trong code business {#hidden-on2}
 
 ::: tip Trả lời nhanh
-Big-O đo số bước tăng theo kích thước dữ liệu n, bỏ qua hằng số. Nó trả lời câu hỏi "dữ liệu tăng gấp 10 thì code chậm đi bao nhiêu lần". Khi n = 10.000: O(1) ≈ 1, O(log n) ≈ 14, O(n) = 10.000, O(n log n) ≈ 130.000, O(n²) = 100 triệu.
+<T>Big-O</T> đo số bước tăng theo kích thước dữ liệu n, bỏ qua hằng số. Nó trả lời câu hỏi "dữ liệu tăng gấp 10 thì code chậm đi bao nhiêu lần". Khi n = 10.000: O(1) ≈ 1, O(log n) ≈ 14, O(n) = 10.000, O(n log n) ≈ 130.000, O(n²) = 100 triệu.
 :::
 
 ::: info Bản chất: vì sao ghép string trong vòng lặp là O(n²)

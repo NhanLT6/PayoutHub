@@ -10,7 +10,7 @@ CV của bạn là Web Forms 4.8, nên interviewer sẽ thử xem bạn còn b�
 
 - **.NET Framework 4.8.1** là bản cuối. Chỉ còn sửa lỗi bảo mật, chỉ chạy Windows, cài chung toàn máy và đi theo OS.
 - **.NET Core 1.0 → 3.1**, sau đó đổi tên thành **.NET 5** (2020) và bỏ chữ "Core". Riêng tên _ASP.NET Core_ và _EF Core_ vẫn giữ.
-- Mỗi tháng 11 ra một bản. Số chẵn là LTS (3 năm), số lẻ là STS (từ .NET 9 được kéo lên 2 năm).
+- Mỗi tháng 11 ra một bản. Số chẵn là <T>LTS</T>, số lẻ là <T>STS</T>.
 - **.NET 8** LTS (11/2023, hết hỗ trợ 11/2026) và **.NET 10** LTS (11/2025). Khi phỏng vấn, nói theo .NET 8/10 là an toàn.
 
 ## Bảng đối chiếu: thứ bạn dùng hằng ngày → thứ thay thế {#framework-to-core-map}
@@ -25,24 +25,24 @@ CV của bạn là Web Forms 4.8, nên interviewer sẽ thử xem bạn còn b�
 | Session in-proc mặc định | Phải bật `AddSession()`, lưu qua `IDistributedCache`, chỉ lưu byte/string |
 | Forms Authentication | Cookie authentication / ASP.NET Core Identity / JWT |
 | `System.Web.Caching.Cache` | `IMemoryCache`, `IDistributedCache`, `HybridCache` (.NET 9) |
-| Unity / Autofac / tự `new` | DI container dựng sẵn |
+| Unity / Autofac / tự `new` | <T>DI</T> container dựng sẵn |
 | log4net / NLog trực tiếp | `ILogger<T>` (log4net/Serilog chỉ còn là provider phía sau) |
-| IIS + `System.Web` | Kestrel, có hoặc không có IIS/Nginx phía trước |
-| ASMX / WCF service | Web API, gRPC, CoreWCF (bản cộng đồng) |
-| `packages.config`, csproj kiểu cũ | SDK-style csproj + `PackageReference` |
+| <T>IIS</T> + `System.Web` | <T>Kestrel</T>, có hoặc không có IIS/Nginx phía trước |
+| ASMX / WCF service | Web API, <T>gRPC</T>, CoreWCF (bản cộng đồng) |
+| `packages.config`, csproj kiểu cũ | <T>SDK-style</T> csproj + `PackageReference` |
 | AppDomain, Remoting | `AssemblyLoadContext`; Remoting bị bỏ hẳn |
 
 ## .NET Framework và .NET (Core) khác nhau thế nào? <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#framework-vs-core}
 
 ::: tip Trả lời nhanh
-.NET Framework chỉ chạy Windows, cài chung toàn máy và gắn chặt với IIS qua `System.Web`. .NET là bản viết lại: cross-platform, mỗi app mang runtime và version riêng, modular qua NuGet, có sẵn DI, config, logging, và nhanh hơn đáng kể. Framework 4.8 vẫn được support nhưng không còn tính năng mới.
+.NET Framework chỉ chạy Windows, cài chung toàn máy và gắn chặt với <T>IIS</T> qua `System.Web`. .NET là bản viết lại: cross-platform, mỗi app mang runtime và version riêng, modular qua <T>NuGet</T>, có sẵn <T>DI</T>, config, logging, và nhanh hơn đáng kể. Framework 4.8 vẫn được support nhưng không còn tính năng mới.
 :::
 
 ::: info Bản chất
 - **Side-by-side**: nhiều app trên cùng server có thể chạy .NET 8 và .NET 10 song song. Framework thì nâng lên là ảnh hưởng mọi app trên máy.
 - **Deploy**: framework-dependent hoặc self-contained (đóng gói luôn runtime), chạy trên Docker/Linux được.
 - **Không còn `System.Web`**: đây là lý do gốc khiến Web Forms không port sang được.
-- **Hiệu năng**: Kestrel, `Span<T>`, tiered JIT, Dynamic PGO; framework cũng được tối ưu lại từ đầu với async.
+- **Hiệu năng**: <T>Kestrel</T>, `Span<T>`, tiered <T>JIT</T>, Dynamic <T>PGO</T>; framework cũng được tối ưu lại từ đầu với async.
 - Open-source và phát hành mỗi năm một bản.
 :::
 
@@ -57,7 +57,7 @@ Không. `System.Web` không tồn tại trên .NET hiện đại. Phần UI ph�
 
 **"Thư viện viết cho Framework có dùng lại được không?"**
 
-Nếu target **.NET Standard 2.0** thì dùng được ở cả hai bên, đây là cách chuẩn khi migrate từng bước. Thư viện target thẳng `net48` thì .NET có thể load nhờ compatibility shim, nhưng sẽ lỗi lúc chạy nếu nó gọi API không còn (System.Web, WCF server, AppDomain).
+Nếu target **.NET Standard 2.0** thì dùng được ở cả hai bên, đây là cách chuẩn khi migrate từng bước. Thư viện target thẳng `net48` thì .NET có thể load nhờ compatibility shim, nhưng sẽ lỗi lúc chạy nếu nó gọi API không còn (<T>System.Web</T>, WCF server, AppDomain).
 
 **".NET Standard là gì, giờ còn cần không?"**
 
@@ -67,13 +67,13 @@ Là một "hợp đồng API" chung để thư viện chạy được trên nhi�
 ## Kestrel là gì? Có còn cần IIS không? {#kestrel}
 
 ::: tip Trả lời nhanh
-Kestrel là web server cross-platform dựng sẵn trong ASP.NET Core. App luôn có server bên trong nó; IIS hoặc Nginx chỉ là reverse proxy tùy chọn đặt phía trước, lo TLS, load balancing, chia port 80/443 cho nhiều app và quản lý process.
+Kestrel là web server cross-platform dựng sẵn trong ASP.NET Core. App luôn có server bên trong nó; <T>IIS</T> hoặc Nginx chỉ là <T>reverse proxy</T> tùy chọn đặt phía trước, lo <T>TLS</T>, load balancing, chia port 80/443 cho nhiều app và quản lý process.
 :::
 
 ::: info Bản chất
-Trên IIS, ASP.NET Core chạy qua **ASP.NET Core Module (ANCM)** theo 2 kiểu:
+Trên IIS, ASP.NET Core chạy qua <T k="ancm">ASP.NET Core Module (ANCM)</T> theo 2 kiểu:
 
-- **In-process** (mặc định): app chạy ngay trong `w3wp.exe`, dùng IIS HTTP Server thay cho Kestrel. Nhanh hơn vì không qua thêm một hop.
+- **In-process** (mặc định): app chạy ngay trong <T k="w3wp">worker process</T> `w3wp.exe` của IIS, dùng IIS HTTP Server thay cho Kestrel. Nhanh hơn vì không qua thêm một hop.
 - **Out-of-process**: IIS chỉ forward request tới Kestrel đang chạy trong process riêng.
 
 Trên Linux/container: thường là Kestrel, đặt sau Nginx, load balancer hoặc ingress.
@@ -82,7 +82,7 @@ Trên Linux/container: thường là Kestrel, đặt sau Nginx, load balancer ho
 ::: warning Bẫy & follow-up
 **"Expose Kestrel thẳng ra internet được không?"**
 
-Được, Kestrel đủ ổn định để làm edge server. Nhưng thực tế vẫn hay đặt sau proxy để terminate TLS tập trung, có WAF, và gom nhiều app về một port.
+Được, Kestrel đủ ổn định để làm edge server. Nhưng thực tế vẫn hay đặt sau proxy để terminate TLS tập trung, có <T>WAF</T>, và gom nhiều app về một port.
 
 **"Đặt sau proxy thì cần chú ý gì?"**
 
@@ -145,7 +145,7 @@ Không: nó là scoped, sẽ lỗi scope validation. Singleton cần giá trị 
 ## Migrate một app .NET Framework lên .NET 8 thế nào? <Badge type="warning" text="cả 2 job hỏi" /> {#migration-strategy}
 
 ::: tip Trả lời nhanh
-Không **big-bang**. Chuyển dần theo **strangler fig**: dựng một app ASP.NET Core mới đứng trước (reverse proxy bằng **YARP**); route nào đã chuyển thì vào app mới, còn lại proxy về app cũ. Thứ tự: thư viện dùng chung sang **.NET Standard 2.0** / multi-target trước, rồi data access (EF6 → EF Core), rồi từng nhóm endpoint. Cần chia sẻ session/auth giữa hai app thì dùng **System.Web adapters**. Bước nào cũng phải deploy được và rollback được.
+Không <T>big-bang</T>. Chuyển dần theo <T>strangler fig</T>: dựng một app ASP.NET Core mới đứng trước (reverse proxy bằng <T>YARP</T>); route nào đã chuyển thì vào app mới, còn lại proxy về app cũ. Thứ tự: thư viện dùng chung sang <T k="net standard">.NET Standard 2.0</T> / multi-target trước, rồi data access (<T>EF6</T> → <T>EF Core</T>), rồi từng nhóm endpoint. Cần chia sẻ session/auth giữa hai app thì dùng <T>System.Web adapters</T>. Bước nào cũng phải deploy được và rollback được.
 :::
 
 ::: info Bản chất
@@ -168,7 +168,7 @@ app cũ (IIS)
 | `Global.asax`, HTTP modules | `Program.cs` + middleware |
 | MVC 5 / Web API 2 | ASP.NET Core MVC (controller MVC và API đã gộp làm một) |
 | EF6 (EDMX) | EF Core: code-first, hoặc `dotnet ef dbcontext scaffold` từ DB có sẵn |
-| WCF server | gRPC / REST, hoặc CoreWCF nếu client không đổi được |
+| WCF server | <T>gRPC</T> / REST, hoặc CoreWCF nếu client không đổi được |
 | Session, Forms auth | Cookie auth; chia sẻ với app cũ qua System.Web adapters |
 
 **Tool**: **.NET Upgrade Assistant** (extension Visual Studio / CLI) chuyển csproj sang SDK-style, đổi package, và dựng sẵn project ASP.NET Core + YARP cho kiểu migrate từng bước.

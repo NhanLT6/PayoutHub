@@ -10,7 +10,7 @@ Phần đầu là bài học kèm hình. [Câu hỏi phỏng vấn](#interview) 
 
 ## 1. Pipeline là các hàm gọi lồng nhau
 
-**Middleware** là một hàm nhận `HttpContext` và hàm kế tiếp (`next`). Nó làm gì đó, gọi `next`, rồi làm tiếp sau khi `next` trả về.
+**Middleware** là một hàm nhận <T>HttpContext</T> và hàm kế tiếp (`next`). Nó làm gì đó, gọi `next`, rồi làm tiếp sau khi `next` trả về.
 
 **Pipeline** là chuỗi các hàm đó gọi lồng vào nhau: 1 gọi 2, 2 gọi 3... "Chiều ra" không phải một cơ chế riêng, nó chỉ là **các hàm trả về cho hàm đã gọi nó**, nên thứ tự tự nhiên là ngược lại.
 
@@ -48,7 +48,7 @@ app.Use(async (ctx, next) =>
 
 **Exception** bay ngược lên qua các hàm đang gọi dở, giống `throw` trong method lồng nhau: code sau lời gọi **bị bỏ qua** (trừ `finally`) cho tới hàm có `catch`.
 
-**Short-circuit** là một lớp **chủ động không gọi** `next` mà tự ghi response rồi `return`. Đường về hoàn toàn bình thường.
+Một lớp **chủ động không gọi** `next` mà tự ghi response rồi `return` gọi là <T>short-circuit</T>. Đường về hoàn toàn bình thường.
 
 <Compare :labels="['Lớp 5 ném exception', 'Lớp 3 short-circuit']" caption="Ví dụ dùng 5 lớp tự đặt, ExceptionHandler ở lớp 2 để thấy lớp 1 vẫn chạy bình thường.">
 <template #a>
@@ -69,7 +69,7 @@ app.Use(async (ctx, next) =>
 
 **UseHttpsRedirection**: **server** trả 307 bảo client "gọi lại bằng https".
 
-**UseHsts**: gửi header dặn **browser** "từ giờ chỉ gọi tôi bằng HTTPS", để browser tự đổi mà không gửi HTTP ra mạng nữa.
+**UseHsts**: gửi header <T>HSTS</T> dặn **browser** "từ giờ chỉ gọi tôi bằng HTTPS", để browser tự đổi mà không gửi HTTP ra mạng nữa.
 
 <Compare :labels="['Chỉ có HttpsRedirection', 'Có thêm HSTS']" caption="HttpsRedirection: server chuyển hướng, request đầu vẫn hở. HSTS: browser tự giác không đi HTTP nữa.">
 <template #a>
@@ -91,7 +91,7 @@ app.Use(async (ctx, next) =>
 <p class="fig-caption">Thứ tự chỉ quan trọng với Use…. Với Map…, routing không duyệt từ trên xuống mà xếp hạng mọi route khớp theo độ cụ thể.</p>
 </div>
 
-**UseCors**: **server nói với browser** origin nào được phép đọc response, qua các header `Access-Control-Allow-*`. Người thực thi là browser, không phải server.
+**UseCors**: <T>CORS</T> là việc **server nói với browser** origin nào được phép đọc response, qua các header `Access-Control-Allow-*`. Người thực thi là browser, không phải server.
 
 <div class="fig">
 <svg viewBox="0 0 720 250" role="img" aria-label="CORS: browser kiểm tra header của server; Postman gọi thẳng không bị kiểm tra"><g font-size="13" font-weight="600" text-anchor="middle"><rect class="box" x="20" y="30" width="170" height="54" rx="8"/><text x="105" y="53">JS trên</text><text x="105" y="71" class="mono">app.a.com</text><rect class="boxAcc" x="250" y="30" width="170" height="54" rx="8"/><text x="335" y="53">Browser</text><text x="335" y="71" font-weight="400" font-size="12">người gác</text><rect class="box" x="520" y="30" width="180" height="54" rx="8"/><text x="610" y="53">PayoutHub API</text><text x="610" y="71" class="mono" font-weight="400">api.b.com</text><rect class="box" x="20" y="170" width="170" height="44" rx="8"/><text x="105" y="197">Postman / server khác</text></g><line class="ln" x1="190" y1="50" x2="246" y2="50" marker-end="url(#aInk)"/><line class="ln" x1="420" y1="50" x2="516" y2="50" marker-end="url(#aInk)"/><line class="ln" x1="520" y1="68" x2="424" y2="68" marker-end="url(#aInk)"/><text x="470" y="104" font-size="12" text-anchor="middle" class="mono">Access-Control-Allow-</text><text x="470" y="119" font-size="12" text-anchor="middle" class="mono">Origin: app.a.com</text><line class="lnOk" x1="250" y1="76" x2="194" y2="76" marker-end="url(#aOk)"/><text x="220" y="140" font-size="12" text-anchor="middle" class="okT">header khớp → cho JS đọc</text><text x="220" y="155" font-size="12" text-anchor="middle" class="badT">không khớp → giấu response</text><path class="lnBad dash" d="M190 192 L 600 192 L 600 88" marker-end="url(#aBad)"/><text x="400" y="210" font-size="12" text-anchor="middle" class="badT">gọi thẳng: không có người gác, CORS không có tác dụng</text></svg>
@@ -104,7 +104,7 @@ app.Use(async (ctx, next) =>
 
 **UseAuthorization**: dựa vào User và policy của endpoint, trả lời "bạn được làm gì". Phải đứng sau Authentication và sau Routing.
 
-**UseRateLimiter**: cổng soát vé, giới hạn số request trong một khoảng thời gian. Đặt càng ngoài thì từ chối càng rẻ, nhưng càng biết ít về người gọi.
+**UseRateLimiter**: cổng soát vé (<T>rate limiting</T>), giới hạn số request trong một khoảng thời gian. Đặt càng ngoài thì từ chối càng rẻ, nhưng càng biết ít về người gọi.
 
 ### Dễ nhầm
 
@@ -124,7 +124,7 @@ app.Use(async (ctx, next) =>
 
 **Convention class**: class có constructor nhận `RequestDelegate next` và method tên `InvokeAsync`. Không có interface nào kiểm tra; sai tên hay sai chữ ký thì chỉ lộ lúc chạy.
 
-**IMiddleware**: class implement interface, compiler kiểm tra chữ ký. Phải đăng ký vào DI.
+**IMiddleware**: class implement interface, compiler kiểm tra chữ ký. Phải đăng ký vào <T>DI</T>.
 
 ### Instance sống bao lâu {#middleware-lifetime}
 
@@ -142,11 +142,11 @@ Khác nhau cốt lõi là **instance sống bao lâu**:
 <p class="fig-caption">Cùng gọi app.UseMiddleware&lt;T&gt;(). Framework nhìn T có implement IMiddleware không để chọn một trong hai đường.</p>
 </div>
 
-Hay nhầm: "đặt `DbContext` ở tham số `InvokeAsync` trông như singleton". Không phải. **Instance** middleware sống lâu, nhưng **tham số** `InvokeAsync` được framework lấy lại từ `HttpContext.RequestServices` (scope của request) ở mỗi lần gọi, giống method injection bằng `[FromServices]` ở action. Ngược lại, đặt `DbContext` vào constructor của convention class mới là sai: constructor chỉ chạy một lần, `DbContext` đó bị giam cả đời app.
+Hay nhầm: "đặt <T>DbContext</T> ở tham số `InvokeAsync` trông như singleton". Không phải. **Instance** middleware sống lâu, nhưng **tham số** `InvokeAsync` được framework lấy lại từ `HttpContext.RequestServices` (scope của request) ở mỗi lần gọi, giống method injection bằng `[FromServices]` ở action. Ngược lại, đặt `DbContext` vào constructor của convention class mới là sai: constructor chỉ chạy một lần, `DbContext` đó bị giam cả đời app (<T>captive dependency</T>).
 
 ### Closure
 
-**Closure**: lambda **mang theo ba lô** chứa các biến bên ngoài mà nó dùng tới, nên các biến đó sống tiếp dù method tạo ra lambda đã chạy xong. Compiler biến ba lô thành một class ẩn. Ba lô giữ **chính biến đó**, không phải bản copy giá trị.
+Lambda ở `app.Use(…)` là một <T>closure</T>: nó giữ lại các biến bên ngoài mà nó dùng, nên chúng sống tiếp sau khi `Program.cs` chạy xong phần đăng ký. Chính vì thế middleware dạng lambda tạo một lần lúc start rồi dùng chung cho mọi request.
 
 ### Code mẫu và cách chọn
 
@@ -190,7 +190,7 @@ app.UseMiddleware<TimingMiddleware>();
 :::
 
 ::: tip Chọn nhanh
-Chỉ liên quan action MVC thì dùng filter ([Filter](/aspnet-core/middleware#filters)). Vài dòng hoặc lab thì dùng `app.Use(…)`. Còn lại dùng `IMiddleware`. Convention class chỉ khi viết library hoặc hot path cực nóng; các middleware có sẵn của ASP.NET đều là convention class vì lý do đó.
+Chỉ liên quan action MVC thì dùng filter ([Filter](/aspnet-core/middleware#filters)). Vài dòng hoặc lab thì dùng `app.Use(…)`. Còn lại dùng `IMiddleware`. Convention class chỉ khi viết library hoặc <T>hot path</T> cực nóng; các middleware có sẵn của ASP.NET đều là convention class vì lý do đó.
 :::
 
 ## Câu hỏi phỏng vấn {#interview}
@@ -234,7 +234,7 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 :::
 
 ::: details Ở dự án thật
-Middleware là phiên bản hiện đại của HttpModule. `Application_BeginRequest` trong Global.asax hay một HttpModule ghi log hoặc kiểm tra IP giờ là một middleware. Khác biệt chính: HttpModule gắn vào các event cố định của IIS pipeline; middleware là chuỗi delegate do bạn tự sắp xếp, rõ ràng và test được.
+Middleware là phiên bản hiện đại của <T>HttpModule</T>. `Application_BeginRequest` trong Global.asax hay một HttpModule ghi log hoặc kiểm tra IP giờ là một middleware. Khác biệt chính: HttpModule gắn vào các event cố định của IIS pipeline; middleware là chuỗi delegate do bạn tự sắp xếp, rõ ràng và test được.
 :::
 
 ::: warning Bẫy & follow-up
@@ -269,7 +269,7 @@ Filter chạy **bên trong** MVC, quanh việc thực thi action, nên biết ac
 5. **Exception filter**: chỉ khi action hoặc filter trước nó ném lỗi
 6. **Result filter**: trước và sau khi ghi kết quả
 
-Minimal API không có MVC filter, thay vào đó là **endpoint filter** (`AddEndpointFilter`).
+<T>Minimal API</T> không có <T>MVC</T> filter, thay vào đó là **endpoint filter** (`AddEndpointFilter`).
 :::
 
 ::: warning Bẫy & follow-up
@@ -287,7 +287,7 @@ Không. Nó chỉ bắt lỗi trong phạm vi MVC. Lỗi toàn cục phải xử
 :::
 
 ::: details Đảo UseRouting và UseCors thì sao?
-**Policy theo endpoint bị lờ đi mà không báo lỗi gì**, và browser chặn request. CORS là người đọc nhãn, Routing là người dán nhãn; đọc trước khi dán thì không có gì để đọc.
+**Policy theo endpoint bị lờ đi mà không báo lỗi gì**, và browser chặn request. <T>CORS</T> là người đọc nhãn, Routing là người dán nhãn; đọc trước khi dán thì không có gì để đọc.
 
 <Compare :labels="['Routing → CORS', 'CORS → Routing (đảo)']">
 <template #a>
@@ -298,7 +298,7 @@ Không. Nó chỉ bắt lỗi trong phạm vi MVC. Lỗi toàn cục phải xử
 </template>
 </Compare>
 
-Thêm: CORS phải đứng **trước** Authentication/Authorization, vì preflight (`OPTIONS`) không mang token; đứng sau auth thì preflight nhận 401 không có header CORS.
+Thêm: CORS phải đứng **trước** Authentication/Authorization, vì <T>preflight</T> (`OPTIONS`) không mang token; đứng sau auth thì preflight nhận 401 không có header CORS.
 :::
 
 ### CORS và HSTS
@@ -308,7 +308,7 @@ Thêm: CORS phải đứng **trước** Authentication/Authorization, vì prefli
 :::
 
 ::: details UseHsts có cần cho PayoutHub không?
-**Chưa cần.** HSTS là chỉ dẫn cho browser; client của PayoutHub là server khác (FakeBank gọi webhook, hệ thống nội bộ), chúng bỏ qua header này. Với API, cách an toàn hơn là không mở cổng HTTP hoặc trả 400 cho HTTP thay vì redirect, vì client có thể đã gửi token qua HTTP ở request đầu. Thực tế TLS thường kết thúc ở reverse proxy và HSTS cũng đặt ở đó.
+**Chưa cần.** <T>HSTS</T> là chỉ dẫn cho browser; client của PayoutHub là server khác (FakeBank gọi webhook, hệ thống nội bộ), chúng bỏ qua header này. Với API, cách an toàn hơn là không mở cổng HTTP hoặc trả 400 cho HTTP thay vì redirect, vì client có thể đã gửi token qua HTTP ở request đầu. Thực tế <T>TLS</T> thường kết thúc ở <T>reverse proxy</T> và HSTS cũng đặt ở đó.
 
 | Điều kiện | Mặc định |
 |---|---|
@@ -321,7 +321,7 @@ Thêm: CORS phải đứng **trước** Authentication/Authorization, vì prefli
 ### Rate limiter
 
 ::: details Đưa UseRateLimiter ra ngay sau UseExceptionHandler thì sao?
-**Tuỳ partition key lấy từ đâu.** Theo IP hoặc global thì tốt, chặn sớm nhất. Theo user thì sai, vì lúc đó `User` chưa được gán.
+**Tuỳ <T>partition key</T> lấy từ đâu.** Theo IP hoặc global thì tốt, chặn sớm nhất. Theo user thì sai, vì lúc đó `User` chưa được gán.
 
 <div class="fig">
 <svg viewBox="0 0 720 280" role="img" aria-label="Hai vị trí của rate limiter"><g text-anchor="middle" font-size="12"><rect class="box" x="10" y="110" width="104" height="54" rx="8"/><text x="62" y="133" class="mono">Exception</text><text x="62" y="150" class="mono">Handler</text><rect class="boxAcc" x="134" y="110" width="104" height="54" rx="8"/><text x="186" y="133" class="mono" font-weight="600">Rate</text><text x="186" y="150" class="mono" font-weight="600">Limiter A</text><rect class="box" x="258" y="110" width="104" height="54" rx="8"/><text x="310" y="133" class="mono">Authen-</text><text x="310" y="150" class="mono">tication</text><rect class="box" x="382" y="110" width="104" height="54" rx="8"/><text x="434" y="133" class="mono">Author-</text><text x="434" y="150" class="mono">ization</text><rect class="boxAcc dash" x="506" y="110" width="104" height="54" rx="8"/><text x="558" y="133" class="mono" font-weight="600">Rate</text><text x="558" y="150" class="mono" font-weight="600">Limiter B</text><rect class="boxOk" x="630" y="110" width="80" height="54" rx="8"/><text x="670" y="142" class="okT">Endpoint</text></g><line class="ln" x1="114" y1="137" x2="132" y2="137" marker-end="url(#aInk)"/><line class="ln" x1="238" y1="137" x2="256" y2="137" marker-end="url(#aInk)"/><line class="ln" x1="362" y1="137" x2="380" y2="137" marker-end="url(#aInk)"/><line class="ln" x1="486" y1="137" x2="504" y2="137" marker-end="url(#aInk)"/><line class="ln" x1="610" y1="137" x2="628" y2="137" marker-end="url(#aInk)"/><g font-size="12"><line class="lnMuted" x1="186" y1="108" x2="186" y2="70"/><text x="134" y="22" font-weight="600">A: sau ExceptionHandler</text><text x="134" y="40" class="okT">✓ theo IP / global: chặn sớm, rẻ nhất</text><text x="134" y="58" class="badT">✗ theo user: User chưa có → mọi người chung 1 xô</text><line class="lnMuted" x1="558" y1="166" x2="558" y2="200"/><text x="330" y="222" font-weight="600">B: sau Authorization</text><text x="330" y="240" class="okT">✓ biết User → mỗi user một xô riêng</text><text x="330" y="258" class="muted">request bị từ chối đã tốn công xác thực token</text></g></svg>
@@ -361,13 +361,13 @@ Tóm lại, trong code ứng dụng gần như không bao giờ cần convention
 :::
 
 ::: details Vì sao lại có convention class? Do type system của C# kém linh hoạt?
-**Một phần, nhưng chủ yếu là lựa chọn thiết kế.** ASP.NET muốn mỗi middleware tự khai báo service nó cần ngay trong tham số `InvokeAsync` (method injection), mỗi class một danh sách khác nhau. Một interface thì phải cố định chữ ký, và C# (cũng như Java, TypeScript) không có cách viết "method với số tham số tuỳ ý" trong interface. Nên framework đọc chữ ký bằng reflection lúc start, rồi compile thành delegate để chạy nhanh.
+**Một phần, nhưng chủ yếu là lựa chọn thiết kế.** ASP.NET muốn mỗi middleware tự khai báo service nó cần ngay trong tham số `InvokeAsync` (method injection), mỗi class một danh sách khác nhau. Một interface thì phải cố định chữ ký, và C# (cũng như Java, TypeScript) không có cách viết "method với số tham số tuỳ ý" trong interface. Nên framework đọc chữ ký bằng <T>reflection</T> lúc start, rồi compile thành <T>delegate</T> để chạy nhanh.
 
 Giá phải trả: sai chữ ký chỉ lộ lúc chạy. Cùng ý tưởng này bạn sẽ gặp lại ở Minimal API: `app.MapGet("/x", (PayoutDbContext db, int id) => …)`, framework đọc tham số của lambda để biết inject gì. Bên dưới, mọi kiểu middleware đều quy về một `Func<RequestDelegate, RequestDelegate>`; `IMiddleware` ra đời sau (2.0) cho ai muốn compiler kiểm tra.
 :::
 
 ::: details Closure nên hiểu tiếng Việt thế nào?
-**Đừng dịch, hãy nhớ hình "lambda mang ba lô".** Ví dụ Lab 1: `app.Use` nhận một lambda; nếu lambda dùng `app.Logger` thì `app.Logger` nằm trong ba lô. Lambda tạo một lần lúc start nên ba lô cũng chỉ có một, dùng chung cho mọi request, giống singleton.
+**Đừng dịch, hãy nhớ hình "lambda mang ba lô"** (xem <T>closure</T>). Ví dụ Lab 1: `app.Use` nhận một lambda; nếu lambda dùng `app.Logger` thì `app.Logger` nằm trong ba lô. Lambda tạo một lần lúc start nên ba lô cũng chỉ có một, dùng chung cho mọi request, giống singleton.
 
 Bẫy kinh điển: closure giữ **chính biến**. Tạo lambda trong vòng `for (int i…)` rồi chạy sau thì mọi lambda thấy cùng một `i` với giá trị cuối.
 :::

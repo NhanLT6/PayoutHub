@@ -14,7 +14,7 @@ Cách thứ hai để báo lỗi, đặt cạnh exception. Đọc sau [Exception
 
 **Exception**: lỗi **nhảy** ra khỏi luồng, bay ngược qua các tầng cho tới chỗ có `catch`. Các tầng ở giữa không thấy gì.
 
-Bạn đã dùng Result pattern phiên bản mini trong BCL rồi: `int.TryParse`, `Dictionary.TryGetValue`. Chúng trả `bool` thay vì ném exception, vì "chuỗi không phải số" là chuyện bình thường, không phải sự cố.
+Bạn đã dùng Result pattern phiên bản mini trong <T>BCL</T> rồi: `int.TryParse`, `Dictionary.TryGetValue`. Chúng trả `bool` thay vì ném exception, vì "chuỗi không phải số" là chuyện bình thường, không phải sự cố.
 
 <Compare :labels="['Exception', 'Result']" caption="Cùng một lỗi: duyệt một payout đã duyệt rồi. Với exception, lỗi nhảy qua các tầng; với Result, lỗi được trả về qua từng tầng.">
 <template #a>
@@ -210,17 +210,17 @@ Thực tế hay **dùng cả hai**: Result cho lỗi nghiệp vụ, exception ch
 
 | Cặp | Phân biệt |
 |---|---|
-| **Result** và **ProblemDetails** | Result là kiểu trong code C#, đi giữa các tầng. ProblemDetails là format JSON trả cho client. Tầng Api đổi cái này sang cái kia |
+| **Result** và **ProblemDetails** | Result là kiểu trong code C#, đi giữa các tầng. <T>ProblemDetails</T> là format JSON trả cho client. Tầng Api đổi cái này sang cái kia |
 | **Result** và **TryXxx(out)** | Cùng ý tưởng. `TryParse` chỉ trả `bool`, không nói vì sao lỗi. Result mang theo `Error` |
 | **Result** và **trả `null`** | `null` chỉ nói "không có", không nói vì sao, và dễ bị quên kiểm tra. Result bắt người gọi nhìn thấy lỗi |
-| **Error** và **Exception** | `Error` là dữ liệu: code, message, loại. Exception là cơ chế điều khiển luồng, kèm stack trace |
+| **Error** và **Exception** | `Error` là dữ liệu: code, message, loại. Exception là cơ chế điều khiển luồng, kèm <T>stack trace</T> |
 
 ## Hỏi đáp
 
 ### Thiết kế
 
 ::: details Có nên dùng thư viện thay vì tự viết Result?
-Có vài thư viện phổ biến: **ErrorOr**, **FluentResults**, **Ardalis.Result**, **OneOf**. Chúng thêm sẵn `Match`, `Map`, nhiều lỗi một lúc, map sang `IResult` của Minimal API. Với PayoutHub, quy ước của project là không thêm package khi chưa cần, và tự viết khoảng 40 dòng như trên là đủ hiểu bản chất. Đi làm thì theo convention của team.
+Có vài thư viện phổ biến: **ErrorOr**, **FluentResults**, **Ardalis.Result**, **OneOf**. Chúng thêm sẵn `Match`, `Map`, nhiều lỗi một lúc, map sang `IResult` của <T>Minimal API</T>. Với PayoutHub, quy ước của project là không thêm package khi chưa cần, và tự viết khoảng 40 dòng như trên là đủ hiểu bản chất. Đi làm thì theo convention của team.
 :::
 
 ::: details "Railway-oriented programming" là gì?
@@ -237,7 +237,7 @@ Gọn hơn chuỗi `if (IsFailure) return`, nhưng khó đọc với người ch
 :::
 
 ::: details Domain method (entity) nên trả Result hay throw?
-Hai trường phái đều có lý. Throw: entity tự bảo vệ invariant, ai gọi sai là sự cố. Result: vi phạm rule nghiệp vụ là chuyện có thể xảy ra (user bấm Approve hai lần), nên là giá trị trả về. PayoutHub chọn throw theo [plan](/progress/plan) để luyện exception handler. Trả lời phỏng vấn: nêu cả hai, nói mình chọn gì và vì sao.
+Hai trường phái đều có lý. Throw: entity tự bảo vệ <T>invariant</T>, ai gọi sai là sự cố. Result: vi phạm rule nghiệp vụ là chuyện có thể xảy ra (user bấm Approve hai lần), nên là giá trị trả về. PayoutHub chọn throw theo [plan](/progress/plan) để luyện exception handler. Trả lời phỏng vấn: nêu cả hai, nói mình chọn gì và vì sao.
 :::
 
 ::: details C# có sẵn kiểu union như F# hay Rust không?
@@ -268,7 +268,7 @@ BCL chưa có sẵn kiểu `Result<T, E>` dựng trên union; hiện vẫn tự 
 :::
 
 ::: details "Exception chậm thật không?"
-Chậm hơn `return` nhiều lần vì phải dựng stack trace và tìm `catch`, cỡ micro giây cho mỗi lần `throw`. Với một request thỉnh thoảng lỗi thì không đáng kể. Thành vấn đề khi lỗi là **luồng thường xuyên**: validate hàng chục nghìn dòng, hay endpoint bị gọi sai liên tục. Lý do chính để chọn Result vẫn là thiết kế (lỗi hiện rõ), hiệu năng chỉ là lý do phụ.
+Chậm hơn `return` nhiều lần vì phải dựng <T>stack trace</T> và tìm `catch`, cỡ micro giây cho mỗi lần `throw`. Với một request thỉnh thoảng lỗi thì không đáng kể. Thành vấn đề khi lỗi là **luồng thường xuyên**: validate hàng chục nghìn dòng, hay endpoint bị gọi sai liên tục. Lý do chính để chọn Result vẫn là thiết kế (lỗi hiện rõ), hiệu năng chỉ là lý do phụ.
 :::
 
 ## Tự kiểm tra

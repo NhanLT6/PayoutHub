@@ -15,8 +15,18 @@
 import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 
 type Kind = 'busy' | 'wait' | 'free' | 'cpu' | 'io' | 'other'
-interface Segment { from: number; to: number; text?: string; kind: Kind }
-interface Lane { label: string; sub?: string; group?: string; segments: Segment[] }
+interface Segment {
+  from: number
+  to: number
+  text?: string
+  kind: Kind
+}
+interface Lane {
+  label: string
+  sub?: string
+  group?: string
+  segments: Segment[]
+}
 
 const props = defineProps<{
   lanes: Lane[]
@@ -28,14 +38,14 @@ const props = defineProps<{
 
 // Kích thước trong hệ toạ độ viewBox (SVG tự co giãn theo bề rộng trang).
 const W = 720
-const X0 = 132          // bắt đầu vùng vẽ (bên trái là nhãn lane)
-const X1 = 704          // kết thúc vùng vẽ
-const TOP = 26          // chừa chỗ cho chữ của marker
+const X0 = 132 // bắt đầu vùng vẽ (bên trái là nhãn lane)
+const X1 = 704 // kết thúc vùng vẽ
+const TOP = 26 // chừa chỗ cho chữ của marker
 const LANE_H = 34
 const BAR_H = 22
 const GROUP_H = 24
 const AXIS_H = 30
-const CHAR_W = 6.1      // ước lượng bề rộng một ký tự cỡ 11px, để biết chữ có vừa thanh không
+const CHAR_W = 6.1 // ước lượng bề rộng một ký tự cỡ 11px, để biết chữ có vừa thanh không
 
 const id = useId()
 const clipId = `tl-clip-${id}`
@@ -68,15 +78,15 @@ function fit(text: string | undefined, from: number, to: number) {
 // ---- Hoạt hình ----
 // progress: 0 → 1 trong một lượt quét. SSR và chế độ giảm chuyển động: luôn = 1 (hình vẽ đủ, không đầu đọc).
 const SWEEP_MS = 7000
-const HOLD_MS = 1300    // dừng ở hình đầy đủ một chút trước khi quét lại
+const HOLD_MS = 1300 // dừng ở hình đầy đủ một chút trước khi quét lại
 const progress = ref(1)
-const animated = ref(false)   // false = hình tĩnh, ẩn nút và đầu đọc
+const animated = ref(false) // false = hình tĩnh, ẩn nút và đầu đọc
 const playing = ref(false)
 const root = ref<HTMLElement | null>(null)
 
 let raf = 0
 let visible = true
-let start = 0           // mốc thời gian (ms) ứng với progress = 0
+let start = 0 // mốc thời gian (ms) ứng với progress = 0
 let observer: IntersectionObserver | null = null
 
 function tick(now: number) {
@@ -86,10 +96,13 @@ function tick(now: number) {
 }
 function run() {
   if (raf || !playing.value || !visible) return
-  start = performance.now() - progress.value * SWEEP_MS   // chạy tiếp từ chỗ đang dừng
+  start = performance.now() - progress.value * SWEEP_MS // chạy tiếp từ chỗ đang dừng
   raf = requestAnimationFrame(tick)
 }
-function halt() { cancelAnimationFrame(raf); raf = 0 }
+function halt() {
+  cancelAnimationFrame(raf)
+  raf = 0
+}
 function toggle() {
   playing.value = !playing.value
   playing.value ? run() : halt()
@@ -111,7 +124,10 @@ onMounted(() => {
   }
   run()
 })
-onBeforeUnmount(() => { halt(); observer?.disconnect() })
+onBeforeUnmount(() => {
+  halt()
+  observer?.disconnect()
+})
 
 const headX = computed(() => x(progress.value * props.duration))
 const nowT = computed(() => progress.value * props.duration)
@@ -136,15 +152,25 @@ const isOn = (s: Segment) => animated.value && progress.value < 1 && nowT.value 
       <!-- Nhãn lane + đường kẻ nền -->
       <g v-for="r in layout.rows" :key="`l-${r.y}`">
         <line class="tl-track" :x1="X0" :x2="X1" :y1="r.y + LANE_H / 2" :y2="r.y + LANE_H / 2" />
-        <text class="tl-label" :x="X0 - 10" :y="r.lane.sub ? r.y + LANE_H / 2 - 2 : r.y + LANE_H / 2 + 4">{{ r.lane.label }}</text>
+        <text class="tl-label" :x="X0 - 10" :y="r.lane.sub ? r.y + LANE_H / 2 - 2 : r.y + LANE_H / 2 + 4">
+          {{ r.lane.label }}
+        </text>
         <text v-if="r.lane.sub" class="tl-sub" :x="X0 - 10" :y="r.y + LANE_H / 2 + 11">{{ r.lane.sub }}</text>
       </g>
 
       <!-- Lớp mờ: toàn bộ hình, để người xem thấy trước sẽ có gì -->
       <g v-if="animated" class="tl-ghost">
         <template v-for="r in layout.rows" :key="`g-${r.y}`">
-          <rect v-for="(s, j) in r.lane.segments" :key="j" :class="['tl-bar', `k-${s.kind}`]"
-            :x="x(s.from) + 1" :y="r.y + (LANE_H - BAR_H) / 2" :width="Math.max(2, x(s.to) - x(s.from) - 2)" :height="BAR_H" rx="5" />
+          <rect
+            v-for="(s, j) in r.lane.segments"
+            :key="j"
+            :class="['tl-bar', `k-${s.kind}`]"
+            :x="x(s.from) + 1"
+            :y="r.y + (LANE_H - BAR_H) / 2"
+            :width="Math.max(2, x(s.to) - x(s.from) - 2)"
+            :height="BAR_H"
+            rx="5"
+          />
         </template>
       </g>
 
@@ -153,8 +179,17 @@ const isOn = (s: Segment) => animated.value && progress.value < 1 && nowT.value 
         <template v-for="r in layout.rows" :key="`b-${r.y}`">
           <g v-for="(s, j) in r.lane.segments" :key="j" :class="[`k-${s.kind}`, { on: isOn(s) }]">
             <title>{{ r.lane.label }}: {{ s.text || s.kind }}</title>
-            <rect class="tl-bar" :x="x(s.from) + 1" :y="r.y + (LANE_H - BAR_H) / 2" :width="Math.max(2, x(s.to) - x(s.from) - 2)" :height="BAR_H" rx="5" />
-            <text class="tl-text" :x="(x(s.from) + x(s.to)) / 2" :y="r.y + LANE_H / 2 + 4">{{ fit(s.text, s.from, s.to) }}</text>
+            <rect
+              class="tl-bar"
+              :x="x(s.from) + 1"
+              :y="r.y + (LANE_H - BAR_H) / 2"
+              :width="Math.max(2, x(s.to) - x(s.from) - 2)"
+              :height="BAR_H"
+              rx="5"
+            />
+            <text class="tl-text" :x="(x(s.from) + x(s.to)) / 2" :y="r.y + LANE_H / 2 + 4">
+              {{ fit(s.text, s.from, s.to) }}
+            </text>
           </g>
         </template>
       </g>
@@ -181,57 +216,168 @@ const isOn = (s: Segment) => animated.value && progress.value < 1 && nowT.value 
 </template>
 
 <style scoped>
-.tl { position: relative; }
-.tl:not(.fig) { margin: 4px 0; }
+.tl {
+  position: relative;
+}
+.tl:not(.fig) {
+  margin: 4px 0;
+}
 
 .tl-btn {
-  position: absolute; top: 8px; right: 8px; z-index: 1;
-  width: 28px; height: 28px; border-radius: 50%;
-  font-size: 11px; line-height: 1; cursor: pointer;
-  color: var(--vp-c-text-2); background: var(--vp-c-bg);
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg);
   border: 1px solid var(--vp-c-divider);
-  transition: color .15s, border-color .15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
-.tl-btn:hover { color: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); }
-.tl-btn:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
+.tl-btn:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+.tl-btn:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
 
-.tl-group { font-size: 12px; font-weight: 600; fill: var(--vp-c-text-2); }
-.tl-label { font-size: 13px; font-weight: 600; text-anchor: end; font-family: var(--vp-font-family-mono); }
-.tl-sub { font-size: 10.5px; text-anchor: end; fill: var(--vp-c-text-3); }
-.tl-track { stroke: var(--vp-c-divider); stroke-width: 1; stroke-dasharray: 2 4; }
+.tl-group {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--vp-c-text-2);
+}
+.tl-label {
+  font-size: 13px;
+  font-weight: 600;
+  text-anchor: end;
+  font-family: var(--vp-font-family-mono);
+}
+.tl-sub {
+  font-size: 10.5px;
+  text-anchor: end;
+  fill: var(--vp-c-text-3);
+}
+.tl-track {
+  stroke: var(--vp-c-divider);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
 
 /* Màu theo kind: đặt color rồi dùng currentColor cho viền và ánh sáng */
-.k-busy  { color: var(--vp-c-warning-1); --tl-fill: var(--vp-c-warning-soft); }
-.k-wait  { color: var(--vp-c-warning-1); --tl-fill: transparent; }
-.k-free  { color: var(--vp-c-green-1);   --tl-fill: var(--vp-c-green-soft); }
-.k-cpu   { color: var(--vp-c-brand-1);   --tl-fill: var(--vp-c-brand-soft); }
-.k-io    { color: var(--vp-c-indigo-1);  --tl-fill: transparent; }
-.k-other { color: var(--vp-c-text-2);    --tl-fill: var(--vp-c-default-soft); }
+.k-busy {
+  color: var(--vp-c-warning-1);
+  --tl-fill: var(--vp-c-warning-soft);
+}
+.k-wait {
+  color: var(--vp-c-warning-1);
+  --tl-fill: transparent;
+}
+.k-free {
+  color: var(--vp-c-green-1);
+  --tl-fill: var(--vp-c-green-soft);
+}
+.k-cpu {
+  color: var(--vp-c-brand-1);
+  --tl-fill: var(--vp-c-brand-soft);
+}
+.k-io {
+  color: var(--vp-c-indigo-1);
+  --tl-fill: transparent;
+}
+.k-other {
+  color: var(--vp-c-text-2);
+  --tl-fill: var(--vp-c-default-soft);
+}
 
-.tl-bar { fill: var(--tl-fill); stroke: currentColor; stroke-width: 1.5; }
-.k-wait .tl-bar, .k-wait.tl-bar, .k-io .tl-bar, .k-io.tl-bar { stroke-dasharray: 5 4; }
-.k-cpu .tl-bar, .k-busy .tl-bar { stroke-width: 1.8; }
-.tl-text { font-size: 11px; text-anchor: middle; fill: var(--vp-c-text-1); pointer-events: none; }
-.k-io .tl-text, .k-wait .tl-text { fill: currentColor; font-style: italic; }
+.tl-bar {
+  fill: var(--tl-fill);
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.k-wait .tl-bar,
+.k-wait.tl-bar,
+.k-io .tl-bar,
+.k-io.tl-bar {
+  stroke-dasharray: 5 4;
+}
+.k-cpu .tl-bar,
+.k-busy .tl-bar {
+  stroke-width: 1.8;
+}
+.tl-text {
+  font-size: 11px;
+  text-anchor: middle;
+  fill: var(--vp-c-text-1);
+  pointer-events: none;
+}
+.k-io .tl-text,
+.k-wait .tl-text {
+  fill: currentColor;
+  font-style: italic;
+}
 
-.tl-ghost { opacity: .22; }
-.tl-ghost .tl-text { display: none; }
+.tl-ghost {
+  opacity: 0.22;
+}
+.tl-ghost .tl-text {
+  display: none;
+}
 
 /* Thanh đang bị đầu đọc chạm: sáng lên */
-.on .tl-bar { stroke-width: 2.4; filter: drop-shadow(0 0 4px currentColor); }
-.on { transition: opacity .2s; }
+.on .tl-bar {
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+.on {
+  transition: opacity 0.2s;
+}
 
-.tl-marker line { stroke: var(--vp-c-red-1); stroke-width: 1.3; stroke-dasharray: 4 3; }
-.tl-marker text { font-size: 11px; font-weight: 600; text-anchor: middle; fill: var(--vp-c-red-1); }
+.tl-marker line {
+  stroke: var(--vp-c-red-1);
+  stroke-width: 1.3;
+  stroke-dasharray: 4 3;
+}
+.tl-marker text {
+  font-size: 11px;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: var(--vp-c-red-1);
+}
 
-.tl-axis { stroke: var(--vp-c-text-3); stroke-width: 1.2; }
-.tl-arrow { fill: var(--vp-c-text-3); }
-.tl-axis-text { font-size: 11px; text-anchor: end; fill: var(--vp-c-text-2); }
+.tl-axis {
+  stroke: var(--vp-c-text-3);
+  stroke-width: 1.2;
+}
+.tl-arrow {
+  fill: var(--vp-c-text-3);
+}
+.tl-axis-text {
+  font-size: 11px;
+  text-anchor: end;
+  fill: var(--vp-c-text-2);
+}
 
-.tl-head line { stroke: var(--vp-c-brand-1); stroke-width: 2; }
-.tl-head circle { fill: var(--vp-c-brand-1); }
+.tl-head line {
+  stroke: var(--vp-c-brand-1);
+  stroke-width: 2;
+}
+.tl-head circle {
+  fill: var(--vp-c-brand-1);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .tl-btn, .tl-head { display: none; }
+  .tl-btn,
+  .tl-head {
+    display: none;
+  }
 }
 </style>

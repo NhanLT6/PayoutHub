@@ -14,83 +14,155 @@ const groups: Group[] = [
     title: 'Nền tảng C#',
     hint: 'Từ Framework sang .NET hiện đại',
     pages: [
-      { text: '.NET Framework vs .NET', desc: 'Khác nhau ở runtime, hosting, config. Thứ thay thế cho những gì bạn dùng hằng ngày ở Web Forms.', link: '/dotnet/framework-vs-core', q: [
-        { text: 'Khác nhau', link: '/dotnet/framework-vs-core#framework-vs-core' },
-        { text: 'Kestrel', link: '/dotnet/framework-vs-core#kestrel' },
-        { text: 'Config', link: '/dotnet/framework-vs-core#configuration' },
-      ] },
-      { text: 'OOP & C# cơ bản', desc: '4 tính chất OOP, abstract và interface, SOLID, các câu trả bài kinh điển.', link: '/dotnet/oop-fundamentals', q: [
-        { text: 'OOP', link: '/dotnet/oop-fundamentals#oop' },
-        { text: 'Abstract vs interface', link: '/dotnet/oop-fundamentals#abstract-vs-interface' },
-        { text: 'SOLID', link: '/dotnet/oop-fundamentals#solid' },
-      ] },
-      { text: 'C# hiện đại', desc: 'Nullable reference types, pattern matching, primary constructor, required, init.', link: '/dotnet/modern-csharp', q: [
-        { text: 'Nullable', link: '/dotnet/modern-csharp#nullable' },
-        { text: 'Pattern matching', link: '/dotnet/modern-csharp#pattern-matching' },
-        { text: 'Primary ctor', link: '/dotnet/modern-csharp#primary-ctor' },
-      ] },
-      { text: 'Collections & LINQ', desc: 'Độ phức tạp, Dictionary bên trong, IEnumerable và IQueryable, deferred execution.', link: '/dotnet/collections-linq', q: [
-        { text: 'IEnumerable vs IQueryable', link: '/dotnet/collections-linq#ienumerable-vs-iqueryable' },
-        { text: 'Deferred execution', link: '/dotnet/collections-linq#deferred-execution' },
-        { text: 'Dictionary', link: '/dotnet/collections-linq#dictionary' },
-      ] },
+      {
+        text: '.NET Framework vs .NET',
+        desc: 'Khác nhau ở runtime, hosting, config. Thứ thay thế cho những gì bạn dùng hằng ngày ở Web Forms.',
+        link: '/dotnet/framework-vs-core',
+        q: [
+          { text: 'Khác nhau', link: '/dotnet/framework-vs-core#framework-vs-core' },
+          { text: 'Kestrel', link: '/dotnet/framework-vs-core#kestrel' },
+          { text: 'Config', link: '/dotnet/framework-vs-core#configuration' },
+        ],
+      },
+      {
+        text: 'OOP & C# cơ bản',
+        desc: '4 tính chất OOP, abstract và interface, SOLID, các câu trả bài kinh điển.',
+        link: '/dotnet/oop-fundamentals',
+        q: [
+          { text: 'OOP', link: '/dotnet/oop-fundamentals#oop' },
+          { text: 'Abstract vs interface', link: '/dotnet/oop-fundamentals#abstract-vs-interface' },
+          { text: 'SOLID', link: '/dotnet/oop-fundamentals#solid' },
+        ],
+      },
+      {
+        text: 'C# hiện đại',
+        desc: 'Nullable reference types, pattern matching, primary constructor, required, init.',
+        link: '/dotnet/modern-csharp',
+        q: [
+          { text: 'Nullable', link: '/dotnet/modern-csharp#nullable' },
+          { text: 'Pattern matching', link: '/dotnet/modern-csharp#pattern-matching' },
+          { text: 'Primary ctor', link: '/dotnet/modern-csharp#primary-ctor' },
+        ],
+      },
+      {
+        text: 'Collections & LINQ',
+        desc: 'Độ phức tạp, Dictionary bên trong, IEnumerable và IQueryable, deferred execution.',
+        link: '/dotnet/collections-linq',
+        q: [
+          { text: 'IEnumerable vs IQueryable', link: '/dotnet/collections-linq#ienumerable-vs-iqueryable' },
+          { text: 'Deferred execution', link: '/dotnet/collections-linq#deferred-execution' },
+          { text: 'Dictionary', link: '/dotnet/collections-linq#dictionary' },
+        ],
+      },
     ],
   },
   {
     title: 'Runtime',
     hint: 'Code chạy thế nào bên dưới',
     pages: [
-      { text: 'Memory & GC', desc: 'CLR, IL, JIT. Value và reference type, GC, IDisposable, memory leak, Span.', link: '/runtime/memory', q: [
-        { text: 'Value vs reference', link: '/runtime/memory#value-vs-reference' },
-        { text: 'GC', link: '/runtime/memory#gc' },
-        { text: 'IDisposable', link: '/runtime/memory#idisposable' },
-      ] },
-      { text: 'Async & Concurrency', desc: 'await chạy thế nào, Task và Thread, deadlock, ConfigureAwait, cancellation.', link: '/runtime/async', q: [
-        { text: 'await chạy thế nào', link: '/runtime/async#how-await-works' },
-        { text: 'Deadlock', link: '/runtime/async#deadlock' },
-        { text: 'ConfigureAwait', link: '/runtime/async#configureawait' },
-      ] },
+      {
+        text: 'Memory & GC',
+        desc: 'CLR, IL, JIT. Value và reference type, GC, IDisposable, memory leak, Span.',
+        link: '/runtime/memory',
+        q: [
+          { text: 'Value vs reference', link: '/runtime/memory#value-vs-reference' },
+          { text: 'GC', link: '/runtime/memory#gc' },
+          { text: 'IDisposable', link: '/runtime/memory#idisposable' },
+        ],
+      },
+      {
+        text: 'Async & Concurrency',
+        desc: 'await chạy thế nào, Task và Thread, deadlock, ConfigureAwait, cancellation.',
+        link: '/runtime/async',
+        q: [
+          { text: 'await chạy thế nào', link: '/runtime/async#how-await-works' },
+          { text: 'Deadlock', link: '/runtime/async#deadlock' },
+          { text: 'ConfigureAwait', link: '/runtime/async#configureawait' },
+        ],
+      },
     ],
   },
   {
     title: 'ASP.NET Core',
     hint: 'Theo đường đi của một request',
     pages: [
-      { text: 'Dependency Injection', desc: 'IoC, DI, DIP và container. Resolve cây object, lifetime, captive dependency.', link: '/aspnet-core/dependency-injection', q: [
-        { text: 'Lifetimes', link: '/aspnet-core/dependency-injection#lifetimes' },
-        { text: 'Captive dependency', link: '/aspnet-core/dependency-injection#captive-dependency' },
-      ] },
-      { text: 'Options pattern', desc: 'Config thành class có kiểu, validate lúc start. IOptions, Snapshot, Monitor đọc giá trị lúc nào.', link: '/aspnet-core/options-pattern', q: [
-        { text: 'Snapshot vs Monitor', link: '/aspnet-core/options-pattern#options-interfaces' },
-        { text: 'Validate lúc start', link: '/aspnet-core/options-pattern#options-validation' },
-      ] },
-      { text: 'Logging', desc: 'Message template, JSON console, log scope, tìm log cho một lỗi 500 qua traceId.', link: '/aspnet-core/logging', q: [
-        { text: 'Message template', link: '/aspnet-core/logging#logging' },
-        { text: 'Tìm log lỗi 500', link: '/aspnet-core/logging#find-log-500' },
-      ] },
-      { text: 'Middleware pipeline', desc: 'Pipeline là các hàm gọi lồng nhau. Thứ tự, short-circuit, route table, ba cách viết middleware.', link: '/aspnet-core/middleware', q: [
-        { text: 'Thứ tự', link: '/aspnet-core/middleware#middleware' },
-        { text: 'Filter', link: '/aspnet-core/middleware#filters' },
-        { text: 'Route table', link: '/aspnet-core/middleware#routing' },
-      ] },
-      { text: 'Exception handling', desc: 'IExceptionHandler, ProblemDetails, traceId, nhiều handler cho lỗi nghiệp vụ.', link: '/aspnet-core/exception-handling', q: [
-        { text: 'Validation và lỗi', link: '/aspnet-core/exception-handling#validation-errors' },
-        { text: 'traceId', link: '/aspnet-core/exception-handling#traceid' },
-      ] },
-      { text: 'Result pattern', desc: 'Trả lỗi như một giá trị thay vì throw. Khi nào Result, khi nào exception.', link: '/aspnet-core/result-pattern' },
-      { text: 'Health check', desc: 'Liveness và readiness, vì sao không đưa DB vào liveness, Kubernetes trong 1 phút.', link: '/aspnet-core/health-checks', q: [
-        { text: 'Liveness vs readiness', link: '/aspnet-core/health-checks#liveness-vs-readiness' },
-      ] },
-      { text: 'Bảo mật API', desc: 'Một request đi qua TLS, WAF, gateway, JWT, policy, IDOR, SQL injection, Key Vault. OWASP API Top 10, PII/PHI.', link: '/aspnet-core/api-security', q: [
-        { text: 'AuthN vs AuthZ', link: '/aspnet-core/api-security#authn-vs-authz' },
-        { text: 'IDOR', link: '/aspnet-core/api-security#idor' },
-        { text: 'Checklist', link: '/aspnet-core/api-security#secure-api-checklist' },
-      ] },
-      { text: 'Câu hỏi khác', desc: 'Startup, Controller hay Minimal API, REST, HttpClientFactory, caching.', link: '/aspnet-core/questions', q: [
-        { text: 'Controller vs Minimal', link: '/aspnet-core/questions#controllers-vs-minimal' },
-        { text: 'REST', link: '/aspnet-core/questions#rest-design' },
-        { text: 'HttpClientFactory', link: '/aspnet-core/questions#httpclientfactory' },
-      ] },
+      {
+        text: 'Dependency Injection',
+        desc: 'IoC, DI, DIP và container. Resolve cây object, lifetime, captive dependency.',
+        link: '/aspnet-core/dependency-injection',
+        q: [
+          { text: 'Lifetimes', link: '/aspnet-core/dependency-injection#lifetimes' },
+          { text: 'Captive dependency', link: '/aspnet-core/dependency-injection#captive-dependency' },
+        ],
+      },
+      {
+        text: 'Options pattern',
+        desc: 'Config thành class có kiểu, validate lúc start. IOptions, Snapshot, Monitor đọc giá trị lúc nào.',
+        link: '/aspnet-core/options-pattern',
+        q: [
+          { text: 'Snapshot vs Monitor', link: '/aspnet-core/options-pattern#options-interfaces' },
+          { text: 'Validate lúc start', link: '/aspnet-core/options-pattern#options-validation' },
+        ],
+      },
+      {
+        text: 'Logging',
+        desc: 'Message template, JSON console, log scope, tìm log cho một lỗi 500 qua traceId.',
+        link: '/aspnet-core/logging',
+        q: [
+          { text: 'Message template', link: '/aspnet-core/logging#logging' },
+          { text: 'Tìm log lỗi 500', link: '/aspnet-core/logging#find-log-500' },
+        ],
+      },
+      {
+        text: 'Middleware pipeline',
+        desc: 'Pipeline là các hàm gọi lồng nhau. Thứ tự, short-circuit, route table, ba cách viết middleware.',
+        link: '/aspnet-core/middleware',
+        q: [
+          { text: 'Thứ tự', link: '/aspnet-core/middleware#middleware' },
+          { text: 'Filter', link: '/aspnet-core/middleware#filters' },
+          { text: 'Route table', link: '/aspnet-core/middleware#routing' },
+        ],
+      },
+      {
+        text: 'Exception handling',
+        desc: 'IExceptionHandler, ProblemDetails, traceId, nhiều handler cho lỗi nghiệp vụ.',
+        link: '/aspnet-core/exception-handling',
+        q: [
+          { text: 'Validation và lỗi', link: '/aspnet-core/exception-handling#validation-errors' },
+          { text: 'traceId', link: '/aspnet-core/exception-handling#traceid' },
+        ],
+      },
+      {
+        text: 'Result pattern',
+        desc: 'Trả lỗi như một giá trị thay vì throw. Khi nào Result, khi nào exception.',
+        link: '/aspnet-core/result-pattern',
+      },
+      {
+        text: 'Health check',
+        desc: 'Liveness và readiness, vì sao không đưa DB vào liveness, Kubernetes trong 1 phút.',
+        link: '/aspnet-core/health-checks',
+        q: [{ text: 'Liveness vs readiness', link: '/aspnet-core/health-checks#liveness-vs-readiness' }],
+      },
+      {
+        text: 'Bảo mật API',
+        desc: 'Một request đi qua TLS, WAF, gateway, JWT, policy, IDOR, SQL injection, Key Vault. OWASP API Top 10, PII/PHI.',
+        link: '/aspnet-core/api-security',
+        q: [
+          { text: 'AuthN vs AuthZ', link: '/aspnet-core/api-security#authn-vs-authz' },
+          { text: 'IDOR', link: '/aspnet-core/api-security#idor' },
+          { text: 'Checklist', link: '/aspnet-core/api-security#secure-api-checklist' },
+        ],
+      },
+      {
+        text: 'Câu hỏi khác',
+        desc: 'Startup, Controller hay Minimal API, REST, HttpClientFactory, caching.',
+        link: '/aspnet-core/questions',
+        q: [
+          { text: 'Controller vs Minimal', link: '/aspnet-core/questions#controllers-vs-minimal' },
+          { text: 'REST', link: '/aspnet-core/questions#rest-design' },
+          { text: 'HttpClientFactory', link: '/aspnet-core/questions#httpclientfactory' },
+        ],
+      },
     ],
   },
   {
@@ -149,11 +221,25 @@ const groups: Group[] = [
   margin-left: auto;
   margin-right: auto;
 }
-@media (min-width: 640px) { .home-toc { padding: 0 48px 64px; } }
-@media (min-width: 960px) { .home-toc { padding: 0 64px 64px; } }
+@media (min-width: 640px) {
+  .home-toc {
+    padding: 0 48px 64px;
+  }
+}
+@media (min-width: 960px) {
+  .home-toc {
+    padding: 0 64px 64px;
+  }
+}
 
-.group + .group { margin-top: 56px; }
-@media (min-width: 960px) { .group + .group { margin-top: 64px; } }
+.group + .group {
+  margin-top: 56px;
+}
+@media (min-width: 960px) {
+  .group + .group {
+    margin-top: 64px;
+  }
+}
 
 header {
   display: flex;
@@ -164,17 +250,36 @@ header {
 }
 .num {
   align-self: center;
-  width: 26px; height: 26px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  display: grid; place-items: center;
-  font-weight: 700; font-size: 13px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
   color: var(--vp-c-brand-1);
   background: var(--vp-c-brand-soft);
 }
-h2 { margin: 0; font-size: 20px; font-weight: 700; border: 0; padding: 0; }
-.hint { font-size: 13px; color: var(--vp-c-text-2); }
-.soon-link { font-size: 13px; font-weight: 600; color: var(--vp-c-brand-1); text-decoration: none; }
-.soon-link:hover { text-decoration: underline; }
+h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  border: 0;
+  padding: 0;
+}
+.hint {
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+}
+.soon-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+}
+.soon-link:hover {
+  text-decoration: underline;
+}
 
 /* Lưới tự xuống dòng: thêm card không phải sửa layout */
 .cards {
@@ -190,19 +295,47 @@ h2 { margin: 0; font-size: 20px; font-weight: 700; border: 0; padding: 0; }
   border: 1px solid var(--vp-c-bg-soft);
   border-radius: 12px;
   padding: 18px 20px;
-  transition: border-color .25s;
+  transition: border-color 0.25s;
 }
-.card:hover { border-color: var(--vp-c-brand-1); }
-.card.soon { background: transparent; border: 1px dashed var(--vp-c-divider); }
-.card.soon:hover { border-color: var(--vp-c-divider); }
+.card:hover {
+  border-color: var(--vp-c-brand-1);
+}
+.card.soon {
+  background: transparent;
+  border: 1px dashed var(--vp-c-divider);
+}
+.card.soon:hover {
+  border-color: var(--vp-c-divider);
+}
 
-.title { font-size: 16px; font-weight: 600; line-height: 24px; color: var(--vp-c-text-1); text-decoration: none; }
-a.title:hover { color: var(--vp-c-brand-1); }
-.card.soon .title { color: var(--vp-c-text-2); }
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--vp-c-text-1);
+  text-decoration: none;
+}
+a.title:hover {
+  color: var(--vp-c-brand-1);
+}
+.card.soon .title {
+  color: var(--vp-c-text-2);
+}
 
-.desc { flex: 1; margin: 6px 0 0; font-size: 14px; line-height: 22px; color: var(--vp-c-text-2); }
+.desc {
+  flex: 1;
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--vp-c-text-2);
+}
 
-.qs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+.qs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 12px;
+}
 .q {
   font-size: 12px;
   line-height: 20px;
@@ -212,7 +345,10 @@ a.title:hover { color: var(--vp-c-brand-1); }
   background: var(--vp-c-default-soft);
   text-decoration: none;
 }
-.q:hover { color: var(--vp-c-brand-1); background: var(--vp-c-brand-soft); }
+.q:hover {
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
 
 .toc-footer {
   display: flex;
@@ -224,8 +360,21 @@ a.title:hover { color: var(--vp-c-brand-1); }
   border-top: 1px solid var(--vp-c-divider);
   font-size: 14px;
 }
-.toc-footer .label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--vp-c-text-3); }
-.toc-footer .label:not(:first-child) { margin-left: 10px; }
-.toc-footer a { color: var(--vp-c-brand-1); text-decoration: none; }
-.toc-footer a:hover { text-decoration: underline; }
+.toc-footer .label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--vp-c-text-3);
+}
+.toc-footer .label:not(:first-child) {
+  margin-left: 10px;
+}
+.toc-footer a {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+}
+.toc-footer a:hover {
+  text-decoration: underline;
+}
 </style>

@@ -10,9 +10,9 @@ Nên đọc [Middleware](/aspnet-core/middleware) trước. [Câu hỏi phỏng 
 
 ## 1. Bài toán
 
-Code ở đâu đó ném exception mà không ai bắt. Không xử lý gì thì client nhận 500 body rỗng (hoặc cả trang stack trace ở Development), và mỗi controller tự `try/catch` một kiểu.
+Code ở đâu đó ném exception mà không ai bắt. Không xử lý gì thì client nhận 500 body rỗng (hoặc cả trang <T>stack trace</T> ở Development), và mỗi controller tự `try/catch` một kiểu.
 
-**Global exception handling**: **một chỗ duy nhất** bắt mọi exception chưa xử lý, **log đầy đủ ở server**, trả cho client **JSON chuẩn không lộ chi tiết nội bộ**.
+**Global exception handling**: **một chỗ duy nhất** bắt mọi exception chưa xử lý, **log đầy đủ ở server**, trả cho client **JSON chuẩn** (<T>ProblemDetails</T>) **không lộ chi tiết nội bộ**.
 
 So với Web Forms: tương đương `Application_Error` trong `Global.asax` cộng `customErrors` trong `Web.config`, nhưng nằm trong pipeline và test được.
 
@@ -20,7 +20,7 @@ So với Web Forms: tương đương `Application_Error` trong `Global.asax` c�
 
 <div class="fig">
 <svg viewBox="0 0 720 220" role="img" aria-label="Ba mảnh: middleware gọi handler của bạn, handler dùng ProblemDetailsService để ghi response"><g font-size="13" font-weight="600" text-anchor="middle"><rect class="boxAcc" x="20" y="60" width="200" height="90" rx="8"/><text x="120" y="88" class="mono">UseExceptionHandler()</text><text x="120" y="110" font-weight="400" font-size="12">middleware: try/catch lớn</text><text x="120" y="127" font-weight="400" font-size="12">bọc phần pipeline phía sau</text><rect class="boxOk" x="260" y="60" width="200" height="90" rx="8"/><text x="360" y="88" class="mono">IExceptionHandler</text><text x="360" y="110" font-weight="400" font-size="12">code của bạn: log gì,</text><text x="360" y="127" font-weight="400" font-size="12">trả status nào</text><rect class="boxAcc" x="500" y="60" width="200" height="90" rx="8"/><text x="600" y="88" class="mono">IProblemDetailsService</text><text x="600" y="110" font-weight="400" font-size="12">ghi JSON ProblemDetails,</text><text x="600" y="127" font-weight="400" font-size="12">tự thêm traceId</text></g><line class="ln" x1="220" y1="105" x2="256" y2="105" marker-end="url(#eInk)"/><line class="ln" x1="460" y1="105" x2="496" y2="105" marker-end="url(#eInk)"/><g font-size="12" text-anchor="middle" class="muted"><text x="120" y="180" class="mono muted">app.UseExceptionHandler()</text><text x="360" y="180" class="mono muted">AddExceptionHandler&lt;T&gt;()</text><text x="600" y="180" class="mono muted">AddProblemDetails()</text><text x="238" y="96" class="muted">gọi</text><text x="478" y="96" class="muted">dùng</text></g></svg>
-<p class="fig-caption">Dòng dưới là chỗ đăng ký. Gọi UseExceptionHandler() không tham số mà thiếu cả handler lẫn AddProblemDetails() thì app ném lỗi lúc start (fail-fast, giống ValidateOnStart).</p>
+<p class="fig-caption">Dòng dưới là chỗ đăng ký. Gọi UseExceptionHandler() không tham số mà thiếu cả handler lẫn AddProblemDetails() thì app ném lỗi lúc start (<T>fail-fast</T>, giống ValidateOnStart).</p>
 </div>
 
 ## 3. Luồng chạy khi có exception {#exception-flow}
@@ -98,7 +98,7 @@ Handler trả `true` thì middleware **không tự log** exception nữa (trư�
 
 ## 4. Server biết nhiều, client biết ít, traceId là cầu nối {#traceid}
 
-`AddProblemDetails()` **tự thêm** field `traceId` vào mọi ProblemDetails (lấy từ `Activity.Current`, không có thì `HttpContext.TraceIdentifier`), không cần tự ghi trong handler. `GlobalExceptionHandler` của PayoutHub chỉ quyết định `title`/`detail`: Development trả `exception.Message`, môi trường khác trả câu chung "Something went wrong".
+`AddProblemDetails()` **tự thêm** field <T>traceId</T> vào mọi ProblemDetails (lấy từ `Activity.Current`, không có thì `HttpContext.TraceIdentifier`), không cần tự ghi trong handler. `GlobalExceptionHandler` của PayoutHub chỉ quyết định `title`/`detail`: Development trả `exception.Message`, môi trường khác trả câu chung "Something went wrong".
 
 <div class="fig">
 <svg viewBox="0 0 720 250" role="img" aria-label="Client nhận ProblemDetails ít thông tin, server log đầy đủ, nối bằng trace id"><g font-size="13" font-weight="600" text-anchor="middle"><rect class="box" x="20" y="20" width="290" height="150" rx="8"/><text x="165" y="44">Client nhận (ProblemDetails)</text><rect class="box" x="410" y="20" width="290" height="150" rx="8"/><text x="555" y="44">Server log</text></g><g font-size="12" class="mono"><text x="36" y="72">"title": "Internal Server Error"</text><text x="36" y="92">"status": 500</text><text x="36" y="112" class="accT" font-weight="600">"traceId": "00-4bf9…4736-00f0…-01"</text><text x="36" y="132" class="muted">không có message, stack trace</text><text x="426" y="72">exception + stack trace</text><text x="426" y="92">Method: GET, Path: /boom</text><text x="426" y="112" class="accT" font-weight="600">TraceId: 4bf9…4736</text><text x="426" y="132" class="muted">cần IncludeScopes = true</text></g><path class="lnAcc" d="M300 108 L 420 108" marker-end="url(#eAcc)"/><text x="360" y="100" font-size="11" text-anchor="middle" class="accT">tìm theo</text><g font-size="12" class="mono" text-anchor="middle"><rect class="boxAcc" x="90" y="196" width="540" height="40" rx="6"/><text x="180" y="221" class="muted">00</text><text x="190" y="221">-</text><text x="300" y="221" class="accT" font-weight="600">4bf92f35…0e4736 (trace id)</text><text x="410" y="221">-</text><text x="480" y="221">00f067aa… (span)</text><text x="555" y="221">-</text><text x="580" y="221" class="muted">01</text></g></svg>
@@ -115,7 +115,7 @@ Handler trả `true` thì middleware **không tự log** exception nữa (trư�
 
 <div class="fig">
 <svg viewBox="0 0 720 170" role="img" aria-label="Chuỗi handler từ cụ thể đến chung"><g font-size="12" text-anchor="middle"><rect class="boxBad" x="10" y="60" width="110" height="50" rx="8"/><text x="65" y="82" font-weight="600">exception</text><text x="65" y="99" class="muted">bất kỳ</text><rect class="box" x="160" y="60" width="150" height="50" rx="8"/><text x="235" y="82" class="mono" font-weight="600">NotFound</text><text x="235" y="99">Handler</text><rect class="box" x="350" y="60" width="150" height="50" rx="8"/><text x="425" y="82" class="mono" font-weight="600">Conflict</text><text x="425" y="99">Handler</text><rect class="box" x="540" y="60" width="160" height="50" rx="8"/><text x="620" y="82" class="mono" font-weight="600">Global</text><text x="620" y="99">ExceptionHandler</text><rect class="boxOk" x="175" y="130" width="120" height="30" rx="15"/><text x="235" y="150" class="okT" font-weight="600">404, true</text><rect class="boxOk" x="365" y="130" width="120" height="30" rx="15"/><text x="425" y="150" class="okT" font-weight="600">409, true</text><rect class="boxOk" x="560" y="130" width="120" height="30" rx="15"/><text x="620" y="150" class="okT" font-weight="600">500, luôn true</text></g><line class="ln" x1="120" y1="85" x2="156" y2="85" marker-end="url(#eInk)"/><line class="lnAcc dash" x1="310" y1="85" x2="346" y2="85" marker-end="url(#eAcc)"/><line class="lnAcc dash" x1="500" y1="85" x2="536" y2="85" marker-end="url(#eAcc)"/><text x="328" y="74" font-size="11" text-anchor="middle" class="accT">false</text><text x="518" y="74" font-size="11" text-anchor="middle" class="accT">false</text><line class="lnOk" x1="235" y1="110" x2="235" y2="126" marker-end="url(#eOk)"/><line class="lnOk" x1="425" y1="110" x2="425" y2="126" marker-end="url(#eOk)"/><line class="lnOk" x1="620" y1="110" x2="620" y2="126" marker-end="url(#eOk)"/><text x="360" y="30" font-size="12" text-anchor="middle" class="muted">thứ tự đăng ký = thứ tự chạy: từ cụ thể đến chung</text></svg>
-<p class="fig-caption">Đây là <a :href="$withBase('/dotnet/oop-fundamentals#solid')">OCP</a>: thêm loại lỗi mới bằng một class mới, không sửa handler cũ. Đặt Global lên đầu thì các handler sau không bao giờ được gọi.</p>
+<p class="fig-caption">Đây là <T>OCP</T>: thêm loại lỗi mới bằng một class mới, không sửa handler cũ. Đặt Global lên đầu thì các handler sau không bao giờ được gọi.</p>
 </div>
 
 ### Đăng ký
@@ -193,7 +193,7 @@ Lỗi 404 là chuyện bình thường nên handler này **không log Error**. H
 ### Model binding, validation và xử lý lỗi {#validation-errors}
 
 ::: tip Trả lời nhanh
-Model binding lấy dữ liệu từ route, query, header, body, form và đổ vào tham số action. Với `[ApiController]`, nếu validation thất bại thì framework tự trả 400 kèm chi tiết lỗi theo chuẩn **ProblemDetails** (RFC 9457), không cần tự kiểm tra `ModelState.IsValid`. Lỗi không mong đợi thì để một chỗ xử lý toàn cục.
+Model binding lấy dữ liệu từ route, query, header, body, form và đổ vào tham số action. Với `[ApiController]` (<T>MVC</T>), nếu validation thất bại thì framework tự trả 400 kèm chi tiết lỗi theo chuẩn **ProblemDetails** (RFC 9457), không cần tự kiểm tra `ModelState.IsValid`. Lỗi không mong đợi thì để một chỗ xử lý toàn cục.
 :::
 
 ::: info Bản chất
@@ -234,7 +234,7 @@ Không bao giờ ở production: lộ cấu trúc code. Log đầy đủ phía s
 ## Hỏi đáp
 
 ::: details Handler đăng ký bằng AddExceptionHandler sống bao lâu? Inject DbContext vào được không?
-**Singleton.** Inject `DbContext` (scoped) vào là [captive dependency](/aspnet-core/dependency-injection#captive-dependency): ở Development, scope validation làm app lỗi lúc start; nếu tắt validation thì một `DbContext` bị dùng chung giữa mọi request, không thread-safe. Thật sự cần service scoped thì lấy qua `httpContext.RequestServices`.
+**Singleton.** Inject <T>DbContext</T> (scoped) vào là [captive dependency](/aspnet-core/dependency-injection#captive-dependency): ở Development, scope validation làm app lỗi lúc start; nếu tắt validation thì một `DbContext` bị dùng chung giữa mọi request, không thread-safe. Thật sự cần service scoped thì lấy qua `httpContext.RequestServices`.
 :::
 
 ::: details Exception ném trong BackgroundService có đi qua handler này không?

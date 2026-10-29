@@ -16,7 +16,7 @@ Loại câu "X là gì, khác Y thế nào". Đáp ngắn, đúng, rồi chuyể
 :::
 
 ::: info Bản chất
-Encapsulation và abstraction hay bị nói lẫn. Encapsulation là _bảo vệ dữ liệu và invariant_; abstraction là _giấu độ phức tạp_. Polymorphism có 2 loại: compile-time (overloading) và runtime (`virtual`/`override`, gọi qua bảng virtual method).
+Encapsulation và abstraction hay bị nói lẫn. Encapsulation là _bảo vệ dữ liệu và <T>invariant</T>_; abstraction là _giấu độ phức tạp_. Polymorphism có 2 loại: compile-time (overloading) và runtime (`virtual`/`override`, gọi qua <T k="vtable">bảng virtual method</T>).
 :::
 
 ::: details Ở dự án thật
@@ -118,7 +118,7 @@ public class PayoutProcessor(IPayoutGateway gateway, IPayoutRepository repo)
 ::: warning Bẫy & follow-up
 **"Composition over inheritance nghĩa là gì?"**
 
-Inheritance tạo coupling chặt: đổi class cha là ảnh hưởng mọi class con, và C# chỉ cho kế thừa một class. Chỉ dùng khi thật sự là "is-a" và cần chia sẻ hành vi. Còn lại thì ghép các object nhỏ qua interface và DI.
+Inheritance tạo <T>coupling</T> chặt: đổi class cha là ảnh hưởng mọi class con, và C# chỉ cho kế thừa một class. Chỉ dùng khi thật sự là "is-a" và cần chia sẻ hành vi. Còn lại thì ghép các object nhỏ qua interface và <T>DI</T>.
 :::
 
 ## Abstract class vs interface {#abstract-vs-interface}
@@ -138,7 +138,7 @@ Interface là hợp đồng "làm được gì", một class implement được 
 :::
 
 ::: details Ở dự án thật
-Interface: `IPaymentGateway` để đổi provider và mock khi test. Abstract class: `ReportBase` giữ luồng chung (lấy data, build header, xuất file) và để class con chỉ override phần tính toán riêng, chính là Template Method.
+Interface: `IPaymentGateway` để đổi provider và <T>mock</T> khi test. Abstract class: `ReportBase` giữ luồng chung (lấy data, build header, xuất file) và để class con chỉ override phần tính toán riêng, chính là <T>Template Method</T>.
 :::
 
 ::: warning Bẫy & follow-up
@@ -164,7 +164,7 @@ x.A();   // "Derived.A": override đi theo kiểu runtime
 x.B();   // "Base.B":    new đi theo kiểu khai báo của biến
 ```
 
-**`new` làm gì:** khai báo một method mới trùng tên chứ không thay thế method của cha, nên object có cả `Base.B` lẫn `Derived.B`. `override` ghi đè ô của method cha trong vtable nên được chọn lúc runtime theo object thật; method `new` được compiler chọn lúc compile theo kiểu biến. Vì vậy `((Base)d).B()` ra "Base.B" dù cùng một object. Chỉ nên dùng khi class cha (thường từ thư viện) thêm method trùng tên với method bạn đã có.
+**`new` làm gì:** khai báo một method mới trùng tên chứ không thay thế method của cha, nên object có cả `Base.B` lẫn `Derived.B`. `override` ghi đè ô của method cha trong <T>vtable</T> nên được chọn lúc runtime theo object thật; method `new` được compiler chọn lúc compile theo kiểu biến. Vì vậy `((Base)d).B()` ra "Base.B" dù cùng một object. Chỉ nên dùng khi class cha (thường từ thư viện) thêm method trùng tên với method bạn đã có.
 :::
 
 ::: warning Bẫy & follow-up
@@ -174,7 +174,7 @@ Nhớ quy tắc: `override` theo object thật, `new` theo kiểu biến. Quên 
 
 **"`sealed` dùng làm gì?"**
 
-Chặn kế thừa (class) hoặc chặn override tiếp (method). JIT có thể tối ưu gọi method trên class sealed. Nhiều team để mặc định sealed cho class không thiết kế để kế thừa.
+Chặn kế thừa (class) hoặc chặn override tiếp (method). <T>JIT</T> có thể tối ưu gọi method trên class sealed. Nhiều team để mặc định sealed cho class không thiết kế để kế thừa.
 :::
 
 ## `const` vs `readonly` vs `static readonly` {#const-readonly}
@@ -190,13 +190,13 @@ Chặn kế thừa (class) hoặc chặn override tiếp (method). JIT có thể
 | `static` / `static readonly` | Ngay trước lần đầu dùng tới type (tạo instance hoặc truy cập static member): chạy static initializer rồi static constructor | 1 lần mỗi process |
 | `readonly` | Mỗi lần `new` object, trong initializer hoặc constructor | 1 lần mỗi object |
 
-Static dùng chung cho mọi request của mọi user trên process. Web Forms recycle app pool thì static khởi tạo lại; nhiều server thì mỗi server một bản.
+Static dùng chung cho mọi request của mọi user trên process. Web Forms recycle <T>app pool</T> thì static khởi tạo lại; nhiều server thì mỗi server một bản.
 :::
 
 ::: warning Bẫy & follow-up
 **"Đổi `const` trong một library thì sao?"**
 
-Giá trị const được copy thẳng vào assembly gọi nó lúc compile. Assembly khác không build lại vẫn dùng giá trị cũ. Giá trị có thể đổi theo version thì dùng `static readonly`.
+Giá trị const được copy thẳng vào <T>assembly</T> gọi nó lúc compile. Assembly khác không build lại vẫn dùng giá trị cũ. Giá trị có thể đổi theo version thì dùng `static readonly`.
 
 **"`readonly List<int>` có thêm phần tử được không?"**
 
@@ -204,13 +204,13 @@ Giá trị const được copy thẳng vào assembly gọi nó lúc compile. Ass
 
 **"Static constructor ném exception thì sao?"**
 
-`TypeInitializationException`, và CLR không thử lại: type hỏng tới khi process khởi động lại. Đừng gọi DB, file hay API trong static constructor.
+`TypeInitializationException`, và <T>CLR</T> không thử lại: type hỏng tới khi process khởi động lại. Đừng gọi DB, file hay API trong static constructor.
 :::
 
 ## `struct` vs `class` vs `record` {#struct-class-record}
 
 ::: tip Trả lời nhanh
-`struct` là value type: gán là copy, không kế thừa, hợp với dữ liệu nhỏ và bất biến (tọa độ, tiền tệ). `class` là reference type: gán là copy tham chiếu. `record` (C# 9) là class có so sánh theo giá trị, có `with` để tạo bản sao, hợp với DTO và value object. `record struct` (C# 10) là bản value type của nó.
+`struct` là <T>value type</T>: gán là copy, không kế thừa, hợp với dữ liệu nhỏ và bất biến (tọa độ, tiền tệ). `class` là <T>reference type</T>: gán là copy tham chiếu. `record` (C# 9) là class có so sánh theo giá trị, có `with` để tạo bản sao, hợp với <T>DTO</T> và <T>value object</T>. `record struct` (C# 10) là bản value type của nó.
 :::
 
 ::: info Bản chất
@@ -231,7 +231,7 @@ Vì mỗi lần lấy ra là một bản copy: `list[0].X = 5` không compile v�
 
 **"Khi nào nên dùng struct?"**
 
-Nhỏ (khoảng 16 byte trở xuống), bất biến, tạo rất nhiều, và không bị boxing thường xuyên. Không chắc thì dùng class hoặc record.
+Nhỏ (khoảng 16 byte trở xuống), bất biến, tạo rất nhiều, và không bị <T>boxing</T> thường xuyên. Không chắc thì dùng class hoặc record.
 
 **"`Tuple` và `ValueTuple` khác nhau thế nào?"**
 
@@ -241,7 +241,7 @@ Nhỏ (khoảng 16 byte trở xuống), bất biến, tạo rất nhiều, và k
 ## String immutable nghĩa là gì? `==` vs `Equals` vs `ReferenceEquals` {#string-equality}
 
 ::: tip Trả lời nhanh
-String không bao giờ bị sửa tại chỗ; mọi phép "sửa" đều tạo string mới. Nhờ vậy nó an toàn khi dùng chung giữa các thread và làm key cho Dictionary. Ghép string trong vòng lặp là O(n²) bộ nhớ, nên dùng `StringBuilder` hoặc `string.Join`.
+String không bao giờ bị sửa tại chỗ; mọi phép "sửa" đều tạo string mới. Nhờ vậy nó an toàn khi dùng chung giữa các thread và làm key cho Dictionary. Ghép string trong vòng lặp là <T k="big-o">O(n²)</T> bộ nhớ, nên dùng `StringBuilder` hoặc `string.Join`.
 
 `ReferenceEquals` luôn so tham chiếu. `==` và `Equals` mặc định cũng so tham chiếu với class, nhưng string, record và các kiểu tự override sẽ so nội dung.
 :::
@@ -287,9 +287,9 @@ Interviewer hiếm khi dừng ở định nghĩa. Họ thường đào theo 3 h�
 ::: info S · Single Responsibility
 **Định nghĩa chính xác:** một class chỉ nên có _một lý do để thay đổi_, tức là chỉ phục vụ một bên hay yêu cầu sửa nó. Ví dụ: chỉ Finance (rule phí), hoặc chỉ Ops (layout báo cáo), không phải cả hai.
 
-Số method không phải thước đo. `Payout` có `Approve`, `Reject`, `MarkPaid`, `Cancel` vẫn đúng SRP, vì tất cả đều là luật trạng thái payout. Ngược lại, một class chỉ có mỗi `Run()` nhưng vừa tính phí, vừa dựng HTML, vừa gửi email thì sai. Tự kiểm tra: mô tả class trong một câu mà phải nối nhiều việc không liên quan bằng chữ "và" là dấu hiệu nên tách.
+Số method không phải thước đo. `Payout` có `Approve`, `Reject`, `MarkPaid`, `Cancel` vẫn đúng <T>SRP</T>, vì tất cả đều là luật trạng thái payout. Ngược lại, một class chỉ có mỗi `Run()` nhưng vừa tính phí, vừa dựng HTML, vừa gửi email thì sai. Tự kiểm tra: mô tả class trong một câu mà phải nối nhiều việc không liên quan bằng chữ "và" là dấu hiệu nên tách.
 
-**Dấu hiệu vi phạm:** class tên `...Manager`/`...Helper` dài hàng nghìn dòng; một file bị sửa bởi các ticket từ nhiều phòng ban khác nhau; không unit test được vì logic dính DB, SMTP.
+**Dấu hiệu vi phạm:** class tên `...Manager`/`...Helper` dài hàng nghìn dòng; một file bị sửa bởi các ticket từ nhiều phòng ban khác nhau; không <T>unit test</T> được vì logic dính DB, <T>SMTP</T>.
 
 ```csharp
 // Trước: Finance, Ops và Marketing đều phải sửa chung class này
@@ -424,9 +424,9 @@ builder.Services.AddScoped<PayoutMethods>();
 | Quên một phần | Nổ lúc chạy, giữa luồng trả tiền | Lỗi compile: class chưa implement đủ interface |
 | Phải test lại | Cả Bank lẫn PayPal | Chỉ `WiseMethod` |
 
-"Đóng" là `PayoutProcessor`, `PayoutMethods`, `BankTransferMethod` và `PayPalMethod` không bị đụng tới. "Mở" là hệ thống vẫn nhận thêm phương thức mới. Về mặt pattern, đây chính là Strategy (2.9) kết hợp với DI.
+"Đóng" là `PayoutProcessor`, `PayoutMethods`, `BankTransferMethod` và `PayPalMethod` không bị đụng tới. "Mở" là hệ thống vẫn nhận thêm phương thức mới. Về mặt pattern, đây chính là <T>Strategy</T> (2.9) kết hợp với <T>DI</T>.
 
-**Quá tay khi:** switch chỉ ở một chỗ, 2–3 giá trị, gần như không đổi. Khi đó một switch expression rõ ràng hơn. Không có code nào "đóng" với mọi kiểu thay đổi; OCP là chọn đúng hướng mà nghiệp vụ hay thay đổi để mở. Ở đây hướng đó là "thêm phương thức thanh toán".
+**Quá tay khi:** switch chỉ ở một chỗ, 2–3 giá trị, gần như không đổi. Khi đó một switch expression rõ ràng hơn. Không có code nào "đóng" với mọi kiểu thay đổi; <T>OCP</T> là chọn đúng hướng mà nghiệp vụ hay thay đổi để mở. Ở đây hướng đó là "thêm phương thức thanh toán".
 :::
 
 ::: info L · Liskov Substitution
@@ -469,7 +469,7 @@ public interface IMerchantWriter { Task AddAsync(Merchant m); Task UpdateBalance
 public class MerchantRepository : IMerchantReader, IMerchantWriter { ... }
 ```
 
-**Lợi ích:** mock trong test chỉ cần 2 method thay vì 15; code báo cáo không thể vô tình ghi dữ liệu. **Quá tay khi:** mỗi method một interface.
+**Lợi ích:** <T>mock</T> trong test chỉ cần 2 method thay vì 15; code báo cáo không thể vô tình ghi dữ liệu. **Quá tay khi:** mỗi method một interface.
 :::
 
 ::: info D · Dependency Inversion
@@ -521,12 +521,12 @@ protected void btnApprove_Click(object sender, EventArgs e)
 
 - **SRP:** một event handler làm 5 việc: đọc input UI, truy cập DB, rule nghiệp vụ, gọi cổng thanh toán, gửi email.
 - **OCP:** `if/else` theo `Method`, chắc chắn lặp lại ở các màn hình khác.
-- **DIP:** `new SqlConnection`, `new SmtpClient` ngay trong UI, nên không test được nếu không có DB và mail server thật.
+- **<T>DIP</T>:** `new SqlConnection`, `new SmtpClient` ngay trong UI, nên không test được nếu không có DB và mail server thật.
 - Bonus: rule "chỉ duyệt khi Pending" nằm ở UI, nên màn hình hoặc API khác có thể duyệt sai.
 
 **Bước 2, refactor theo thứ tự rủi ro thấp lên cao, không làm một lần:**
 
-1. Viết vài test bao quanh hành vi hiện tại (characterization test) để biết mình không làm hỏng gì.
+1. Viết vài test bao quanh hành vi hiện tại (<T>characterization test</T>) để biết mình không làm hỏng gì.
 2. Đưa rule vào domain: `payout.Approve(user)` tự kiểm tra trạng thái (xem ví dụ 2.1).
 3. Tách data access ra `IPayoutRepository`, email ra `INotifier`.
 4. Thay `if/else` bằng `IPayoutMethod` theo từng phương thức.
@@ -544,13 +544,13 @@ protected void btnApprove_Click(object sender, EventArgs e)
 :::
 
 ::: details Cách nói của senior
-"Mình không ngồi check từng chữ cái khi code. Mình để ý xem khi requirement đổi thì phải sửa bao nhiêu chỗ, và có test được phần logic không. SOLID là tên gọi cho những thói quen đó. Ví dụ ở dự án cũ, logic tính phí nằm trong code-behind nên mỗi lần đổi rule phải test tay cả màn hình; tách ra một class riêng thì viết unit test được."
+"Mình không ngồi check từng chữ cái khi code. Mình để ý xem khi requirement đổi thì phải sửa bao nhiêu chỗ, và có test được phần logic không. <T>SOLID</T> là tên gọi cho những thói quen đó. Ví dụ ở dự án cũ, logic tính phí nằm trong code-behind nên mỗi lần đổi rule phải test tay cả màn hình; tách ra một class riêng thì viết unit test được."
 :::
 
 ::: warning Bẫy & follow-up
-**"SOLID có mâu thuẫn với KISS/YAGNI không?"**
+**"SOLID có mâu thuẫn với <T>KISS</T>/<T>YAGNI</T> không?"**
 
-Có thể, nếu áp trước khi có lý do. Thực tế: viết đơn giản trước; khi thay đổi thứ hai hoặc thứ ba cùng loại xuất hiện (rule of three) thì mới tách abstraction. Abstraction đúng sinh ra từ thay đổi thật, không từ phỏng đoán.
+Có thể, nếu áp trước khi có lý do. Thực tế: viết đơn giản trước; khi thay đổi thứ hai hoặc thứ ba cùng loại xuất hiện (<T>rule of three</T>) thì mới tách abstraction. Abstraction đúng sinh ra từ thay đổi thật, không từ phỏng đoán.
 
 **"SOLID liên quan gì tới testability?"**
 
@@ -599,15 +599,15 @@ public sealed class AppClock
 ::: warning Bẫy & follow-up
 **"Tại sao dùng Strategy thay vì if/else?"**
 
-Khi số nhánh tăng dần, mỗi nhánh có logic riêng cần test riêng, và muốn thêm nhánh mà không sửa code cũ. Còn 2–3 nhánh ổn định thì if/switch đơn giản hơn: đó là KISS.
+Khi số nhánh tăng dần, mỗi nhánh có logic riêng cần test riêng, và muốn thêm nhánh mà không sửa code cũ. Còn 2–3 nhánh ổn định thì if/switch đơn giản hơn: đó là <T>KISS</T>.
 
 **"Singleton có nhược điểm gì?"**
 
-Là global state: khó mock, ẩn dependency, phải thread-safe nếu có state thay đổi. Trong ASP.NET Core dùng `AddSingleton` thay cho static Instance để vẫn inject và test được.
+Là global state: khó <T>mock</T>, ẩn dependency, phải thread-safe nếu có state thay đổi. Trong ASP.NET Core dùng `AddSingleton` thay cho static Instance để vẫn inject và test được.
 
-**"Có nên viết Repository trên EF Core không?"**
+**"Có nên viết Repository trên <T>EF Core</T> không?"**
 
-Đây là câu tranh luận, trả lời theo trade-off: DbContext đã là UoW + repository, bọc thêm một lớp generic thường chỉ làm mất tính năng (`Include`, projection). Nên viết repository theo nghiệp vụ (`GetPendingPayouts`) khi cần gom query hoặc tách khỏi EF để test. Sẽ nói kỹ ở mục EF Core.
+Đây là câu tranh luận, trả lời theo trade-off: <T>DbContext</T> đã là UoW + repository, bọc thêm một lớp generic thường chỉ làm mất tính năng (`Include`, projection). Nên viết repository theo nghiệp vụ (`GetPendingPayouts`) khi cần gom query hoặc tách khỏi EF để test. Sẽ nói kỹ ở mục EF Core.
 :::
 
 ## DRY, KISS, YAGNI {#dry-kiss-yagni}

@@ -12,7 +12,7 @@ title: "Health check"
 
 **Health check** là một URL (thường là `/health`) mà máy khác gọi định kỳ để hỏi app: **"còn làm việc được không?"**. App trả `200` là ổn, `503` là đang có vấn đề.
 
-**Ai gọi:** load balancer, Kubernetes, công cụ giám sát. Không phải người dùng.
+**Ai gọi:** <T>load balancer</T>, <T>Kubernetes</T>, công cụ giám sát. Không phải người dùng.
 
 **Vì sao cần:** app vẫn đang chạy chưa có nghĩa là dùng được. Ví dụ app chạy nhưng mất kết nối DB, hoặc đang khởi động dở. Health check giúp phát hiện những lúc đó để ngừng gửi request vào app, hoặc khởi động lại app.
 
@@ -20,14 +20,11 @@ title: "Health check"
 
 ## 2. Liveness, readiness, startup
 
-Ba câu hỏi khác nhau. Khác nhau quan trọng nhất là **orchestrator làm gì khi câu trả lời là "không"**. **Orchestrator**: phần mềm chạy và trông coi nhiều bản app thay cho người vận hành; phổ biến nhất là Kubernetes. Bạn không cần đã chạy Kubernetes để hiểu phần này, chỉ cần hình dưới. Phần probe này sẽ được làm thật trên Kubernetes local ở [M8](/progress/plan#m8).
+Ba câu hỏi khác nhau. Khác nhau quan trọng nhất là **orchestrator làm gì khi câu trả lời là "không"**. Bên hỏi là <T>orchestrator</T>, phổ biến nhất là Kubernetes. Bạn không cần đã chạy Kubernetes để hiểu phần này, chỉ cần hình dưới. Phần probe này sẽ được làm thật trên Kubernetes local ở [M8](/progress/plan#m8).
 
 ### Kubernetes trong 1 phút
 
-- **Pod**: một bản app đang chạy (một container chứa PayoutHub.Api). Giống một server trong web farm IIS.
-- **Deployment**: khai báo "luôn giữ 3 pod". Pod chết thì tự tạo pod mới.
-- **Service**: một địa chỉ chung đứng trước các pod, chia traffic **chỉ cho pod đang ready**. Giống load balancer trước web farm.
-- **Probe**: Kubernetes tự gọi `/health/...` của từng pod định kỳ. Cứ mỗi `periodSeconds` (mặc định 10s) gọi một lần, fail **liên tiếp** `failureThreshold` lần (mặc định 3) mới hành động: khoảng **30 giây** từ lúc hỏng tới lúc bị xử lý. Mỗi lần gọi có `timeoutSeconds` (mặc định 1s), quá thời gian là tính fail.
+Trong Kubernetes, app chạy thành nhiều <T>pod</T>, một <T>deployment</T> giữ đủ số pod, và một <T k="k8s service">Service</T> chia traffic chỉ cho pod đang ready. Việc hỏi "pod còn ổn không" do <T>probe</T> làm: nó gọi `/health/...` của từng pod theo chu kỳ, và chỉ hành động sau vài lần fail liên tiếp (khoảng 30 giây với cấu hình mặc định).
 
 <div class="fig">
 <svg viewBox="0 0 720 250" role="img" aria-label="Service chỉ chia traffic cho pod ready; pod fail readiness bị gỡ khỏi Service; pod fail liveness bị restart"><g font-size="13" font-weight="600" text-anchor="middle"><rect class="box" x="20" y="100" width="120" height="50" rx="8"/><text x="80" y="122">Client</text><text x="80" y="139" font-size="11" font-weight="400" class="muted">request</text><rect class="boxAcc" x="190" y="100" width="130" height="50" rx="8"/><text x="255" y="122">Service</text><text x="255" y="139" font-size="11" font-weight="400" class="accT">chỉ chia cho pod ready</text><rect class="boxOk" x="400" y="20" width="160" height="50" rx="8"/><text x="480" y="42">Pod 1</text><text x="480" y="60" font-size="11" font-weight="400" class="okT">live ✓ · ready ✓</text><rect class="box" x="400" y="100" width="160" height="50" rx="8"/><text x="480" y="122">Pod 2</text><text x="480" y="140" font-size="11" font-weight="400" class="muted">live ✓ · ready ✗</text><rect class="boxBad" x="400" y="180" width="160" height="50" rx="8"/><text x="480" y="202">Pod 3</text><text x="480" y="220" font-size="11" font-weight="400" class="badT">live ✗ (3 lần liền)</text></g><line class="ln" x1="140" y1="125" x2="186" y2="125" marker-end="url(#hInk)"/><line class="lnOk" x1="320" y1="115" x2="396" y2="48" marker-end="url(#hOk)"/><line class="lnMuted dash" x1="320" y1="125" x2="396" y2="125"/><g font-size="12"><text x="578" y="50" class="okT">nhận traffic</text><text x="578" y="122">bị gỡ khỏi Service,</text><text x="578" y="138">không restart; ready lại</text><text x="578" y="154">→ tự được thêm vào</text><text x="578" y="202" class="badT">container bị kill</text><text x="578" y="218" class="badT">và chạy lại</text></g></svg>
@@ -103,7 +100,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c
 | Cache | Có header chống cache (`AllowCachingResponses = false`) |
 | Mỗi lần gọi | Chạy lại **tất cả** check, song song, không cache kết quả |
 | Exception trong check | Không làm sập endpoint: check đó tính là `failureStatus` (mặc định `Unhealthy`) |
-| Lifetime | Mỗi lần chạy check có **DI scope riêng**, inject `DbContext` được |
+| Lifetime | Mỗi lần chạy check có **<T>DI</T> scope riêng**, inject <T>DbContext</T> được |
 
 ### Status đổi theo thời gian
 
@@ -175,17 +172,17 @@ PayoutHub M1: chưa có DB nên `/health` chỉ là liveness, và lúc này live
 ::: warning Bẫy & follow-up
 **"DB sập thì mọi pod cùng not-ready. Vậy khác gì app sập?"**
 
-Với user thì giống: Service không còn pod nào ready, request nhận lỗi. Khác ở chỗ **phục hồi**: pod không bị restart nên DB hồi là cả hệ thống tự quay lại trong một chu kỳ probe, không có cold start đồng loạt, không có vòng restart liên tục. Trung thực về trade-off: nếu check DB chập chờn thì cả fleet cùng chập chờn ra vào, nên check phải nhẹ, có timeout, và chỉ đưa dependency mà thiếu nó instance vô dụng hoàn toàn.
+Với user thì giống: Service không còn pod nào ready, request nhận lỗi. Khác ở chỗ **phục hồi**: pod không bị restart nên DB hồi là cả hệ thống tự quay lại trong một chu kỳ probe, không có <T>cold start</T> đồng loạt, không có vòng restart liên tục. Trung thực về trade-off: nếu check DB chập chờn thì cả fleet cùng chập chờn ra vào, nên check phải nhẹ, có timeout, và chỉ đưa dependency mà thiếu nó instance vô dụng hoàn toàn.
 
 **"Sao không bỏ hẳn readiness, để request tự lỗi?"**
 
-Lúc khởi động (warm-up, chưa có connection) và lúc tắt (graceful shutdown), readiness là cách duy nhất báo "đừng gửi request vào tôi" mà không bị restart.
+Lúc khởi động (<T>warm-up</T>, chưa có connection) và lúc tắt (<T>graceful shutdown</T>), readiness là cách duy nhất báo "đừng gửi request vào tôi" mà không bị restart.
 :::
 
 ## Hỏi đáp
 
 ::: details Có nên đưa FakeBank vào readiness check không?
-**Không.** Thiếu FakeBank thì PayoutHub vẫn xem payout, vẫn duyệt được, và worker ở M4 có retry/circuit breaker lo phần chuyển tiền. Đưa vào readiness thì FakeBank sập kéo theo PayoutHub ngừng nhận **mọi** request. Chỉ check dependency mà thiếu nó thì instance vô dụng hoàn toàn. Đây là câu hỏi thiết kế hay khi phỏng vấn.
+**Không.** Thiếu FakeBank thì PayoutHub vẫn xem payout, vẫn duyệt được, và worker ở M4 có retry/<T>circuit breaker</T> lo phần chuyển tiền. Đưa vào readiness thì FakeBank sập kéo theo PayoutHub ngừng nhận **mọi** request. Chỉ check dependency mà thiếu nó thì instance vô dụng hoàn toàn. Đây là câu hỏi thiết kế hay khi phỏng vấn.
 :::
 
 ::: details Vì sao Degraded vẫn trả 200?
