@@ -215,8 +215,8 @@ defineProps<{ name: string }>()
 </template>
 
 <style scoped>
-.si { display: block; width: 132px; height: 88px; overflow: visible; }
-.si * { vector-effect: non-scaling-stroke; }
+/* Kích thước hiển thị do nơi dùng quyết định qua --si-w (mặc định 132px); hình và chữ co giãn theo */
+.si { display: block; width: var(--si-w, 132px); height: auto; aspect-ratio: 3 / 2; overflow: visible; }
 
 /* Chữ: selector có class + data-v nên thắng `.vp-doc svg text` trong custom.css */
 .si .t { font-family: var(--vp-font-family-base); font-size: 10px; fill: var(--vp-c-text-2); }

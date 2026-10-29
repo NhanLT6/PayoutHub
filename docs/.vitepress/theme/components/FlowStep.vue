@@ -144,12 +144,19 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
   background: var(--vp-c-brand-1);
 }
 
-/* Màn hình rộng (xem custom.css): cột trái không cần quá 22%, nhường chỗ cho code trong cột phải */
+/* Màn hình ≥1024px: hình to gấp ~1,5 (198×132), cột trái giãn theo cho vừa hình */
+@media (min-width: 1024px) {
+  .flow-pic { --si-w: 198px; }
+  .flow-grid { grid-template-columns: minmax(230px, 28%) 1fr; }
+}
 @media (min-width: 1440px) {
-  .flow-grid { grid-template-columns: minmax(190px, 22%) 1fr; }
+  .flow-grid { grid-template-columns: minmax(230px, 24%) 1fr; }
 }
 
 @media (max-width: 639px) {
   .flow-grid { grid-template-columns: 1fr; gap: 8px; }
+  /* Điện thoại: hình nằm trên nội dung, rộng theo màn hình, căn giữa */
+  .flow-pic { width: auto; --si-w: min(100%, 240px); }
+  .flow-pic :deep(.si) { margin: 0 auto; }
 }
 </style>
