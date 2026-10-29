@@ -45,9 +45,9 @@ Vì vậy chiến lược là: **deny by default** ở mọi chỗ làm được
 
 ## Bản đồ tổng quan {#overview}
 
-Một hình để nhớ cả trang: request đi vào từ trái sang phải qua 11 lớp, response đi ra theo làn mỏng bên dưới. Giống [middleware pipeline](/aspnet-core/middleware#middleware), nhưng bảo mật **nặng ở chiều vào**, nhẹ ở chiều ra. Bấm một cổng để tới bước chi tiết; đọc xong các bước thì quay lại đây ôn bằng từ khoá.
+Một hình để nhớ cả trang, kể như một cái **phễu**. Mỗi hàng là một bước: request của chị Lan bị làm gì (dòng ✉), lớp đó loại bỏ cái gì (dòng ✕ đỏ), và còn lại bao nhiêu request (thanh ngắn dần). Đọc xong các bước thì quay lại đây, nhìn hình và tự kể lại câu chuyện.
 
-<div class="so-host"><SecurityOverview /></div>
+<SecurityFunnel />
 
 ## Kịch bản {#scenario}
 
@@ -435,7 +435,7 @@ Ví dụ alert đáng có:
 
 </FlowStep>
 
-[↑ Bản đồ tổng quan](#overview): nhìn lại cả 13 lớp trên một hình.
+[↑ Bản đồ tổng quan](#overview): nhìn lại cả 13 lớp như một cái phễu.
 
 ### Tóm tắt: lớp nào chặn gì {#summary}
 
