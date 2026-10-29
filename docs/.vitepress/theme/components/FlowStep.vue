@@ -8,9 +8,11 @@
 //
 // </FlowStep>
 // tone: busy (thread đang bị chiếm) | free (không chiếm thread nào). Bỏ trống = màu trung tính.
+// icon: tên hình trong StepIcon.vue. Có icon thì hình + nhãn "Bước n" thay cho chấm tròn số.
 import { computed } from 'vue'
+import StepIcon from './StepIcon.vue'
 
-const props = defineProps<{ n: number; title: string; layer: string; thread?: string; tone?: 'busy' | 'free' }>()
+const props = defineProps<{ n: number; title: string; layer: string; thread?: string; tone?: 'busy' | 'free'; icon?: string }>()
 
 // Mỗi tầng một màu, chỉ dùng biến màu của theme để tự đổi theo light/dark.
 const layerColors: Record<string, string> = {
@@ -29,10 +31,14 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
 </script>
 
 <template>
-  <section :id="`step-${n}`" class="flow-step">
-    <span class="flow-node" aria-hidden="true">{{ n }}</span>
+  <section :id="`step-${n}`" class="flow-step" :class="{ 'has-icon': icon }">
+    <span v-if="!icon" class="flow-node" aria-hidden="true">{{ n }}</span>
     <div class="flow-grid">
       <div class="flow-rail">
+        <div v-if="icon" class="flow-pic">
+          <span class="flow-num">Bước {{ n }}</span>
+          <StepIcon :name="icon" />
+        </div>
         <div class="flow-title">{{ title }}</div>
         <div class="flow-chips">
           <span class="flow-layer" :style="{ color: color === 'gray' ? 'var(--vp-c-text-2)' : `var(--vp-c-${color}-1)`, background: `var(--vp-c-${color}-soft)` }">{{ layer }}</span>
@@ -112,6 +118,31 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
 .flow-body { min-width: 0; }
 .flow-body > :deep(:first-child) { margin-top: 0; }
 .flow-body > :deep(:last-child) { margin-bottom: 0; }
+
+/* Có hình: bỏ đường ray + chấm số bên trái, hình nằm đầu cột trái kèm nhãn "Bước n" */
+.flow-step.has-icon { padding-left: 0; }
+.flow-step.has-icon::before { display: none; }
+.flow-pic {
+  position: relative;
+  width: fit-content;
+  padding: 18px 8px 6px;
+  margin-bottom: 10px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg-soft);
+}
+.flow-num {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  padding: 0 8px;
+  border-radius: 10px 0 10px 0;
+  color: var(--vp-c-white);
+  background: var(--vp-c-brand-1);
+}
 
 @media (max-width: 639px) {
   .flow-grid { grid-template-columns: 1fr; gap: 8px; }

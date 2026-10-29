@@ -32,7 +32,7 @@ Theo dõi hai thứ ở cột trái của mỗi bước: **tầng** đang xử l
 
 ## Luồng đầy đủ {#flow}
 
-<FlowStep :n="1" title="User bấm Approve" layer="Browser" thread="UI thread (JS)" tone="busy">
+<FlowStep :n="1" title="User bấm Approve" layer="Browser" thread="UI thread (JS)" icon="click" tone="busy">
 
 Browser gọi event handler JavaScript trên **UI thread** của tab. Mỗi tab chỉ có **một** thread chạy JS.
 
@@ -44,7 +44,7 @@ Handler chạy tới `await` thì dừng, UI thread rảnh. Nhờ vậy spinner 
 
 </FlowStep>
 
-<FlowStep :n="2" title="Request đi trên mạng" layer="Network" thread="không có thread" tone="free">
+<FlowStep :n="2" title="Request đi trên mạng" layer="Network" thread="không có thread" icon="network" tone="free">
 
 Các byte của HTTP request đi qua mạng tới server. Mất vài ms tới vài chục ms.
 
@@ -52,7 +52,7 @@ Phía .NET **chưa có ai chờ** request này: server còn chưa biết nó t�
 
 </FlowStep>
 
-<FlowStep :n="3" title="OS nhận kết nối, báo cho Kestrel" layer="Kestrel" thread="không có thread" tone="free">
+<FlowStep :n="3" title="OS nhận kết nối, báo cho Kestrel" layer="Kestrel" thread="không có thread" icon="gate" tone="free">
 
 **Kestrel** là web server có sẵn trong ASP.NET Core. Card mạng nhận byte, **kernel của OS** gom thành dữ liệu của socket.
 
@@ -67,9 +67,35 @@ Khi OS báo, runtime đưa việc "xử lý dữ liệu vừa tới" vào hàng 
 >
 > **Thread pool:** một nhóm worker thread .NET tạo sẵn và **dùng lại**. Có một hàng đợi việc; thread nào rảnh thì lấy việc tiếp theo ra chạy, xong lại quay về chờ việc. Khi việc dồn mà không có thread rảnh, pool **tăng thêm thread rất chậm** (thêm dần từng cái, có độ trễ), để không đẻ thread vô tội vạ.
 
+::: info Lớp chặn trước Kestrel
+Request phải qua nhiều lớp trước khi tới code, mỗi lớp chặn một kiểu:
+
+1. **Router / NAT / security group**: chỉ cho traffic tới IP + port được mở.
+2. **OS firewall**: luật cho phép / chặn theo port, IP, chương trình.
+3. **Kernel**: chỉ giao kết nối cho process đang **listen** trên port đó. Không ai listen → **connection refused**.
+4. **Reverse proxy / WAF** (nếu có): chặn pattern tấn công phổ biến, rate limit.
+5. **Kestrel**: **TLS**, giới hạn kích thước request, số kết nối, timeout.
+6. **AuthN / AuthZ middleware**: bạn là ai, bạn được làm gì.
+7. **Input validation**: dữ liệu có hợp lệ không.
+
+**Dễ nhầm:** firewall quyết định **ai tới được port nào**, không biết nội dung request có độc hại không. Qua được firewall không có nghĩa là đáng tin: **không bao giờ tin input của client**.
+
+**PayoutHub:** endpoint Approve thì ai cũng gọi tới được, nhưng khi đã có auth, request thiếu JWT có role Finance sẽ nhận **401 / 403**. Webhook từ FakeBank được verify bằng **HMAC**.
+:::
+
+::: details Chi tiết từng lớp
+- **NAT** (Network Address Translation): router có một IP public, chia cho nhiều máy bên trong. Từ ngoài muốn vào một máy bên trong thì phải có luật **port forwarding**. **Security group** là firewall của cloud (Azure NSG, AWS Security Group), vd "port 443 mở cho mọi nơi, port 1433 của SQL Server chỉ mở cho máy chạy app".
+- **OS firewall** (Windows Defender Firewall, `nftables` / `iptables` trên Linux): lọc theo port, IP, chương trình. Đây là lý do lần đầu chạy app, Windows hỏi "Allow access?".
+- **Kernel và listen:** khi app khởi động, Kestrel **bind + listen** trên port (vd 5000). Kết nối tới một port không ai listen bị kernel từ chối ngay → **connection refused**. Bị firewall chặn thì gói thường bị bỏ im lặng → **timeout**. Phân biệt được hai lỗi này giúp debug: refused = app chưa chạy hoặc sai port; timeout = bị chặn trên đường.
+- **Reverse proxy** (nginx, YARP, Azure Application Gateway...): đứng trước Kestrel, nhận HTTPS từ internet rồi chuyển vào. **WAF** (Web Application Firewall) hiểu HTTP: soi URL, header, body tìm pattern SQL injection, XSS. Bắt được kiểu tấn công phổ biến, **không thay được** validation trong code.
+- **Kestrel:** giải mã **TLS** nếu không có proxy làm thay. `KestrelServerLimits` có `MaxRequestBodySize` (mặc định khoảng 28,6 MB), `MaxConcurrentConnections`, `RequestHeadersTimeout`... để chống request khổng lồ hoặc client cố tình gửi thật chậm.
+- **AuthN / AuthZ:** `UseAuthentication` đọc JWT để biết user là ai (thiếu hoặc sai → **401**). `UseAuthorization` + `[Authorize(Roles = "Finance")]` quyết định có được làm không (không đủ quyền → **403**).
+- **Validation:** `[ApiController]` tự trả **400** khi model không hợp lệ; rule nghiệp vụ (payout đã Approved thì không approve lại) nằm trong domain. Mọi thứ client gửi lên (id, số tiền, status) đều có thể đã bị sửa.
+:::
+
 </FlowStep>
 
-<FlowStep :n="4" title="Pipeline và model binding" layer="ASP.NET Core" thread="Thread #7" tone="busy">
+<FlowStep :n="4" title="Pipeline và model binding" layer="ASP.NET Core" thread="Thread #7" icon="pipeline" tone="busy">
 
 Một worker rảnh của thread pool, gọi là **Thread #7**, nhận việc. Từ đây Thread #7 đang bận vì request này.
 
@@ -83,7 +109,7 @@ Thread #7 chạy lần lượt:
 
 </FlowStep>
 
-<FlowStep :n="5" title="Code của bạn chạy đồng bộ" layer="Your code" thread="Thread #7" tone="busy">
+<FlowStep :n="5" title="Code của bạn chạy đồng bộ" layer="Your code" thread="Thread #7" icon="sync" tone="busy">
 
 Điểm hay bị hiểu sai: method `async` **không** chạy trên thread mới. Nó chạy **đồng bộ trên Thread #7** cho tới `await` đầu tiên gặp một việc **chưa xong**.
 
@@ -97,7 +123,7 @@ Ghi nhớ chỗ này: biến local nằm trên stack, mà stack sẽ bị bỏ k
 
 </FlowStep>
 
-<FlowStep :n="6" title="FindAsync gửi SQL đi" layer="EF Core" thread="Thread #7" tone="busy">
+<FlowStep :n="6" title="FindAsync gửi SQL đi" layer="EF Core" thread="Thread #7" icon="query" tone="busy">
 
 Vẫn trên Thread #7:
 
@@ -110,7 +136,7 @@ Vẫn trên Thread #7:
 
 </FlowStep>
 
-<FlowStep :n="7" title="Gặp await: awaiter và state machine" layer="Your code" thread="Thread #7" tone="busy">
+<FlowStep :n="7" title="Gặp await: awaiter và state machine" layer="Your code" thread="Thread #7" icon="state" tone="busy">
 
 `await` không phải phép màu. Compiler dịch nó thành vài lời gọi trên **awaiter**.
 
@@ -176,7 +202,7 @@ struct ApproveStateMachine : IAsyncStateMachine
 
 </FlowStep>
 
-<FlowStep :n="8" title="Method return, Thread #7 về pool" layer="Your code" thread="không có thread" tone="free">
+<FlowStep :n="8" title="Method return, Thread #7 về pool" layer="Your code" thread="không có thread" icon="release" tone="free">
 
 Đây là **bước quan trọng nhất** của cả trang.
 
@@ -193,7 +219,7 @@ Trong lúc DB đang chạy query: **không có thread nào** của app ngồi ch
 
 <Timeline :duration="12" :markers="[{ at: 7.5, text: 'SQL trả lời' }]" :lanes="[{ label: 'Thread #7', sub: 'pool thread', segments: [{ from: 0, to: 3, text: 'pipeline + action → FindAsync', kind: 'busy' }, { from: 3, to: 12, text: 'về pool → phục vụ request khác …', kind: 'free' }] }, { label: 'không thread', sub: 'chỉ có Task trên heap', segments: [{ from: 3, to: 7.5, text: 'chờ SQL Server (I/O)', kind: 'io' }] }, { label: 'Thread #12', sub: 'pool thread', segments: [{ from: 7.5, to: 12, text: 'MoveNext: Approve(), SaveChangesAsync …', kind: 'busy' }] }]" caption="Cam = thread đang bận vì request này. Xanh = thread rảnh, đi làm việc khác. Khung nét đứt = đang chờ I/O mà không thread nào bị giữ." />
 
-<FlowStep :n="9" title="SQL Server chạy query" layer="SQL Server" thread="không có thread" tone="free">
+<FlowStep :n="9" title="SQL Server chạy query" layer="SQL Server" thread="không có thread" icon="dbwork" tone="free">
 
 SQL Server là **process khác**, thường ở máy khác. Nó dùng thread **của nó** để parse, lập plan, đọc page từ buffer pool hoặc đĩa.
 
@@ -201,7 +227,7 @@ Những thread đó **không phải** thread của app. Phía app: 0 thread bậ
 
 </FlowStep>
 
-<FlowStep :n="10" title="Kết quả về, OS báo cho .NET" layer="OS kernel" thread="không có thread" tone="free">
+<FlowStep :n="10" title="Kết quả về, OS báo cho .NET" layer="OS kernel" thread="không có thread" icon="bell" tone="free">
 
 Byte kết quả về card mạng → kernel đưa vào buffer của socket → hoàn thành yêu cầu đọc đã đăng ký ở bước 6.
 
@@ -209,7 +235,7 @@ OS báo cho .NET qua **IOCP** (Windows) hoặc **epoll** (Linux). Runtime nhận
 
 </FlowStep>
 
-<FlowStep :n="11" title="Continuation chạy trên một pool thread" layer=".NET runtime" thread="Thread #12" tone="busy">
+<FlowStep :n="11" title="Continuation chạy trên một pool thread" layer=".NET runtime" thread="Thread #12" icon="resume" tone="busy">
 
 Một worker rảnh nhận việc. Có thể là **Thread #12**, cũng có thể lại là Thread #7, không ai đảm bảo. SqlClient đọc rows, EF Core tạo entity `Payout`, Task của `FindAsync` được đánh dấu **xong**, và continuation được gọi:
 
@@ -232,7 +258,7 @@ Một worker rảnh nhận việc. Có thể là **Thread #12**, cũng có thể
 
 </FlowStep>
 
-<FlowStep :n="12" title="payout.Approve(): việc CPU" layer="Your code" thread="Thread #12" tone="busy">
+<FlowStep :n="12" title="payout.Approve(): việc CPU" layer="Your code" thread="Thread #12" icon="cpu" tone="busy">
 
 `Approve()` chỉ kiểm tra trạng thái và đổi `Status = Approved` trong memory. Mất vài micro giây.
 
@@ -240,7 +266,7 @@ Một worker rảnh nhận việc. Có thể là **Thread #12**, cũng có thể
 
 </FlowStep>
 
-<FlowStep :n="13" title="SaveChangesAsync: lặp lại bước 6–11" layer="EF Core" thread="Thread #12 → không có → Thread #?" tone="busy">
+<FlowStep :n="13" title="SaveChangesAsync: lặp lại bước 6–11" layer="EF Core" thread="Thread #12 → không có → Thread #?" icon="save" tone="busy">
 
 Cùng một vòng, lần này với `state = 1`:
 
@@ -252,7 +278,7 @@ Cùng một vòng, lần này với `state = 1`:
 
 </FlowStep>
 
-<FlowStep :n="14" title="return NoContent(): Task hoàn thành" layer="ASP.NET Core" thread="Thread #?" tone="busy">
+<FlowStep :n="14" title="return NoContent(): Task hoàn thành" layer="ASP.NET Core" thread="Thread #?" icon="respond" tone="busy">
 
 `builder.SetResult(...)` đánh dấu **xong** cho Task đã trả cho MVC ở bước 8. Việc này kích hoạt continuation của MVC, rồi của Kestrel, cứ thế ngược lên:
 
@@ -263,7 +289,7 @@ Cùng một vòng, lần này với `state = 1`:
 
 </FlowStep>
 
-<FlowStep :n="15" title="Browser nhận response, cập nhật UI" layer="Browser" thread="UI thread (JS)" tone="busy">
+<FlowStep :n="15" title="Browser nhận response, cập nhật UI" layer="Browser" thread="UI thread (JS)" icon="resolve" tone="busy">
 
 Response về browser. Tầng network của browser **resolve Promise** của `fetch`, rồi xếp continuation (phần code sau `await fetch(...)`) vào hàng đợi của **event loop**.
 
@@ -358,6 +384,20 @@ Nhìn cùng một kiểu hình: **mỗi core là một hàng**, thời gian ch�
 | Đầu bếp nào cũng đứng canh nồi, khách mới không ai tiếp | **Thread pool starvation** |
 
 > *Concurrency = một người tung hứng nhiều quả bóng. Parallelism = nhiều người, mỗi người một quả. Async = cách để không phải cầm quả bóng trong lúc chờ.*
+
+::: info Dễ nhầm
+**Sai:** "async = giao việc cho **đầu bếp khác** rồi chờ báo". Đó là `Task.Run`: vẫn có một đầu bếp (thread) bị chiếm, chỉ là người khác.
+
+**Đúng:** async = giao cho thứ **không phải đầu bếp** (kho, nồi, OS) kèm một **chuông**, và **không ai đứng chờ**.
+
+Ba khái niệm trả lời ba câu hỏi khác nhau:
+
+- **Concurrency**: bao nhiêu món đang **dở dang**?
+- **Parallelism**: bao nhiêu người đang **tay làm** cùng một tích tắc?
+- **Async**: trong lúc chờ, có ai **đứng không**?
+
+Async không ngang hàng với concurrency: async là **kỹ thuật tạo ra** concurrency cho việc I/O mà không tốn thread.
+:::
 
 <Timeline :duration="16" :lanes="[{ group: 'Tuần tự: B chỉ bắt đầu khi A xong', label: 'Core 1', segments: [{ from: 0, to: 8, text: 'A', kind: 'cpu' }, { from: 8, to: 16, text: 'B', kind: 'other' }] }, { group: 'Concurrent, 1 core, xen kẽ: cả hai cùng dở dang, không cái nào chạy cùng tích tắc', label: 'Core 1', segments: [{ from: 0, to: 2, text: 'A', kind: 'cpu' }, { from: 2, to: 4, text: 'B', kind: 'other' }, { from: 4, to: 6, text: 'A', kind: 'cpu' }, { from: 6, to: 8, text: 'B', kind: 'other' }, { from: 8, to: 10, text: 'A', kind: 'cpu' }, { from: 10, to: 12, text: 'B', kind: 'other' }, { from: 12, to: 14, text: 'A', kind: 'cpu' }, { from: 14, to: 16, text: 'B', kind: 'other' }] }, { group: 'Concurrent nhờ async I/O: A chờ mà không chiếm core/thread nào', label: 'Core 1', segments: [{ from: 0, to: 2, text: 'A gửi query', kind: 'cpu' }, { from: 2, to: 10, text: 'B', kind: 'other' }, { from: 10, to: 12, text: 'A xong', kind: 'cpu' }] }, { group: 'Concurrent nhờ async I/O: A chờ mà không chiếm core/thread nào', label: 'không thread', segments: [{ from: 2, to: 10, text: 'A chờ DB', kind: 'io' }] }, { group: 'Parallel, 2 core: chạy thật cùng lúc', label: 'Core 1', segments: [{ from: 0, to: 8, text: 'A', kind: 'cpu' }] }, { group: 'Parallel, 2 core: chạy thật cùng lúc', label: 'Core 2', segments: [{ from: 0, to: 8, text: 'B', kind: 'other' }] }]" caption="Màu brand = việc A, xám = việc B, khung nét đứt = A đang chờ I/O (không chiếm core hay thread nào)." />
 

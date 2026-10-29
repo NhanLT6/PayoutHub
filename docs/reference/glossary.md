@@ -35,12 +35,15 @@ Tra nhanh, mỗi dòng một ý. Xếp theo nhóm, trong nhóm theo ABC. Mã tro
 |---|---|---|
 | HMAC | Hash-based Message Authentication Code | Chữ ký tạo từ nội dung + secret chung; dùng verify webhook (M5) |
 | JWT | JSON Web Token | Token chứa claim (user, role) có chữ ký; dùng cho authentication (M3) |
+| NAT | Network Address Translation | Router dùng một IP public cho nhiều máy bên trong; muốn vào từ ngoài phải mở port forwarding ([Lớp chặn trước Kestrel](/runtime/async-flow#step-3)) |
 | OpenAPI | (trước đây gọi là Swagger) | Chuẩn mô tả API dạng JSON; sinh tài liệu, client |
 | ProblemDetails | RFC 7807 / RFC 9457 | Format JSON chuẩn cho lỗi HTTP: `type`, `title`, `status`, `detail` ([Validation và xử lý lỗi](/aspnet-core/exception-handling#validation-errors)) |
 | REST | Representational State Transfer | Kiểu thiết kế API theo resource + HTTP method + status code ([Thiết kế REST](/aspnet-core/questions#rest-design)) |
 | Span | (OpenTelemetry) | Một bước công việc trong một trace (xử lý request, gọi DB, gọi FakeBank); .NET gọi là `Activity` |
+| TLS | Transport Layer Security | Lớp mã hoá của HTTPS; Kestrel hoặc reverse proxy giải mã ([Lớp chặn trước Kestrel](/runtime/async-flow#step-3)) |
 | Trace | (distributed tracing) | Toàn bộ hành trình của một thao tác, có thể đi qua nhiều service; gồm nhiều span lồng nhau |
 | traceparent | W3C Trace Context | Header/chuỗi `version-traceId-spanId-flags`, mang trace id đi giữa các service |
+| WAF | Web Application Firewall | Firewall hiểu HTTP, soi URL/header/body tìm pattern tấn công (SQL injection, XSS); không thay validation trong code ([Lớp chặn trước Kestrel](/runtime/async-flow#step-3)) |
 
 ## Dữ liệu
 
