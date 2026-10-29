@@ -2,6 +2,7 @@ import DefaultTheme from 'vitepress/theme'
 import { withBase, type Theme } from 'vitepress'
 import Compare from './components/Compare.vue'
 import FlowStep from './components/FlowStep.vue'
+import FlowToggleAll from './components/FlowToggleAll.vue'
 import Glossary from './components/Glossary.vue'
 import HomeToc from './components/HomeToc.vue'
 import SecurityMap from './components/SecurityMap.vue'
@@ -17,6 +18,7 @@ export default {
     app.config.globalProperties.$withBase = withBase
     app.component('Compare', Compare)
     app.component('FlowStep', FlowStep)
+    app.component('FlowToggleAll', FlowToggleAll)
     app.component('Glossary', Glossary)
     app.component('HomeToc', HomeToc)
     app.component('SecurityMap', SecurityMap)

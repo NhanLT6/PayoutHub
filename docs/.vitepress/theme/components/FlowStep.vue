@@ -9,7 +9,12 @@
 // </FlowStep>
 // tone: busy (thread đang bị chiếm) | free (không chiếm thread nào). Bỏ trống = màu trung tính.
 // icon: tên hình trong StepIcon.vue. Có icon thì hình + nhãn "Bước n" thay cho chấm tròn số.
-import { computed } from 'vue'
+//
+// collapsible: bước thu gọn thành một dòng (số, hình nhỏ, tiêu đề, where, asks); bấm dòng để mở nội dung ngay bên dưới.
+// Link tới #step-n (vd từ bản đồ) tự mở bước đó. Nội dung đóng dùng hidden="until-found",
+// nên Ctrl+F vẫn tìm thấy chữ bên trong và browser tự mở bước có chữ đó.
+// Nút mở/đóng tất cả: <FlowToggleAll /> (phát sự kiện 'flowstep:all' trên window).
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import StepIcon from './StepIcon.vue'
 
 const props = defineProps<{
@@ -19,6 +24,9 @@ const props = defineProps<{
   thread?: string
   tone?: 'busy' | 'free'
   icon?: string
+  collapsible?: boolean
+  where?: string // trạm này nằm ở đâu (chỉ hiện ở dòng thu gọn)
+  asks?: string // trạm này hỏi câu gì (chỉ hiện ở dòng thu gọn)
 }>()
 
 // Mỗi tầng một màu, chỉ dùng biến màu của theme để tự đổi theo light/dark.
@@ -39,22 +47,74 @@ const layerColors: Record<string, string> = {
   Monitoring: 'gray',
 }
 const color = computed(() => layerColors[props.layer] ?? 'gray')
+
+// --- Thu gọn / mở ---
+
+const open = ref(!props.collapsible)
+const root = ref<HTMLElement>()
+
+function openFromHash() {
+  if (!props.collapsible || location.hash !== `#step-${props.n}`) return
+
+  open.value = true
+  requestAnimationFrame(() => root.value?.scrollIntoView({ block: 'start' }))
+}
+
+function onAll(e: Event) {
+  if (props.collapsible) open.value = (e as CustomEvent<boolean>).detail
+}
+
+function collapse() {
+  open.value = false
+  root.value?.scrollIntoView({ block: 'nearest' })
+}
+
+onMounted(() => {
+  openFromHash()
+  window.addEventListener('hashchange', openFromHash)
+  window.addEventListener('flowstep:all', onAll)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('hashchange', openFromHash)
+  window.removeEventListener('flowstep:all', onAll)
+})
 </script>
 
 <template>
-  <section :id="`step-${n}`" class="flow-step" :class="{ 'has-icon': icon }">
-    <span v-if="!icon" class="flow-node" aria-hidden="true">{{ n }}</span>
-    <div class="flow-grid">
+  <section :id="`step-${n}`" ref="root" class="flow-step" :class="{ 'has-icon': icon, collapsible, open }">
+    <span v-if="!icon && !collapsible" class="flow-node" aria-hidden="true">{{ n }}</span>
+
+    <!-- Dòng thu gọn: bấm để mở / đóng -->
+    <button v-if="collapsible" type="button" class="flow-row" :aria-expanded="open" @click="open = !open">
+      <span class="flow-row-num">{{ n }}</span>
+      <StepIcon v-if="icon" class="flow-row-icon" :name="icon" />
+
+      <span class="flow-row-text">
+        <span class="flow-row-title">{{ title }}</span>
+        <span v-if="where || asks" class="flow-row-meta">
+          <span v-if="where" class="flow-row-where">{{ where }}</span>
+          <span v-if="asks" class="flow-row-asks">{{ asks }}</span>
+        </span>
+      </span>
+
+      <span class="flow-row-chev" aria-hidden="true">›</span>
+    </button>
+
+    <div class="flow-grid" :hidden="collapsible && !open ? 'until-found' : undefined" @beforematch="open = true">
       <div class="flow-rail">
         <div v-if="icon" class="flow-pic">
           <span class="flow-num">Bước {{ n }}</span>
           <StepIcon :name="icon" />
         </div>
-        <div class="flow-title">{{ title }}</div>
+        <div v-if="!collapsible" class="flow-title">{{ title }}</div>
         <div class="flow-chips">
           <span
             class="flow-layer"
-            :style="{ color: color === 'gray' ? 'var(--vp-c-text-2)' : `var(--vp-c-${color}-1)`, background: `var(--vp-c-${color}-soft)` }"
+            :style="{
+              color: color === 'gray' ? 'var(--vp-c-text-2)' : `var(--vp-c-${color}-1)`,
+              background: `var(--vp-c-${color}-soft)`,
+            }"
             >{{
               layer
             }}</span
@@ -62,7 +122,15 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
           <span v-if="thread" class="flow-thread" :class="tone">{{ thread }}</span>
         </div>
       </div>
-      <div class="flow-body"><slot /></div>
+
+      <div class="flow-body">
+        <slot />
+
+        <div v-if="collapsible" class="flow-foot">
+          <a href="#overview">↑ Bản đồ</a>
+          <button type="button" @click="collapse">Thu gọn bước {{ n }}</button>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -215,7 +283,135 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
   }
 }
 
+/* --- Chế độ thu gọn (collapsible) --- */
+
+.flow-step.collapsible {
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+}
+
+.flow-step.collapsible + .flow-step.collapsible {
+  margin-top: 8px;
+}
+
+.flow-step.collapsible::before {
+  display: none;
+}
+
+.flow-step.collapsible.open {
+  border-color: var(--vp-c-brand-1);
+}
+
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  border-radius: 10px;
+}
+
+.flow-row:hover {
+  background: var(--vp-c-default-soft);
+}
+
+.flow-row-num {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 26px;
+  text-align: center;
+  color: var(--vp-c-white);
+  background: var(--vp-c-brand-3);
+}
+
+.flow-row-icon {
+  flex: none;
+  --si-w: 66px;
+}
+
+.flow-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.flow-row-title {
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--vp-c-text-1);
+}
+
+.flow-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.flow-row-where {
+  color: var(--vp-c-text-2);
+}
+
+.flow-row-where::after {
+  content: " ·";
+}
+
+.flow-row-asks {
+  color: var(--vp-c-brand-1);
+}
+
+.flow-row-chev {
+  flex: none;
+  font-size: 22px;
+  color: var(--vp-c-text-3);
+  transition: transform 0.15s;
+}
+
+.flow-step.open .flow-row-chev {
+  transform: rotate(90deg);
+}
+
+.flow-step.collapsible .flow-grid {
+  border-top: 1px dashed var(--vp-c-divider);
+  padding: 12px 14px 14px;
+}
+
+.flow-step.collapsible .flow-grid[hidden] {
+  /* hidden="until-found" giữ lại box: bỏ padding và viền để dòng đóng không bị hở */
+  padding: 0;
+  border: 0;
+}
+
+.flow-step.open .flow-row-icon {
+  display: none;
+}
+
+.flow-foot {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.flow-foot a,
+.flow-foot button {
+  color: var(--vp-c-brand-1);
+}
+
 @media (max-width: 639px) {
+  .flow-row-icon {
+    display: none;
+  }
+
   .flow-grid {
     grid-template-columns: 1fr;
     gap: 8px;

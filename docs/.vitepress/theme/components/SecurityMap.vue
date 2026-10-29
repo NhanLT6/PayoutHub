@@ -2,21 +2,14 @@
 // Bản đồ tổng quan cho aspnet-core/api-security, vẽ như bản đồ du lịch:
 // request của chị Lan đi từ "nhà" (browser) qua "cổng thành" (edge của Microsoft),
 // vào "khu tường bao" (VNet của mình), qua các phòng trong "toà nhà app", xuống "kho" (database), rồi đi đường về.
-// Hình trả lời: cái gì nằm ở đâu, ai vận hành, và mỗi trạm hỏi câu gì. Chi tiết nằm ở bảng dưới hình.
-// Bấm số trên hình hoặc một dòng trong bảng để tới #step-n.
+// Hình trả lời: cái gì nằm ở đâu, ai vận hành. Mỗi trạm hỏi câu gì nằm ở dòng thu gọn của FlowStep ngay dưới hình.
+// Bấm số trên hình để mở và cuộn tới #step-n.
 
 interface Stop {
   n: number
   x: number
   y: number
   label: string
-}
-
-interface Station {
-  n: number
-  name: string
-  where: string
-  asks: string
 }
 
 // Trạm trên đường vào (y = 150) và đường về (y = 380). Toạ độ theo viewBox 1000 × 430.
@@ -34,27 +27,6 @@ const stops: Stop[] = [
   { n: 11, x: 905, y: 150, label: 'DB' },
   { n: 12, x: 690, y: 380, label: 'Response' },
   { n: 13, x: 858, y: 312, label: 'Monitor' },
-]
-
-const stations: Station[] = [
-  { n: 1, name: 'TLS', where: 'đường ống browser ↔ edge', asks: 'Có đúng server không? Ai nghe lén được không?' },
-  { n: 2, name: 'Chống DDoS', where: 'edge (Microsoft)', asks: 'Có phải lũ traffic ồ ạt không?' },
-  { n: 3, name: 'WAF', where: 'edge, sau khi mở ống TLS', asks: 'Nội dung có pattern tấn công đã biết không?' },
-  { n: 4, name: 'Gateway', where: 'cổng duy nhất vào VNet', asks: 'Có đi đúng cổng, đúng route không?' },
-  { n: 5, name: 'Rate limit', where: 'middleware đầu tiên', asks: 'Người này gọi quá nhiều chưa? (429)' },
-  { n: 6, name: 'CORS', where: 'trong browser', asks: 'Trang web này có được đọc response không?' },
-  { n: 7, name: 'JWT', where: 'middleware', asks: 'Bạn là ai? (401)' },
-  { n: 8, name: 'Policy', where: 'middleware', asks: 'Bạn được làm việc này không? (403)' },
-  { n: 9, name: 'Owner check', where: 'handler, code của bạn', asks: 'Payout 42 có phải của công ty bạn không?' },
-  { n: 10, name: 'Validation', where: 'handler + EF Core', asks: 'Dữ liệu đúng không? SQL có dùng tham số không?' },
-  {
-    n: 11,
-    name: 'DB + Key Vault',
-    where: 'trong VNet, không ra internet',
-    asks: 'Nếu lớp trước thủng, thiệt hại tới đâu?',
-  },
-  { n: 12, name: 'Response', where: 'đường về', asks: 'Có lộ gì thừa không? (stack trace, header)' },
-  { n: 13, name: 'Monitoring', where: 'nhìn cả khu', asks: 'Chuyện gì đã xảy ra? Có gì bất thường?' },
 ]
 </script>
 
@@ -158,17 +130,6 @@ const stations: Station[] = [
     </div>
 
     <p class="sm-hint">← kéo ngang để xem cả bản đồ →</p>
-
-    <div class="sm-legend">
-      <a v-for="s in stations" :key="s.n" :href="`#step-${s.n}`" class="sm-item">
-        <span class="sm-n">{{ s.n }}</span>
-        <span class="sm-body">
-          <strong>{{ s.name }}</strong>
-          <span class="sm-where">{{ s.where }}</span>
-          <span class="sm-asks">{{ s.asks }}</span>
-        </span>
-      </a>
-    </div>
   </div>
 </template>
 
@@ -359,51 +320,5 @@ const stations: Station[] = [
   .sm-hint {
     display: block;
   }
-}
-
-/* Bảng dưới hình */
-.sm-legend {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 6px 14px;
-  margin-top: 12px;
-}
-
-.sm-item {
-  display: flex;
-  gap: 10px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  color: inherit;
-  text-decoration: none;
-  font-size: 13.5px;
-  line-height: 1.45;
-}
-
-.sm-item:hover {
-  background: var(--vp-c-default-soft);
-}
-
-.sm-n {
-  flex: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 11px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 22px;
-  text-align: center;
-  color: var(--vp-c-white);
-  background: var(--vp-c-brand-3);
-}
-
-.sm-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.sm-where {
-  font-size: 12px;
-  color: var(--vp-c-text-2);
 }
 </style>
