@@ -81,6 +81,10 @@ Request phải qua nhiều lớp trước khi tới code, mỗi lớp chặn m�
 **Dễ nhầm:** firewall quyết định **ai tới được port nào**, không biết nội dung request có độc hại không. Qua được firewall không có nghĩa là đáng tin: **không bao giờ tin input của client**.
 
 **PayoutHub:** endpoint Approve thì ai cũng gọi tới được, nhưng khi đã có auth, request thiếu JWT có role Finance sẽ nhận **401 / 403**. Webhook từ FakeBank được verify bằng **HMAC**.
+
+**IDOR:** JWT hợp lệ, đúng role, nhưng đổi `/payouts/42` thành `/payouts/43` của công ty khác: mọi lớp trên đều cho qua, chỉ code kiểm tra "object này có phải của bạn" mới chặn được.
+
+Đi lại cả luồng này dưới góc nhìn bảo mật, từng lớp một: [Bảo mật API: một request đi qua những lớp nào](/aspnet-core/api-security).
 :::
 
 ::: details Chi tiết từng lớp

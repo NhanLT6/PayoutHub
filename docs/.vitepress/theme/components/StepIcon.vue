@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Hình minh hoạ nhỏ cho từng bước của FlowStep (runtime/async-flow): mỗi `name` một SVG 132×88.
+// Hình minh hoạ nhỏ cho từng bước của FlowStep (runtime/async-flow, aspnet-core/api-security): mỗi `name` một SVG 132×88.
 // Chỉ dùng biến màu của theme, nên tự đổi theo light/dark. Nhãn trong hình để tiếng Anh, thật ngắn.
 // Thêm hình mới: thêm một nhánh v-else-if với name mới, rồi dùng <FlowStep icon="name">.
 defineProps<{ name: string }>()
@@ -211,6 +211,183 @@ defineProps<{ name: string }>()
       <text class="t tb ok" x="66" y="46" text-anchor="middle">✓ Approved</text>
       <text class="t mono s" x="66" y="70" text-anchor="middle">Promise resolved</text>
     </g>
+
+    <!-- ===== aspnet-core/api-security: mỗi lớp bảo vệ một hình ===== -->
+
+    <!-- sec 1. HTTPS/TLS: ổ khoá, đường hầm mã hoá, certificate do CA ký -->
+    <g v-else-if="name === 'tls'">
+      <path class="ok-ln" d="M13 40 v-8 a8 8 0 0 1 16 0 v8" />
+      <rect class="box-ok" x="8" y="40" width="26" height="22" rx="3" />
+      <circle class="dot-ok" cx="21" cy="50" r="2.5" /><path class="ok-ln" d="M21 52 v4" />
+      <path class="tunnel" d="M38 38 H92 M38 58 H92" />
+      <rect class="pkt" x="44" y="45" width="8" height="8" rx="1.5" /><rect class="pkt p2" x="60" y="45" width="8" height="8" rx="1.5" /><rect class="pkt p3" x="76" y="45" width="8" height="8" rx="1.5" />
+      <text class="t s tb acc" x="65" y="32" text-anchor="middle">TLS 1.3</text>
+      <rect class="box" x="96" y="16" width="30" height="40" rx="2" />
+      <line class="ln" x1="101" y1="24" x2="121" y2="24" /><line class="ln" x1="101" y1="31" x2="117" y2="31" />
+      <circle class="seal" cx="111" cy="44" r="6" /><text class="t xs tb on" x="111" y="47" text-anchor="middle">CA</text>
+      <text class="t s mono" x="6" y="84">https://</text>
+      <text class="t s ok" x="111" y="68" text-anchor="middle">cert ✓</text>
+      <text class="t xs bad" x="65" y="70" text-anchor="middle">MITM ✗</text>
+    </g>
+
+    <!-- sec 2. CDN / DDoS: lũ request bị khiên ở edge hấp thụ, request thật đi tiếp -->
+    <g v-else-if="name === 'ddos'">
+      <path class="bad-ln" d="M4 16 L42 30 M4 30 L42 36 M4 44 L42 42 M4 58 L42 48 M4 72 L42 54" />
+      <text class="t s tb bad" x="4" y="10">flood</text>
+      <path class="shield" d="M64 12 l20 7 v18 c0 16 -9 25 -20 31 c-11 -6 -20 -15 -20 -31 v-18 z" />
+      <text class="t s tb acc" x="64" y="44" text-anchor="middle">edge</text>
+      <path class="ok-ln" d="M86 42 H110" /><path class="head ok-f" d="M110 38 l6 4 l-6 4 z" />
+      <rect class="frame" x="117" y="30" width="11" height="24" rx="2" />
+      <text class="t s" x="64" y="84" text-anchor="middle">CDN / DDoS</text>
+    </g>
+
+    <!-- sec 3. WAF: soi nội dung, chặn payload tấn công, cho request bình thường qua -->
+    <g v-else-if="name === 'waf'">
+      <text class="t xs mono bad" x="4" y="22">' OR 1=1--</text>
+      <text class="t xs mono bad" x="4" y="42">&lt;script&gt;</text>
+      <text class="t xs mono ok" x="4" y="62">POST /42</text>
+      <path class="bad-ln" d="M56 16 l6 6 M62 16 l-6 6 M56 36 l6 6 M62 36 l-6 6" />
+      <rect class="box-acc" x="66" y="8" width="28" height="66" rx="4" />
+      <text class="t s tb acc" x="80" y="44" text-anchor="middle">WAF</text>
+      <path class="arrow" d="M46 59 H66" />
+      <path class="ok-ln" d="M94 59 H114" /><path class="head ok-f" d="M114 55 l6 4 l-6 4 z" />
+      <text class="t s" x="112" y="40" text-anchor="middle">rules</text>
+      <text class="t xs" x="66" y="85" text-anchor="middle">no business logic</text>
+    </g>
+
+    <!-- sec 4. Reverse proxy / API gateway: một cửa vào, chia cho nhiều instance -->
+    <g v-else-if="name === 'gateway'">
+      <path class="arrow" d="M4 40 H26" /><path class="head" d="M26 36 l6 4 l-6 4 z" />
+      <rect class="box-acc" x="34" y="24" width="48" height="32" rx="5" />
+      <text class="t s tb acc" x="58" y="38" text-anchor="middle">API</text>
+      <text class="t s tb acc" x="58" y="49" text-anchor="middle">gateway</text>
+      <path class="arrow" d="M82 34 L94 20" /><path class="arrow" d="M82 46 L94 60" />
+      <rect class="frame" x="94" y="10" width="34" height="18" rx="3" /><text class="t xs" x="111" y="22" text-anchor="middle">app #1</text>
+      <rect class="frame" x="94" y="52" width="34" height="18" rx="3" /><text class="t xs" x="111" y="64" text-anchor="middle">app #2</text>
+      <text class="t xs" x="58" y="72" text-anchor="middle">TLS · route · LB</text>
+      <text class="t xs mono" x="4" y="32">:443</text>
+    </g>
+
+    <!-- sec 5. Rate limiting: quá ngưỡng trong một khoảng thời gian thì 429 -->
+    <g v-else-if="name === 'ratelimit'">
+      <text class="t s" x="6" y="12">per user / minute</text>
+      <rect class="box-ok" x="8" y="30" width="10" height="24" rx="2" /><rect class="box-ok" x="22" y="30" width="10" height="24" rx="2" />
+      <rect class="box-ok" x="36" y="30" width="10" height="24" rx="2" /><rect class="box-ok" x="50" y="30" width="10" height="24" rx="2" />
+      <rect class="box-ok" x="64" y="30" width="10" height="24" rx="2" />
+      <path class="limit" d="M80 22 V62" />
+      <rect class="box-bad" x="86" y="30" width="10" height="24" rx="2" /><rect class="box-bad" x="100" y="30" width="10" height="24" rx="2" /><rect class="box-bad" x="114" y="30" width="10" height="24" rx="2" />
+      <line class="ln" x1="4" y1="58" x2="128" y2="58" />
+      <text class="t xs bad" x="80" y="86" text-anchor="middle">limit 5</text>
+      <text class="t tb ok" x="40" y="76" text-anchor="middle">200</text>
+      <text class="t tb bad" x="105" y="76" text-anchor="middle">429</text>
+    </g>
+
+    <!-- sec 6. CORS: browser chặn trang khác origin đọc response; server không bị chặn gì -->
+    <g v-else-if="name === 'cors'">
+      <rect class="frame" x="4" y="8" width="62" height="62" rx="5" />
+      <line class="ln" x1="4" y1="20" x2="66" y2="20" />
+      <circle class="dot" cx="11" cy="14" r="2" /><circle class="dot" cx="18" cy="14" r="2" />
+      <text class="t s tb bad" x="35" y="36" text-anchor="middle">evil.com</text>
+      <text class="t xs" x="35" y="64" text-anchor="middle">browser</text>
+      <rect class="box-acc" x="98" y="26" width="30" height="30" rx="4" />
+      <text class="t s tb acc" x="113" y="44" text-anchor="middle">API</text>
+      <path class="arrow" d="M66 34 H92" /><path class="head" d="M92 30 l6 4 l-6 4 z" />
+      <path class="arrow dash" d="M98 50 H74" /><path class="head" d="M74 46 l-6 4 l6 4 z" />
+      <path class="bad-ln thick" d="M54 44 l10 10 M64 44 l-10 10" />
+      <text class="t xs mono" x="66" y="84" text-anchor="middle">Allow-Origin: app only</text>
+    </g>
+
+    <!-- sec 7. Authentication: JWT = header.payload.signature -->
+    <g v-else-if="name === 'jwt'">
+      <text class="t xs mono" x="66" y="14" text-anchor="middle">eyJhbGc.eyJzdWI.SflKxw</text>
+      <rect class="box-acc" x="6" y="22" width="34" height="20" rx="3" /><text class="t xs" x="23" y="35" text-anchor="middle">alg</text>
+      <rect class="box-ok" x="44" y="22" width="46" height="20" rx="3" /><text class="t xs" x="67" y="35" text-anchor="middle">sub, role</text>
+      <rect class="box-warn" x="94" y="22" width="32" height="20" rx="3" /><text class="t xs" x="110" y="35" text-anchor="middle">sig</text>
+      <text class="t xs acc" x="23" y="54" text-anchor="middle">header</text>
+      <text class="t xs ok" x="67" y="54" text-anchor="middle">payload</text>
+      <text class="t xs warn" x="110" y="54" text-anchor="middle">signature</text>
+      <text class="t s tb" x="66" y="70" text-anchor="middle">signed ≠ encrypted</text>
+      <text class="t s tb bad" x="66" y="84" text-anchor="middle">no / bad token → 401</text>
+    </g>
+
+    <!-- sec 8. Authorization: role / policy quyết định được làm gì -->
+    <g v-else-if="name === 'role'">
+      <rect class="card" x="6" y="10" width="40" height="56" rx="4" />
+      <circle class="person" cx="26" cy="28" r="7" />
+      <path class="person-ln" d="M15 48 a11 9 0 0 1 22 0" />
+      <text class="t xs tb acc" x="26" y="60" text-anchor="middle">Finance</text>
+      <path class="arrow" d="M48 26 H70" /><path class="head" d="M70 22 l6 4 l-6 4 z" />
+      <rect class="box-ok" x="78" y="14" width="50" height="22" rx="4" /><text class="t s tb ok" x="103" y="29" text-anchor="middle">approve ✓</text>
+      <path class="arrow dash" d="M48 52 H70" /><path class="head" d="M70 48 l6 4 l-6 4 z" />
+      <rect class="box-bad" x="78" y="42" width="50" height="22" rx="4" /><text class="t s tb bad" x="103" y="57" text-anchor="middle">Ops → 403</text>
+      <text class="t xs" x="66" y="82" text-anchor="middle">policy: CanApprovePayout</text>
+    </g>
+
+    <!-- sec 9. Object-level authorization: cùng JWT hợp lệ, payout của người khác bị chặn -->
+    <g v-else-if="name === 'idor'">
+      <rect class="box-warn" x="2" y="34" width="34" height="18" rx="3" /><text class="t xs tb" x="19" y="46" text-anchor="middle">JWT ✓</text>
+      <path class="arrow" d="M36 40 L58 22" /><path class="arrow" d="M36 46 L58 64" />
+      <rect class="box-ok" x="60" y="10" width="68" height="24" rx="3" />
+      <text class="t xs mono ok" x="94" y="20" text-anchor="middle">/payouts/42</text>
+      <text class="t xs ok" x="94" y="30" text-anchor="middle">your tenant ✓</text>
+      <rect class="box-bad" x="60" y="52" width="68" height="24" rx="3" />
+      <text class="t xs mono bad" x="94" y="62" text-anchor="middle">/payouts/43</text>
+      <text class="t xs bad" x="94" y="72" text-anchor="middle">not yours ✗</text>
+      <text class="t xs tb acc" x="4" y="84">owner check</text>
+    </g>
+
+    <!-- sec 10. Input: validate + parameterized query, không nối chuỗi SQL -->
+    <g v-else-if="name === 'inject'">
+      <rect class="box-bad" x="4" y="10" width="86" height="22" rx="3" />
+      <text class="t xs mono bad" x="8" y="24">"…Id=" + input</text>
+      <path class="bad-ln" d="M94 14 l10 12 M104 14 l-10 12" />
+      <rect class="box-ok" x="4" y="42" width="86" height="22" rx="3" />
+      <text class="t xs mono ok" x="8" y="56">WHERE Id = @p0</text>
+      <path class="ok-ln" d="M94 54 l4 4 l7 -9" />
+      <g class="db"><path d="M110 40 v22 a9 4 0 0 0 18 0 v-22" /><ellipse cx="119" cy="40" rx="9" ry="4" /></g>
+      <text class="t xs" x="4" y="82">validate → 400</text>
+      <text class="t xs" x="128" y="82" text-anchor="end">encode out</text>
+    </g>
+
+    <!-- sec 11. DB & secret: Key Vault + managed identity, DB mã hoá at rest, user quyền tối thiểu -->
+    <g v-else-if="name === 'vault'">
+      <rect class="box-acc" x="6" y="12" width="40" height="44" rx="4" />
+      <circle class="dial" cx="26" cy="34" r="9" /><path class="ln" d="M26 34 l5 -5" />
+      <text class="t xs tb acc" x="26" y="68" text-anchor="middle">Key Vault</text>
+      <path class="arrow dash" d="M48 34 H88" /><path class="head" d="M88 30 l6 4 l-6 4 z" />
+      <text class="t xs" x="72" y="27" text-anchor="middle">managed id</text>
+      <g class="db"><path d="M98 18 v34 a14 5 0 0 0 28 0 v-34" /><ellipse cx="112" cy="18" rx="14" ry="5" /></g>
+      <path class="ok-ln" d="M107 36 v-4 a5 5 0 0 1 10 0 v4" /><rect class="box-ok" x="104" y="36" width="16" height="11" rx="2" />
+      <text class="t xs tb" x="112" y="68" text-anchor="middle">TDE</text>
+      <text class="t xs" x="66" y="84" text-anchor="middle">no password in appsettings</text>
+    </g>
+
+    <!-- sec 12. Response: ProblemDetails, không stack trace, security headers -->
+    <g v-else-if="name === 'headers'">
+      <rect class="frame" x="6" y="6" width="120" height="66" rx="4" />
+      <text class="t xs mono" x="12" y="18">HTTP 500</text>
+      <text class="t xs ok" x="12" y="32">HSTS ✓</text>
+      <text class="t xs ok" x="12" y="44">nosniff ✓</text>
+      <text class="t xs ok" x="12" y="56">CSP ✓</text>
+      <rect class="code" x="66" y="26" width="52" height="4" rx="2" /><rect class="code" x="66" y="34" width="44" height="4" rx="2" />
+      <rect class="code" x="66" y="42" width="50" height="4" rx="2" /><rect class="code" x="66" y="50" width="38" height="4" rx="2" />
+      <path class="bad-ln" d="M62 24 L120 56" />
+      <text class="t xs bad" x="92" y="66" text-anchor="middle">stack trace</text>
+      <text class="t s mono tb acc" x="66" y="84" text-anchor="middle">ProblemDetails</text>
+    </g>
+
+    <!-- sec 13. Audit log + alert: ghi ai làm gì, bất thường thì báo -->
+    <g v-else-if="name === 'audit'">
+      <rect class="frame" x="4" y="8" width="76" height="62" rx="4" />
+      <rect class="code" x="10" y="16" width="62" height="5" rx="2" /><rect class="code" x="10" y="26" width="54" height="5" rx="2" />
+      <rect class="hl-bad" x="8" y="34" width="68" height="11" rx="2" />
+      <text class="t xs mono bad" x="11" y="42">403 ×50 /min</text>
+      <rect class="code" x="10" y="50" width="58" height="5" rx="2" /><rect class="code" x="10" y="60" width="46" height="5" rx="2" />
+      <path class="bell" d="M98 40 a10 10 0 0 1 20 0 v7 l4 5 h-28 l4 -5 z" /><circle class="bell" cx="108" cy="56" r="3" />
+      <path class="ring" d="M90 30 q-4 8 0 16 M126 30 q4 8 0 16" />
+      <text class="t xs tb warn" x="108" y="70" text-anchor="middle">alert</text>
+      <text class="t xs" x="4" y="84">who · what · when · no token</text>
+    </g>
   </svg>
 </template>
 
@@ -271,6 +448,17 @@ defineProps<{ name: string }>()
 .si .pool { fill: var(--vp-c-green-soft); stroke: var(--vp-c-green-1); stroke-width: 1.5; }
 .si .loop { fill: none; stroke: var(--vp-c-text-2); stroke-width: 1.6; stroke-dasharray: 4 3; }
 .si .badge-ok { fill: var(--vp-c-green-soft); stroke: var(--vp-c-green-1); stroke-width: 1.5; }
+/* api-security */
+.si .box-bad { fill: var(--vp-c-red-soft); stroke: var(--vp-c-red-1); stroke-width: 1.5; }
+.si .hl-bad { fill: var(--vp-c-red-soft); stroke: var(--vp-c-red-1); stroke-width: 1; }
+.si .bad-ln.thick { stroke-width: 3; }
+.si .head.ok-f { fill: var(--vp-c-green-1); }
+.si .dot-ok { fill: var(--vp-c-green-1); }
+.si .tunnel { fill: none; stroke: var(--vp-c-green-1); stroke-width: 2; stroke-linecap: round; }
+.si .seal { fill: var(--vp-c-brand-1); }
+.si .shield { fill: var(--vp-c-brand-soft); stroke: var(--vp-c-brand-1); stroke-width: 2; stroke-linejoin: round; }
+.si .limit { fill: none; stroke: var(--vp-c-red-1); stroke-width: 1.8; stroke-dasharray: 3 3; }
+.si .dial { fill: var(--vp-c-bg); stroke: var(--vp-c-brand-1); stroke-width: 1.8; }
 
 /* Chuyển động nhẹ; tắt khi người dùng chọn giảm chuyển động */
 .si .spin { transform-box: fill-box; transform-origin: center; animation: si-spin 6s linear infinite; }

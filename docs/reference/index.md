@@ -114,6 +114,15 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 
 - [Liveness và readiness khác nhau thế nào? Check DB đặt ở đâu?](/aspnet-core/health-checks#liveness-vs-readiness)
 
+### [Bảo mật API](/aspnet-core/api-security#interview)
+
+- [Authentication và authorization khác nhau thế nào?](/aspnet-core/api-security#authn-vs-authz)
+- [JWT là gì? Có an toàn để chứa dữ liệu nhạy cảm không?](/aspnet-core/api-security#jwt)
+- [IDOR / BOLA là gì? Bạn chặn thế nào?](/aspnet-core/api-security#idor)
+- [CORS có bảo vệ API không?](/aspnet-core/api-security#cors)
+- [SQL injection xảy ra thế nào và chặn ra sao?](/aspnet-core/api-security#sql-injection)
+- [Thiết kế một API an toàn: checklist của bạn?](/aspnet-core/api-security#secure-api-checklist)
+
 ### Chưa có câu phỏng vấn riêng
 
 - [Result pattern](/aspnet-core/result-pattern)

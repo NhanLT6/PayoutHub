@@ -42,6 +42,7 @@ export const sidebar: DefaultTheme.Sidebar = [
       { text: 'Exception handling', link: '/aspnet-core/exception-handling' },
       { text: 'Result pattern', link: '/aspnet-core/result-pattern' },
       { text: 'Health check', link: '/aspnet-core/health-checks' },
+      { text: 'Bảo mật API', link: '/aspnet-core/api-security' },
       { text: 'Câu hỏi khác', link: '/aspnet-core/questions' },
     ],
   },

@@ -81,6 +81,11 @@ const groups: Group[] = [
       { text: 'Health check', desc: 'Liveness và readiness, vì sao không đưa DB vào liveness, Kubernetes trong 1 phút.', link: '/aspnet-core/health-checks', q: [
         { text: 'Liveness vs readiness', link: '/aspnet-core/health-checks#liveness-vs-readiness' },
       ] },
+      { text: 'Bảo mật API', desc: 'Một request đi qua TLS, WAF, gateway, JWT, policy, IDOR, SQL injection, Key Vault. OWASP API Top 10, PII/PHI.', link: '/aspnet-core/api-security', q: [
+        { text: 'AuthN vs AuthZ', link: '/aspnet-core/api-security#authn-vs-authz' },
+        { text: 'IDOR', link: '/aspnet-core/api-security#idor' },
+        { text: 'Checklist', link: '/aspnet-core/api-security#secure-api-checklist' },
+      ] },
       { text: 'Câu hỏi khác', desc: 'Startup, Controller hay Minimal API, REST, HttpClientFactory, caching.', link: '/aspnet-core/questions', q: [
         { text: 'Controller vs Minimal', link: '/aspnet-core/questions#controllers-vs-minimal' },
         { text: 'REST', link: '/aspnet-core/questions#rest-design' },

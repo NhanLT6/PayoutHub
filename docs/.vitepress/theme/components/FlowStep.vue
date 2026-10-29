@@ -26,6 +26,10 @@ const layerColors: Record<string, string> = {
   'EF Core': 'yellow',
   'SqlClient': 'yellow',
   'SQL Server': 'red',
+  // aspnet-core/api-security
+  'Edge': 'indigo',
+  'Gateway': 'purple',
+  'Monitoring': 'gray',
 }
 const color = computed(() => layerColors[props.layer] ?? 'gray')
 </script>
