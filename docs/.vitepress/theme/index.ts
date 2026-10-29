@@ -4,7 +4,7 @@ import Compare from './components/Compare.vue'
 import FlowStep from './components/FlowStep.vue'
 import Glossary from './components/Glossary.vue'
 import HomeToc from './components/HomeToc.vue'
-import SecurityFunnel from './components/SecurityFunnel.vue'
+import SecurityMap from './components/SecurityMap.vue'
 import Term from './components/Term.vue'
 import Timeline from './components/Timeline.vue'
 import './custom.css'
@@ -19,7 +19,7 @@ export default {
     app.component('FlowStep', FlowStep)
     app.component('Glossary', Glossary)
     app.component('HomeToc', HomeToc)
-    app.component('SecurityFunnel', SecurityFunnel)
+    app.component('SecurityMap', SecurityMap)
     app.component('T', Term)
     app.component('Timeline', Timeline)
     if (typeof window !== 'undefined') enableDiagramZoom()

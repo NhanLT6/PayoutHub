@@ -45,9 +45,9 @@ Vì vậy chiến lược là: **deny by default** ở mọi chỗ làm được
 
 ## Bản đồ tổng quan {#overview}
 
-Một hình để nhớ cả trang, kể như một cái **phễu**. Mỗi hàng là một bước: request của chị Lan bị làm gì (dòng ✉), lớp đó loại bỏ cái gì (dòng ✕ đỏ), và còn lại bao nhiêu request (thanh ngắn dần). Đọc xong các bước thì quay lại đây, nhìn hình và tự kể lại câu chuyện.
+Một tấm **bản đồ du lịch** của cả trang. Request của chị Lan xuất phát từ **nhà** (browser), đi qua **cổng thành** của Microsoft (edge), vào **khu tường bao** của bạn (VNet), qua các phòng trong **toà nhà app**, xuống **kho dữ liệu**, rồi theo đường mỏng quay về. Mỗi số là một trạm kiểm tra. Bảng dưới hình ghi trạm đó **nằm ở đâu** và **hỏi câu gì**. Bấm vào một số để đọc bước đó.
 
-<SecurityFunnel />
+<SecurityMap />
 
 ## Kịch bản {#scenario}
 
@@ -435,7 +435,7 @@ Ví dụ alert đáng có:
 
 </FlowStep>
 
-[↑ Bản đồ tổng quan](#overview): nhìn lại cả 13 lớp như một cái phễu.
+[↑ Bản đồ tổng quan](#overview): nhìn lại cả 13 trạm trên bản đồ.
 
 ### Tóm tắt: lớp nào chặn gì {#summary}
 
