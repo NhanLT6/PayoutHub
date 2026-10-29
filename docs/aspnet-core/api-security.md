@@ -23,6 +23,38 @@ Câu hỏi hay gặp: "API mở port 443 ra internet, ai cũng biết địa ch�
 
 Vì vậy câu trả lời đúng cho "port public có nguy hiểm không" là: không, **miễn là** mỗi lớp phía sau làm đúng việc của nó. Phần còn lại của trang là danh sách các lớp đó.
 
+### Blocklist, allowlist, assume breach {#blocklist-vs-allowlist}
+
+Các lớp bảo vệ chia làm hai kiểu suy nghĩ, và hiểu khác biệt này giải thích vì sao cần nhiều lớp.
+
+> **Blocklist** (deny-list): liệt kê **cái xấu đã biết** rồi chặn: chữ ký tấn công của WAF, mẫu virus của antivirus, danh sách IP xấu. Mọi thứ không có trong danh sách thì cho qua.
+>
+> **Zero-day**: lỗ hổng hoặc kiểu tấn công **chưa ai biết**, nên chưa có trong danh sách nào. Biến thể của payload cũ (viết hoa thường lẫn lộn, encode khác) cũng hay lọt.
+>
+> **Allowlist** (**deny by default**, mặc định từ chối): chỉ cho qua **cái tốt đã biết**, còn lại chặn hết: chữ ký JWT hợp lệ, policy cho phép, chỉ mở port 443, query có tham số, DB user chỉ có đúng quyền cần. Không dựa vào việc nhận ra pattern tấn công, nên không bị "đi sau".
+>
+> **Assume breach** (giả định đã bị xâm nhập): thiết kế như thể kẻ tấn công **đã vào được** một lớp, và hỏi "thiệt hại lớn tới đâu?". Trả lời bằng cách giới hạn **blast radius** (phạm vi thiệt hại): least privilege, mã hoá, **segmentation** (chia mạng và hệ thống thành vùng riêng, vào được một vùng không có nghĩa là vào được hết).
+>
+> **Anomaly detection** (phát hiện bất thường): so hành vi hiện tại với **baseline** (mức bình thường) của user hay hệ thống, thay vì so với pattern tấn công. Ví dụ: chị Lan thường approve 5 payout mỗi ngày, hôm nay approve 500 lúc 2 giờ sáng. Token hợp lệ, role đúng, request sạch, nhưng hành vi lạ.
+
+::: info Dễ nhầm: blocklist luôn đi sau kẻ tấn công
+Bất đối xứng giữa hai bên: **người phòng thủ phải chặn mọi đường, kẻ tấn công chỉ cần một đường**. Blocklist chỉ chặn được thứ đã thấy, nên luôn chậm hơn một bước; WAF và antivirus vẫn đáng có vì chúng rẻ và chặn được phần lớn tấn công tự động, nhưng **không được là lớp duy nhất**.
+
+Vì vậy chiến lược là: **deny by default** ở mọi chỗ làm được (allowlist), **defense in depth** để một lớp blocklist bị né thì lớp allowlist phía sau vẫn chặn, và **assume breach** để khi mọi lớp đều thủng thì thiệt hại vẫn nhỏ và có người biết.
+
+| Kiểu | Các bước | Ký hiệu trong bản đồ |
+|---|---|---|
+| Blocklist (pattern đã biết) | [2 DDoS](#step-2), [3 WAF](#step-3) | ô vuông đỏ |
+| Allowlist / deny by default | [1 TLS](#step-1), [4 gateway](#step-4), [6 CORS](#step-6), [7 JWT](#step-7), [8 policy](#step-8), [9 owner check](#step-9), [10 validation + parameterized query](#step-10), [11 least privilege](#step-11) | chấm tròn xanh |
+| Ngưỡng / hành vi | [5 rate limit](#step-5), [13 anomaly alert](#step-13) | hình thoi cam |
+:::
+
+## Bản đồ tổng quan {#overview}
+
+Một hình để nhớ cả trang: request đi vào từ trái sang phải qua 11 lớp, response đi ra theo làn mỏng bên dưới. Giống [middleware pipeline](/aspnet-core/middleware#middleware), nhưng bảo mật **nặng ở chiều vào**, nhẹ ở chiều ra. Bấm một cổng để tới bước chi tiết; đọc xong các bước thì quay lại đây ôn bằng từ khoá.
+
+<div class="so-host"><SecurityOverview /></div>
+
 ## Kịch bản {#scenario}
 
 Chị Lan, user role **Finance**, bấm **Approve** trên payout 42 trong app web `https://app.payouthub.example`. Front end gọi:
@@ -343,7 +375,7 @@ Trả **404** thay vì 403 cho object của người khác để không tiết l
 
 > **Input validation**: kiểm tra dữ liệu vào có đúng kiểu, độ dài, khoảng giá trị, format không. Sai → **400 Bad Request**. `[ApiController]` tự trả 400 khi model không hợp lệ (DataAnnotations); rule nghiệp vụ (payout đã `Paid` không approve lại được) nằm trong domain. Xem [Validation và xử lý lỗi](/aspnet-core/exception-handling#validation-errors).
 >
-> **Allow-list**: chỉ chấp nhận giá trị nằm trong danh sách hợp lệ (vd `currency` ∈ VND, USD). Chắc hơn **deny-list** (cố chặn ký tự xấu), vì luôn có cách viết né deny-list.
+> **Allow-list** cho input: chỉ chấp nhận giá trị nằm trong danh sách hợp lệ (vd `currency` ∈ VND, USD). Chắc hơn cố chặn ký tự xấu, vì luôn có cách viết né blocklist ([blocklist vs allowlist](#blocklist-vs-allowlist)).
 >
 > **Mass assignment** (overposting): bind thẳng body vào entity, kẻ tấn công gửi thêm field `"status": "Paid"` hoặc `"amount": 999999` và chúng được ghi vào DB. Sửa: nhận **DTO** chỉ có field được phép sửa, không bind vào entity.
 
@@ -473,6 +505,8 @@ Ví dụ alert đáng có:
 > **PII** (Personally Identifiable Information): thông tin nhận diện được một người: tên, email, số điện thoại, số CMND, số tài khoản. Chi tiết ở [Data security](#data-security).
 
 </FlowStep>
+
+[↑ Bản đồ tổng quan](#overview): nhìn lại cả 13 lớp trên một hình.
 
 ### Tóm tắt: lớp nào chặn gì {#summary}
 
@@ -661,6 +695,12 @@ Vì payload chỉ là Base64Url **encoding**, không phải encryption. Chữ k�
 |---|---|---|
 | Attack surface | Mọi chỗ kẻ tấn công gửi dữ liệu vào được | [Mở đầu](#intro) |
 | Defense in depth | Nhiều lớp bảo vệ, giả định lớp trước có thể thủng | [Mở đầu](#intro) |
+| Blocklist (deny-list) | Chặn cái xấu đã biết; luôn đi sau kẻ tấn công | [Blocklist vs allowlist](#blocklist-vs-allowlist) |
+| Allowlist / deny by default | Chỉ cho qua cái tốt đã biết, còn lại chặn | [Blocklist vs allowlist](#blocklist-vs-allowlist) |
+| Zero-day | Lỗ hổng hoặc kiểu tấn công chưa ai biết | [Blocklist vs allowlist](#blocklist-vs-allowlist) |
+| Assume breach / blast radius | Thiết kế như đã bị xâm nhập; giới hạn phạm vi thiệt hại | [Blocklist vs allowlist](#blocklist-vs-allowlist) |
+| Segmentation | Chia mạng, hệ thống thành vùng riêng | [Blocklist vs allowlist](#blocklist-vs-allowlist) |
+| Anomaly detection / baseline | So hành vi với mức bình thường thay vì với pattern tấn công | [Blocklist vs allowlist](#blocklist-vs-allowlist) |
 | DNS | Đổi tên miền thành địa chỉ IP | [Bước 1](#step-1) |
 | HTTPS / TLS | HTTP bên trong kết nối mã hoá: bí mật, toàn vẹn, xác thực server | [Bước 1](#step-1) |
 | TLS handshake | Trao certificate, thoả thuận khoá phiên lúc mở kết nối | [Bước 1](#step-1) |

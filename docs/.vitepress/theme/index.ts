@@ -3,6 +3,7 @@ import { withBase, type Theme } from 'vitepress'
 import Compare from './components/Compare.vue'
 import FlowStep from './components/FlowStep.vue'
 import HomeToc from './components/HomeToc.vue'
+import SecurityOverview from './components/SecurityOverview.vue'
 import Timeline from './components/Timeline.vue'
 import './custom.css'
 
@@ -15,6 +16,7 @@ export default {
     app.component('Compare', Compare)
     app.component('FlowStep', FlowStep)
     app.component('HomeToc', HomeToc)
+    app.component('SecurityOverview', SecurityOverview)
     app.component('Timeline', Timeline)
     if (typeof window !== 'undefined') enableDiagramZoom()
   },

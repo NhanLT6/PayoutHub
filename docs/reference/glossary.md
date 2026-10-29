@@ -51,9 +51,13 @@ Xem cả luồng: [Bảo mật API: một request đi qua những lớp nào](/a
 
 | Viết tắt | Đầy đủ | Nghĩa ngắn |
 |---|---|---|
+| Allowlist / deny by default | — | Chỉ cho qua cái tốt đã biết (chữ ký JWT, policy, port 443), còn lại chặn ([Blocklist vs allowlist](/aspnet-core/api-security#blocklist-vs-allowlist)) |
+| Assume breach | — | Thiết kế như đã bị xâm nhập; giới hạn blast radius bằng least privilege, mã hoá, segmentation ([Blocklist vs allowlist](/aspnet-core/api-security#blocklist-vs-allowlist)) |
+| Anomaly detection | — | So hành vi với baseline (5 payout/ngày → 500) thay vì với pattern tấn công ([Blocklist vs allowlist](/aspnet-core/api-security#blocklist-vs-allowlist)) |
 | APIM | Azure API Management | API gateway của Azure: auth, rate limit, routing cho nhiều API ([Gateway](/aspnet-core/api-security#step-4)) |
 | BAA | Business Associate Agreement | Hợp đồng bắt buộc với bên xử lý PHI cho khách hàng y tế (HIPAA) ([HIPAA](/aspnet-core/api-security#hipaa)) |
 | BOLA / IDOR | Broken Object Level Authorization / Insecure Direct Object Reference | Đổi id trong URL để truy cập object của người khác; số 1 OWASP API Top 10 ([IDOR](/aspnet-core/api-security#step-9)) |
+| Blocklist | (deny-list) | Chặn cái xấu đã biết (WAF signature, antivirus, IP xấu); luôn đi sau kẻ tấn công, zero-day lọt qua ([Blocklist vs allowlist](/aspnet-core/api-security#blocklist-vs-allowlist)) |
 | CA | Certificate Authority | Tổ chức được browser tin, ký certificate cho tên miền ([HTTPS / TLS](/aspnet-core/api-security#step-1)) |
 | CDN | Content Delivery Network | Mạng server ở edge, gần user; cache file tĩnh, đứng trước app để lọc traffic ([CDN và DDoS](/aspnet-core/api-security#step-2)) |
 | CORS | Cross-Origin Resource Sharing | Server cho phép origin khác đọc response; luật của browser, **không** bảo vệ server ([CORS](/aspnet-core/api-security#step-6)) |
@@ -82,6 +86,7 @@ Xem cả luồng: [Bảo mật API: một request đi qua những lớp nào](/a
 | SSRF | Server-Side Request Forgery | Server bị lừa gọi URL do kẻ tấn công chọn ([OWASP API Top 10](/aspnet-core/api-security#owasp-api-top-10)) |
 | TDE | Transparent Data Encryption | Mã hoá file database và backup trên đĩa (encryption at rest); Azure SQL bật mặc định ([DB và secret](/aspnet-core/api-security#step-11)) |
 | VNet | Azure Virtual Network | Mạng riêng trên Azure; app và DB nằm trong, không có IP public ([Gateway](/aspnet-core/api-security#step-4)) |
+| Zero-day | — | Lỗ hổng hoặc kiểu tấn công chưa ai biết, chưa có trong blocklist nào ([Blocklist vs allowlist](/aspnet-core/api-security#blocklist-vs-allowlist)) |
 | XSS | Cross-Site Scripting | Script do kẻ tấn công chèn chạy trong browser người xem; chặn bằng output encoding, CSP ([Injection, CSRF, XSS](/aspnet-core/api-security#step-10)) |
 
 ## Dữ liệu
