@@ -81,3 +81,16 @@
   html .VPDoc.has-aside .content-container { max-width: 1200px !important; }
 }
 .vp-doc > div > :is(p, ul, ol, blockquote) { max-width: 820px; }
+
+/* Thin scrollbars (page, sidebar, outline, code blocks) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--vp-c-divider) transparent;
+}
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--vp-c-divider);
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--vp-c-text-3); }
