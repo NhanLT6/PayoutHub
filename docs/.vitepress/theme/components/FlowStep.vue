@@ -144,6 +144,11 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
   background: var(--vp-c-brand-1);
 }
 
+/* Màn hình rộng (xem custom.css): cột trái không cần quá 22%, nhường chỗ cho code trong cột phải */
+@media (min-width: 1440px) {
+  .flow-grid { grid-template-columns: minmax(190px, 22%) 1fr; }
+}
+
 @media (max-width: 639px) {
   .flow-grid { grid-template-columns: 1fr; gap: 8px; }
 }

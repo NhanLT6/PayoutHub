@@ -61,3 +61,23 @@
 .vp-doc .kitchen-sub { font-size: 13px; color: var(--vp-c-text-2); }
 .vp-doc .kitchen-card p { font-size: 14px; line-height: 1.55; margin: 8px 0 0; }
 @media (max-width: 639px) { .vp-doc .kitchen-cards { grid-template-columns: 1fr; } }
+
+/* Màn hình rộng: cho cột nội dung giãn ra thay vì để trống hai bên.
+   Mặc định VitePress khoá nội dung ở 688px và toàn bộ layout ở 1440px.
+   - ≥1280px: aside (outline bên phải) hẹp lại một chút để nhường chỗ cho nội dung.
+   - ≥1440px: layout giãn theo màn hình (tối đa 1800px), nội dung tối đa 1200px.
+   - Đoạn văn, list ở cấp ngoài cùng vẫn giới hạn ~820px để dòng không quá dài;
+     bảng, code, sơ đồ, FlowStep, Timeline thì dùng hết chiều rộng.
+   Dưới 1280px (tablet, điện thoại) giữ nguyên mặc định.
+   !important: style gốc của VitePress là scoped (có [data-v-…]) nên selector thường không thắng được. */
+@media (min-width: 1280px) {
+  html .VPDoc.has-aside .content-container { max-width: none !important; }
+  html .VPDoc .container > .content { padding: 0 24px 128px; }
+  html .VPDoc .aside { max-width: 224px; padding-left: 24px; }
+  html .VPDoc .aside-container, html .VPDoc .aside-curtain { width: 200px; }
+}
+@media (min-width: 1440px) {
+  :root { --vp-layout-max-width: min(100vw, 1800px); }
+  html .VPDoc.has-aside .content-container { max-width: 1200px !important; }
+}
+.vp-doc > div > :is(p, ul, ol, blockquote) { max-width: 820px; }
