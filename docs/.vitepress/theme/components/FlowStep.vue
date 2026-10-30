@@ -14,7 +14,7 @@
 // Link tới #step-n (vd từ bản đồ) tự mở bước đó. Nội dung đóng dùng hidden="until-found",
 // nên Ctrl+F vẫn tìm thấy chữ bên trong và browser tự mở bước có chữ đó.
 // Nút mở/đóng tất cả: <FlowToggleAll /> (phát sự kiện 'flowstep:all' trên window).
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import StepIcon from './StepIcon.vue'
 
 const props = defineProps<{
@@ -52,21 +52,55 @@ const color = computed(() => layerColors[props.layer] ?? 'gray')
 
 const open = ref(!props.collapsible)
 const root = ref<HTMLElement>()
+const panel = ref<HTMLElement>()
+
+// Trượt mở / đóng bằng cách animate chiều cao từ 0 tới chiều cao thật (và ngược lại).
+// Đóng xong mới gắn lại hidden="until-found", để Ctrl+F vẫn tìm được chữ bên trong.
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+
+function slide(from: number, to: number) {
+  return panel.value!.animate(
+    [
+      { height: `${from}px`, opacity: from ? 1 : 0 },
+      { height: `${to}px`, opacity: to ? 1 : 0 },
+    ],
+    { duration: 240, easing: 'cubic-bezier(0.2, 0, 0, 1)' },
+  ).finished
+}
+
+async function expand() {
+  if (open.value) return
+
+  open.value = true
+  if (reduceMotion()) return
+
+  await nextTick()
+  await slide(0, panel.value!.scrollHeight)
+}
+
+async function shrink() {
+  if (!open.value) return
+
+  if (!reduceMotion()) await slide(panel.value!.scrollHeight, 0)
+  open.value = false
+}
+
+const toggle = () => (open.value ? shrink() : expand())
 
 function openFromHash() {
   if (!props.collapsible || location.hash !== `#step-${props.n}`) return
 
-  open.value = true
-  requestAnimationFrame(() => root.value?.scrollIntoView({ block: 'start' }))
+  root.value?.scrollIntoView({ block: 'start' })
+  expand()
 }
 
 function onAll(e: Event) {
   if (props.collapsible) open.value = (e as CustomEvent<boolean>).detail
 }
 
-function collapse() {
-  open.value = false
-  root.value?.scrollIntoView({ block: 'nearest' })
+async function collapse() {
+  await shrink()
+  root.value?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
 }
 
 onMounted(() => {
@@ -86,7 +120,7 @@ onBeforeUnmount(() => {
     <span v-if="!icon && !collapsible" class="flow-node" aria-hidden="true">{{ n }}</span>
 
     <!-- Dòng thu gọn: bấm để mở / đóng -->
-    <button v-if="collapsible" type="button" class="flow-row" :aria-expanded="open" @click="open = !open">
+    <button v-if="collapsible" type="button" class="flow-row" :aria-expanded="open" @click="toggle">
       <span class="flow-row-num">{{ n }}</span>
       <StepIcon v-if="icon" class="flow-row-icon" :name="icon" />
 
@@ -101,7 +135,12 @@ onBeforeUnmount(() => {
       <span class="flow-row-chev" aria-hidden="true">›</span>
     </button>
 
-    <div class="flow-grid" :hidden="collapsible && !open ? 'until-found' : undefined" @beforematch="open = true">
+    <div
+      ref="panel"
+      class="flow-grid"
+      :hidden="collapsible && !open ? 'until-found' : undefined"
+      @beforematch="open = true"
+    >
       <div class="flow-rail">
         <div v-if="icon" class="flow-pic">
           <span class="flow-num">Bước {{ n }}</span>
@@ -381,6 +420,8 @@ onBeforeUnmount(() => {
 }
 
 .flow-step.collapsible .flow-grid {
+  overflow: hidden;
+  box-sizing: border-box;
   border-top: 1px dashed var(--vp-c-divider);
   padding: 12px 14px 14px;
 }
@@ -389,10 +430,6 @@ onBeforeUnmount(() => {
   /* hidden="until-found" giữ lại box: bỏ padding và viền để dòng đóng không bị hở */
   padding: 0;
   border: 0;
-}
-
-.flow-step.open .flow-row-icon {
-  display: none;
 }
 
 .flow-foot {

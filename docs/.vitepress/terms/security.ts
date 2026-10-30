@@ -266,6 +266,31 @@ const terms: Record<string, TermDef> = {
     blocks: 'giả danh, sửa token',
     link: '/aspnet-core/api-security#step-7',
   },
+  jwks: {
+    title: 'JWKS',
+    full: 'JSON Web Key Set',
+    group: security,
+    def: 'File JSON công khai chứa danh sách **public key** của [[idp]], mỗi key có một [[kid]]. API tải nó qua `jwks_uri` trong `.well-known/openid-configuration` để kiểm chữ ký [[jwt]]. JwtBearer tự tải và cache khi bạn đặt `Authority`.',
+    link: '/aspnet-core/api-security#step-7',
+  },
+
+  kid: {
+    title: 'kid',
+    full: 'Key ID',
+    group: security,
+    def: 'Trường trong header của [[jwt]] cho biết token được ký bằng key nào trong [[jwks]]. Cần vì IdP giữ nhiều key và **xoay vòng** (key rotation): key cũ vẫn kiểm được token cũ trong lúc key mới bắt đầu ký.',
+    link: '/aspnet-core/api-security#step-7',
+  },
+
+  rs256: {
+    title: 'RS256',
+    full: 'RSA signature với SHA-256',
+    group: security,
+    def: 'Thuật toán ký **bất đối xứng**: private key ký, public key kiểm. Bên kiểm không tạo được token giả. Khác **HS256** (dùng [[hmac]] với một secret chung): ai kiểm được thì cũng ký được, nên chỉ hợp khi bên cấp và bên kiểm là cùng một hệ thống.',
+    blocks: 'giả token (bên kiểm không có khoá ký)',
+    link: '/aspnet-core/api-security#step-7',
+  },
+
   claim: {
     title: 'Claim',
     group: security,

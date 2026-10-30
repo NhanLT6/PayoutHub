@@ -220,6 +220,37 @@ JWT gồm 3 phần `header.payload.signature`. Sửa một ký tự trong payloa
 Chị Lan không đăng nhập vào PayoutHub trực tiếp. Chị đăng nhập ở một <T>IdP</T> là <T k="entra id">Microsoft Entra ID</T> (theo chuẩn <T>OAuth 2.0</T> và <T>OpenID Connect</T>, có thể thêm <T>MFA</T>), Entra ID cấp token, PayoutHub chỉ kiểm tra token.
 
 
+**Trường hợp PayoutHub dùng nhà cung cấp (Entra ID).** Ai giữ khoá nào? Cặp key do **Entra ID tự sinh và tự giữ**. Client không có key nào cả, PayoutHub cũng không: PayoutHub chỉ cần **public key**, và tự tải nó về.
+
+<div class="fig">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="jInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="jAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="jOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker></defs></svg>
+<svg viewBox="0 0 400 440" style="min-width:0;max-width:460px;margin:0 auto" role="img" aria-label="Entra ID giữ private key và ký token; browser chỉ chuyển token; API tải public key từ Entra ID một lần rồi tự kiểm chữ ký"><rect class="boxAcc" x="10" y="10" width="380" height="104" rx="10"/><text x="24" y="34" font-size="15" font-weight="600">Entra ID (IdP)</text><text x="24" y="56" font-size="12"><tspan class="accT" font-weight="600">🔑 private key:</tspan> chỉ Entra ID giữ, dùng để KÝ</text><text x="24" y="78" font-size="12"><tspan class="okT" font-weight="600">🔓 public key:</tspan> công khai (JWKS), ai cũng tải</text><text x="24" y="96" font-size="12">được, nhưng chỉ dùng để KIỂM chữ ký</text><line class="ln" x1="40" y1="196" x2="40" y2="120" marker-end="url(#jInk)"/><text x="48" y="150" font-size="12">① đăng nhập</text><text x="48" y="166" font-size="11" class="muted">mật khẩu + MFA</text><line class="lnAcc" x1="150" y1="118" x2="150" y2="194" marker-end="url(#jAcc)"/><text x="158" y="150" font-size="12" class="accT">② token</text><text x="158" y="166" font-size="11" class="accT">đã ký</text><line class="lnOk dash" x1="300" y1="118" x2="300" y2="194" marker-end="url(#jOk)"/><text x="308" y="150" font-size="12" class="okT">③ tải public key</text><text x="308" y="166" font-size="11" class="muted">1 lần, rồi cache</text><rect class="box" x="10" y="200" width="172" height="134" rx="10"/><text x="24" y="224" font-size="15" font-weight="600">Browser (chị Lan)</text><text x="24" y="246" font-size="12">chỉ cầm token,</text><text x="24" y="262" font-size="12" font-weight="600">không giữ key nào</text><text x="24" y="292" font-size="12">④ gửi request kèm</text><text x="24" y="308" font-size="12" class="mono">Bearer token</text><line class="ln" x1="184" y1="300" x2="222" y2="300" marker-end="url(#jInk)"/><text x="14" y="360" font-size="11" class="muted">Như cầm vé: ai cầm cũng dùng</text><text x="14" y="376" font-size="11" class="muted">được (bearer = người cầm)</text><rect class="boxOk" x="226" y="200" width="164" height="230" rx="10"/><text x="240" y="224" font-size="15" font-weight="600">PayoutHub API</text><text x="240" y="246" font-size="12" class="okT" font-weight="600">mỗi request, tự kiểm:</text><g font-size="12"><text x="240" y="268">a. đọc <tspan class="mono">kid</tspan> trong token</text><text x="240" y="284">   → chọn public key</text><text x="240" y="304">b. tính lại chữ ký,</text><text x="240" y="320">   so khớp signature</text><text x="240" y="340">c. <tspan class="mono">iss</tspan> đúng tenant?</text><text x="240" y="358">d. <tspan class="mono">aud</tspan> = PayoutHub?</text><text x="240" y="376">e. chưa quá <tspan class="mono">exp</tspan>?</text></g><text x="240" y="400" font-size="11" class="muted">không gọi Entra ID</text><text x="240" y="416" font-size="11" class="badT">sai bước nào → 401</text></svg>
+<p class="fig-caption">Private key không bao giờ rời Entra ID. Public key ai có cũng được, vì nó chỉ <b>kiểm</b> được chữ ký, không <b>tạo</b> được chữ ký.</p>
+</div>
+
+- **Ký** (②): Entra ID lấy `header.payload`, băm ra một "dấu vân tay", rồi dùng private key biến dấu vân tay đó thành **signature** (thuật toán <T>RS256</T>).
+- **Kiểm** (bước b): API băm lại `header.payload` của token nhận được, dùng public key mở signature ra, so hai dấu vân tay. Khớp nghĩa là: (1) token do người giữ private key tạo, tức Entra ID, và (2) không ai sửa một ký tự nào. Đây là **kiểm chữ ký**, không phải giải mã: payload vốn đọc được sẵn.
+- **Tìm public key** (③): `Authority` trong code bên dưới là địa chỉ Entra ID. JwtBearer tự gọi `{Authority}/.well-known/openid-configuration`, đọc `jwks_uri`, tải bộ key (<T>JWKS</T>) và cache lại. Entra ID có nhiều key và **xoay vòng** định kỳ, nên token ghi <T>kid</T> để API biết dùng key nào. Gặp `kid` lạ, JwtBearer tự tải lại JWKS.
+
+**So với trường hợp server tự phát hành token** (một app vừa có `POST /login` vừa là API, thuật toán HS256):
+
+1. Cài đặt một lần: dev sinh một **secret** ngẫu nhiên (32 byte trở lên), cất trong <T>Azure Key Vault</T> hoặc config, không để trong code.
+2. `POST /login`: server so password với hash trong DB. Đúng thì tạo header `{alg: HS256}` và payload `{sub: 42, role: Approver, exp: +15 phút}`.
+3. `signature = HMACSHA256(header + "." + payload, secret)`, trả token cho browser.
+4. Request sau: JwtBearer **tính lại** HMAC bằng **cùng secret** đó, so với signature. Khớp thì đọc claim, lệch thì 401.
+
+Không có public/private key nào, chỉ một secret, vì bên ký và bên kiểm là cùng một server. Có thêm service khác cần kiểm token thì service đó cũng phải giữ secret, và **ai kiểm được cũng ký được**. Lúc đó chuyển sang RS256: chỉ auth service giữ private key.
+
+| | Tự phát hành (HS256) | Nhà cung cấp (RS256) |
+|---|---|---|
+| Khoá | 1 <T>secret</T> dùng chung | Cặp key: private ký, public kiểm |
+| Ai sinh khoá | Dev, cất ở Key Vault | Entra ID tự sinh, tự xoay vòng |
+| Password đi qua | API của bạn | Chỉ trang login của Entra ID |
+| Bên kiểm có ký được không | **Có** | **Không** |
+| Code API | `IssuerSigningKey = new SymmetricSecurityKey(secret)` | `Authority = ...` (tự tải JWKS) |
+
+**Token là "vé ai cầm cũng dùng được"** (bearer = người cầm). Chữ ký chứng minh token **thật**, không chứng minh người gửi **là chị Lan**. Trộm được token thì dùng được tới `exp`, nên token phải đi qua <T>TLS</T>, sống ngắn, và không lưu ở chỗ JavaScript lạ đọc được.
+
 API kiểm tra mỗi request: chữ ký đúng (bằng public key của IdP), `iss` đúng, `aud` đúng là PayoutHub, chưa quá `exp`.
 
 ```csharp
