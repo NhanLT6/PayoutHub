@@ -238,6 +238,17 @@ Phía Angular gần như không phải code: `HttpClient` mặc định đọc c
 
 Thêm một quy tắc: **không dùng GET để thay đổi dữ liệu**, vì `SameSite=Lax` vẫn gửi cookie với GET chuyển trang.
 
+::: info Dễ nhầm: evil.com tự đọc XSRF-TOKEN rồi gắn vào thì sao?
+Không làm được, vì browser chặn cả hai việc:
+
+- **Đọc**: JavaScript trên evil.com chỉ thấy cookie của evil.com. Gọi `fetch` tới payouthub.com để xin token thì request đi được, nhưng browser không cho đọc response (<T>CORS</T>).
+- **Gắn header**: `<form>` không thêm header được. `fetch` có header lạ thì browser gửi preflight trước, server không cho origin evil.com, request thật bị huỷ.
+
+ASP.NET Core còn phát **một cặp** giá trị (một trong cookie `HttpOnly` riêng, một là `XSRF-TOKEN`) gắn với user đang đăng nhập, nên token kẻ tấn công lấy từ tài khoản của hắn không khớp với cookie của chị Lan.
+
+Hàng rào này **thủng** khi: có <T>XSS</T> trên chính payouthub.com (script chạy trong origin của mình, đọc được token), hoặc CORS cấu hình sai như `SetIsOriginAllowed(_ => true)` + `AllowCredentials()` (evil.com gọi kèm cookie và đọc được response).
+:::
+
 ## Câu hỏi phỏng vấn {#interview}
 
 ### JWT bị trộm thì sao? {#stolen-token-question}
