@@ -349,8 +349,18 @@ Sửa bằng <T>parameterized query</T>. EF Core LINQ, LINQ to SQL, `SqlCommand`
 
 Hai lớp chặn:
 
-- **Lớp 1, <T>output encoding</T> (chặn bước 3)**: khi hiển thị, đổi `<` thành `&lt;`, `>` thành `&gt;`, nên browser **vẽ ra chữ** `<script>` thay vì chạy. Angular `{{ note }}` và Razor `@Model.Note` tự encode; Angular `[innerHTML]` tự sanitize (lọc bỏ thẻ script). Lỗ hổng sinh ra khi **tắt** cơ chế đó: `bypassSecurityTrustHtml`, `Html.Raw`, gán `element.innerHTML` trực tiếp. Encode **lúc hiển thị, theo đúng chỗ hiển thị** (HTML, thuộc tính, URL, JS), không encode lúc lưu.
-- **Lớp 2, <T>CSP</T> (chặn bước 4 nếu lớp 1 sót)**: header gửi kèm **trang HTML**, ví dụ `Content-Security-Policy: script-src 'self'; connect-src 'self' https://api.payouthub.com`. `script-src 'self'` chỉ cho chạy file script từ domain mình, script chèn inline bị từ chối. `connect-src` chỉ cho `fetch` tới các địa chỉ liệt kê, nên dữ liệu không gửi ra evil.com được. Angular build ra file `.js` riêng nên chạy tốt với `script-src 'self'`.
+- **Lớp 1, <T>output encoding</T> (chặn bước 3)**: khi hiển thị, đổi `<` thành `&lt;`, `>` thành `&gt;`, nên browser **vẽ ra chữ** `<script>` thay vì chạy. Framework tự encode khi bạn in **text**; lỗ hổng sinh ra ở chỗ bạn chủ động in **HTML thô**. Encode **lúc hiển thị, theo đúng chỗ hiển thị** (HTML, thuộc tính, URL, JS), không encode lúc lưu.
+
+| | In text (an toàn, tự encode) | In HTML thô (nguy hiểm) | Có tự lọc script không? |
+|---|---|---|---|
+| **Vue** | <code v-pre>{{ note }}</code>, `:title="note"` | `v-html="note"` | **Không**: Vue in nguyên văn |
+| **React** | `{note}` trong JSX | <code v-pre>dangerouslySetInnerHTML={{ __html: note }}</code> | **Không**: cái tên đã cảnh báo |
+| **Angular** | <code v-pre>{{ note }}</code> | `[innerHTML]="note"` | **Có** sanitize, trừ khi gọi `bypassSecurityTrustHtml` |
+| **Razor** | `@Model.Note` | `@Html.Raw(Model.Note)` | Không |
+| JS thuần | `el.textContent = note` | `el.innerHTML = note` | Không |
+
+Bắt buộc phải hiển thị HTML do user nhập (vd ô soạn thảo rich text) thì lọc qua **DOMPurify** trước khi đưa vào `v-html` hay `dangerouslySetInnerHTML`. Cẩn thận cả link: `<a :href="url">` với `url = "javascript:..."` vẫn chạy code khi bấm, nên chỉ cho phép `http(s)://`.
+- **Lớp 2, <T>CSP</T> (chặn bước 4 nếu lớp 1 sót)**: header gửi kèm **trang HTML**, ví dụ `Content-Security-Policy: script-src 'self'; connect-src 'self' https://api.payouthub.com`. `script-src 'self'` chỉ cho chạy file script từ domain mình, script chèn inline bị từ chối. `connect-src` chỉ cho `fetch` tới các địa chỉ liệt kê, nên dữ liệu không gửi ra evil.com được. Vue, React, Angular build ra file `.js` riêng nên chạy tốt với `script-src 'self'`.
 
 XSS là lý do không nên để token trong `localStorage` nếu tránh được: script lạ chạy được là đọc được token.
 
