@@ -174,12 +174,69 @@ flowchart LR
 
 Chọn theo loại app:
 
-- **App y tế, tài chính** (ASW, PayoutHub): BFF.
+- **App y tế, tài chính** (ASW, PayoutHub): BFF. Không nhất thiết là hệ thống riêng: thường chính app ASP.NET Core phục vụ file Angular kiêm luôn BFF, dùng <T>YARP</T> chuyển request sang API. BFF dùng cookie nên vẫn phải [chống CSRF](#csrf).
 - **SPA bình thường**: access token trong RAM, refresh token trong cookie `HttpOnly` giới hạn `Path=/auth/refresh`.
 - **Mobile**: Keychain (iOS), Keystore (Android).
 - **Service gọi service**: không có refresh token. Dùng client credentials với secret trong <T>Azure Key Vault</T>, hoặc <T>managed identity</T> để khỏi cần secret.
 
 Không chỗ nào trong browser an toàn tuyệt đối trước XSS: khi trang đang mở, script độc vẫn gọi API được dưới tên user. Cookie `HttpOnly` và BFF chỉ ngăn script **mang token đi dùng ở chỗ khác, sau này**. Vẫn phải chặn XSS từ gốc bằng <T>output encoding</T> và <T>CSP</T>.
+
+### Chống CSRF khi dùng cookie {#csrf}
+
+Cookie `HttpOnly` và BFF chặn được XSS lấy token, nhưng đổi lại mở ra <T>CSRF</T>: **browser tự gắn cookie** vào mọi request tới domain của nó, kể cả request do trang khác khởi tạo.
+
+```text
+Chị Lan đang đăng nhập PayoutHub, mở thêm tab evil.com. Trang đó có form ẩn tự submit:
+
+   <form method="POST" action="https://payouthub.com/payouts/42/approve">
+
+browser gửi request → TỰ GẮN cookie của payouthub.com → server thấy cookie hợp lệ → duyệt tiền
+```
+
+Kẻ tấn công không đọc được cookie hay response, chỉ **mượn browser** của chị Lan để gửi lệnh. Bearer token trong header thì không bị, vì browser không tự gắn header và evil.com không đọc được token. Hai hàng rào, dùng cả hai:
+
+**1. `SameSite` trên cookie**: browser có gửi cookie khi request đến từ site khác không.
+
+| Giá trị | Request từ site khác | Ghi chú |
+|---|---|---|
+| `Strict` | Không bao giờ gửi cookie | Chặn chắt nhất; bấm link từ email vào thì chưa thấy đăng nhập |
+| `Lax` | Chỉ gửi khi user bấm link (GET chuyển trang) | Mặc định của browser hiện đại. **Không** gửi với POST hay `fetch` từ site khác |
+| `None` | Luôn gửi (bắt buộc kèm `Secure`) | Không có bảo vệ |
+
+Chưa đủ vì "site" tính theo domain gốc: subdomain bị chiếm (vd `blog.payouthub.com`) vẫn là cùng site, và browser cũ có thể không hỗ trợ.
+
+**2. Anti-forgery token**: một con số ngẫu nhiên mà request thay đổi dữ liệu phải gửi lại trong **header**.
+
+```text
+1. Server set cookie XSRF-TOKEN=abc123      (KHÔNG HttpOnly, để JavaScript đọc được)
+2. Angular HttpClient tự đọc cookie, gắn header X-XSRF-TOKEN: abc123 vào POST/PUT/DELETE
+3. Server so header với token nó đã phát → khớp thì cho qua
+
+evil.com không đọc được cookie của payouthub.com (same-origin policy)
+→ không biết abc123 → không gắn được header → 400
+```
+
+```csharp
+builder.Services.AddAntiforgery(o => o.HeaderName = "X-XSRF-TOKEN");
+
+// Controller: kiểm token cho mọi POST/PUT/PATCH/DELETE (GET, HEAD, OPTIONS được bỏ qua)
+builder.Services.AddControllers(o => o.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
+
+// Angular gọi endpoint này sau khi login để nhận cookie XSRF-TOKEN
+app.MapGet("/antiforgery/token", (IAntiforgery af, HttpContext ctx) =>
+{
+    var tokens = af.GetAndStoreTokens(ctx);
+
+    ctx.Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!,
+        new CookieOptions { HttpOnly = false, Secure = true, SameSite = SameSiteMode.Strict });
+
+    return Results.NoContent();
+});
+```
+
+Phía Angular gần như không phải code: `HttpClient` mặc định đọc cookie `XSRF-TOKEN` và gửi header `X-XSRF-TOKEN`.
+
+Thêm một quy tắc: **không dùng GET để thay đổi dữ liệu**, vì `SameSite=Lax` vẫn gửi cookie với GET chuyển trang.
 
 ## Câu hỏi phỏng vấn {#interview}
 
@@ -199,6 +256,12 @@ Access token gửi tới API mỗi request, thường là JWT, sống ngắn và
 
 ::: tip Trả lời nhanh
 HS256 dùng một secret chung: service nào kiểm được token thì cũng ký được token, lộ một chỗ là lộ hết. RS256 tách ra: chỉ auth server giữ private key để ký, các service khác chỉ cần public key (tải từ JWKS) để kiểm, không giả được token.
+:::
+
+### CSRF là gì? Chặn thế nào? {#csrf-question}
+
+::: tip Trả lời nhanh
+Trang lạ khiến browser của user gửi request tới app của bạn, browser tự gắn cookie nên request được xác thực. Chỉ xảy ra khi xác thực bằng cookie, không xảy ra với Bearer token trong header. Chặn bằng: cookie `SameSite=Lax/Strict`, anti-forgery token gửi trong header (ASP.NET Core `AddAntiforgery`, Angular tự gửi `X-XSRF-TOKEN`), và không đổi dữ liệu bằng GET.
 :::
 
 ### SPA nên lưu token ở đâu? {#token-storage-question}

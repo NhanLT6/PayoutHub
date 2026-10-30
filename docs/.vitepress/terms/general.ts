@@ -43,7 +43,7 @@ const terms: Record<string, TermDef> = {
     full: 'Cross-Site Request Forgery',
     group: 'Bảo mật',
     def: 'Site lạ khiến browser của user gửi request tới app của bạn, **kèm cookie tự động**. Chặn bằng cookie `SameSite`, antiforgery token, hoặc dùng header `Authorization` thay cho cookie.',
-    link: '/aspnet-core/api-security#step-10',
+    link: '/aspnet-core/authentication-jwt#csrf',
   },
 
   ssrf: {
