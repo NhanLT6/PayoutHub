@@ -266,6 +266,15 @@ const terms: Record<string, TermDef> = {
     blocks: 'giả danh, sửa token',
     link: '/aspnet-core/authentication-jwt#what-jwt-blocks',
   },
+  bff: {
+    title: 'BFF',
+    full: 'Backend for Frontend',
+    group: security,
+    def: 'Một server nhỏ (vd ASP.NET Core) cùng domain với SPA, **giữ access token và refresh token ở phía server**. Browser chỉ cầm cookie session `HttpOnly`, nên [[xss]] không lấy được token mang đi. Cách OAuth khuyến nghị cho app browser cần bảo mật cao.',
+    blocks: 'trộm token qua XSS',
+    link: '/aspnet-core/authentication-jwt#token-storage',
+  },
+
   jwks: {
     title: 'JWKS',
     full: 'JSON Web Key Set',

@@ -153,7 +153,33 @@ Thư viện như MSAL còn **làm mới trước** khi access token hết hạn 
 
 Chữ ký không cứu được trường hợp này, vì token bị trộm là token thật. Phải giữ token và giới hạn thiệt hại: đi qua <T>TLS</T> để không bị nghe lén; `exp` ngắn để trộm được cũng chỉ dùng được một lúc; không lưu token ở chỗ script lạ đọc được (<T>XSS</T>), `localStorage` nguy hiểm hơn cookie `HttpOnly`; nâng cao thì gắn token với key riêng của client (DPoP, mTLS) để trộm token thôi chưa đủ.
 
-API kiểm tra mỗi request: chữ ký đúng (bằng public key của IdP), `iss` đúng, `aud` đúng là PayoutHub, chưa quá `exp`.
+### Lưu token ở đâu {#token-storage}
+
+Không phải client nào cũng cầm cả 2 token. SPA kiểu Angular + MSAL thì cầm. Kiểu <T>BFF</T> thì browser **không cầm token nào**. Trong browser có 5 chỗ:
+
+| Chỗ | JavaScript đọc được? | <T>XSS</T> lấy token mang đi được? | Ghi chú |
+|---|---|---|---|
+| `localStorage` | Có | **Có** | Còn sau khi đóng tab. Tệ nhất cho refresh token |
+| `sessionStorage` | Có | **Có** | Mất khi đóng tab. MSAL mặc định dùng |
+| Biến trong RAM | Có | Khó hơn | Reload trang là mất, phải xin token lại |
+| Cookie `HttpOnly; Secure` | **Không** | Không | Browser tự gửi kèm, nên phải chống <T>CSRF</T> (`SameSite` + anti-forgery token) |
+| <T>BFF</T> | Không có token | Không | Browser chỉ có cookie session. BFF là một server ASP.NET Core nhỏ cùng domain, giữ cả 2 token, tự gắn token khi gọi API và tự refresh |
+
+```mermaid
+flowchart LR
+    B["Browser: chỉ có cookie"] -- "cookie HttpOnly" --> F["BFF giữ 2 token"]
+    F -- "Bearer access token" --> A["PayoutHub API"]
+    F <-- "login, refresh" --> I["Entra ID"]
+```
+
+Chọn theo loại app:
+
+- **App y tế, tài chính** (ASW, PayoutHub): BFF.
+- **SPA bình thường**: access token trong RAM, refresh token trong cookie `HttpOnly` giới hạn `Path=/auth/refresh`.
+- **Mobile**: Keychain (iOS), Keystore (Android).
+- **Service gọi service**: không có refresh token. Dùng client credentials với secret trong <T>Azure Key Vault</T>, hoặc <T>managed identity</T> để khỏi cần secret.
+
+Không chỗ nào trong browser an toàn tuyệt đối trước XSS: khi trang đang mở, script độc vẫn gọi API được dưới tên user. Cookie `HttpOnly` và BFF chỉ ngăn script **mang token đi dùng ở chỗ khác, sau này**. Vẫn phải chặn XSS từ gốc bằng <T>output encoding</T> và <T>CSP</T>.
 
 ## Câu hỏi phỏng vấn {#interview}
 
@@ -173,4 +199,10 @@ Access token gửi tới API mỗi request, thường là JWT, sống ngắn và
 
 ::: tip Trả lời nhanh
 HS256 dùng một secret chung: service nào kiểm được token thì cũng ký được token, lộ một chỗ là lộ hết. RS256 tách ra: chỉ auth server giữ private key để ký, các service khác chỉ cần public key (tải từ JWKS) để kiểm, không giả được token.
+:::
+
+### SPA nên lưu token ở đâu? {#token-storage-question}
+
+::: tip Trả lời nhanh
+Không để refresh token ở `localStorage`: XSS đọc được và mang đi. SPA thông thường: access token trong RAM, refresh token trong cookie `HttpOnly; Secure; SameSite` và chống CSRF. App nhạy cảm (y tế, tài chính): dùng BFF, browser chỉ giữ cookie session, token nằm ở server. Dù chọn cách nào vẫn phải chặn XSS bằng output encoding và CSP, vì script độc vẫn gọi API được khi trang đang mở.
 :::
