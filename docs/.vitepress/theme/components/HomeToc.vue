@@ -154,6 +154,15 @@ const groups: Group[] = [
         ],
       },
       {
+        text: 'Đăng nhập và JWT',
+        desc: 'JWT chặn gì, tự phát hành hay dùng Entra ID, private/public key, access và refresh token, xử lý khi hết hạn.',
+        link: '/aspnet-core/authentication-jwt',
+        q: [
+          { text: 'JWT bị trộm', link: '/aspnet-core/authentication-jwt#stolen-token-question' },
+          { text: 'Access vs refresh', link: '/aspnet-core/authentication-jwt#access-vs-refresh' },
+        ],
+      },
+      {
         text: 'Câu hỏi khác',
         desc: 'Startup, Controller hay Minimal API, REST, HttpClientFactory, caching.',
         link: '/aspnet-core/questions',

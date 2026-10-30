@@ -264,14 +264,14 @@ const terms: Record<string, TermDef> = {
     group: security,
     def: 'Loại [[token]] gồm 3 phần nối bằng dấu chấm: `header.payload.signature`. **Header** nêu thuật toán ký (vd `RS256`). **Payload** chứa các [[claim]]. **Signature** là chữ ký trên header + payload, tạo bằng private key của bên cấp token. Được ký, **không** được mã hoá.',
     blocks: 'giả danh, sửa token',
-    link: '/aspnet-core/api-security#step-7',
+    link: '/aspnet-core/authentication-jwt#what-jwt-blocks',
   },
   jwks: {
     title: 'JWKS',
     full: 'JSON Web Key Set',
     group: security,
     def: 'File JSON công khai chứa danh sách **public key** của [[idp]], mỗi key có một [[kid]]. API tải nó qua `jwks_uri` trong `.well-known/openid-configuration` để kiểm chữ ký [[jwt]]. JwtBearer tự tải và cache khi bạn đặt `Authority`.',
-    link: '/aspnet-core/api-security#step-7',
+    link: '/aspnet-core/authentication-jwt#identity-provider',
   },
 
   kid: {
@@ -279,7 +279,7 @@ const terms: Record<string, TermDef> = {
     full: 'Key ID',
     group: security,
     def: 'Trường trong header của [[jwt]] cho biết token được ký bằng key nào trong [[jwks]]. Cần vì IdP giữ nhiều key và **xoay vòng** (key rotation): key cũ vẫn kiểm được token cũ trong lúc key mới bắt đầu ký.',
-    link: '/aspnet-core/api-security#step-7',
+    link: '/aspnet-core/authentication-jwt#identity-provider',
   },
 
   rs256: {
@@ -288,7 +288,7 @@ const terms: Record<string, TermDef> = {
     group: security,
     def: 'Thuật toán ký **bất đối xứng**: private key ký, public key kiểm. Bên kiểm không tạo được token giả. Khác **HS256** (dùng [[hmac]] với một secret chung): ai kiểm được thì cũng ký được, nên chỉ hợp khi bên cấp và bên kiểm là cùng một hệ thống.',
     blocks: 'giả token (bên kiểm không có khoá ký)',
-    link: '/aspnet-core/api-security#step-7',
+    link: '/aspnet-core/authentication-jwt#identity-provider',
   },
 
   claim: {
@@ -330,7 +330,7 @@ const terms: Record<string, TermDef> = {
     title: 'Refresh token',
     group: security,
     def: '[[Token]] sống lâu (vài giờ tới 90 ngày), chỉ gửi tới IdP hoặc auth server để **đổi lấy access token mới** mà không bắt user đăng nhập lại. Thường là chuỗi ngẫu nhiên server lưu trong DB, nên **thu hồi được** (logout, đổi mật khẩu). Mỗi lần đổi nên cấp refresh token mới (rotation).',
-    link: '/aspnet-core/api-security#step-7',
+    link: '/aspnet-core/authentication-jwt#expiry',
   },
   authorization: {
     title: 'Authorization',

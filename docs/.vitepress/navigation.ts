@@ -43,6 +43,7 @@ export const sidebar: DefaultTheme.Sidebar = [
       { text: 'Result pattern', link: '/aspnet-core/result-pattern' },
       { text: 'Health check', link: '/aspnet-core/health-checks' },
       { text: 'Bảo mật API', link: '/aspnet-core/api-security' },
+      { text: 'Đăng nhập và JWT', link: '/aspnet-core/authentication-jwt' },
       { text: 'Câu hỏi khác', link: '/aspnet-core/questions' },
     ],
   },
