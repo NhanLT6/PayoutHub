@@ -273,7 +273,42 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 app.UseAuthentication();
 ```
 
-**Expiry** (hết hạn): access token nên sống ngắn (Entra ID mặc định khoảng 60–90 phút). JWT **không thu hồi được** một khi đã phát ra: API chỉ kiểm tra chữ ký và `exp`, không hỏi lại IdP. Token ngắn hạn giới hạn thời gian kẻ trộm token dùng được. Một <T>refresh token</T> dùng để xin access token mới mà không bắt user đăng nhập lại.
+**Ba loại token hay bị lẫn.** **Token** là tên chung. **JWT** là một **định dạng** (cách viết token). **Access token**, **refresh token**, **ID token** là ba **công dụng**:
+
+| | Dùng để | Gửi tới | Sống | Định dạng thường gặp |
+|---|---|---|---|---|
+| **Access token** | Gọi API, gửi kèm mỗi request | API | Ngắn: 15–60 phút (Entra ID mặc định 60–90) | JWT, API tự kiểm chữ ký |
+| <T>Refresh token</T> | Đổi lấy access token mới | **Chỉ** IdP hoặc auth server | Dài: vài giờ tới 90 ngày | Chuỗi ngẫu nhiên (opaque), server lưu trong DB |
+| **ID token** | Cho app client biết ai vừa đăng nhập (<T>OpenID Connect</T>) | App client | Ngắn | JWT, **không** gửi tới API |
+
+Nên "JWT có phải token không?": có, JWT là một loại token. Access token **thường** là JWT, nhưng hai từ không đồng nghĩa.
+
+**Hết hạn thì xử lý thế nào?** User **không** phải đăng nhập lại mỗi 15 phút. Access token hết hạn thì client tự đổi ngầm, user không thấy gì:
+
+1. Client gọi API với access token cũ, API trả **401** (đã quá `exp`).
+2. Client tự gọi `POST /token` kèm refresh token. Thư viện làm việc này: MSAL với Entra ID, hoặc một HTTP interceptor trong Angular.
+3. Server tra refresh token trong DB. Còn hiệu lực thì trả **access token mới + refresh token mới**.
+4. Client gửi lại request ở bước 1, lần này được 200.
+
+User chỉ phải đăng nhập lại khi **refresh token** hết hạn hoặc bị thu hồi.
+
+Vì sao phải tách hai loại? Access token **không thu hồi được**: API chỉ kiểm chữ ký và `exp`, không hỏi ai. Vì vậy cho nó sống ngắn. Refresh token **thu hồi được**: lần nào dùng, server cũng tra DB. Khi logout, đổi mật khẩu hay phát hiện bị trộm, server xoá refresh token, và chậm nhất một vòng `exp` sau kẻ trộm mất quyền. Thêm **rotation**: mỗi lần đổi là cấp refresh token mới, cái cũ hết hiệu lực. Nếu cái cũ bị dùng lại, server biết có người trộm và thu hồi cả chuỗi.
+
+::: details Vì sao private key ký được còn public key thì không?
+Vì toán học một chiều: **nhân 2 số nguyên tố rất lớn thì dễ, nhưng từ tích tách ngược ra 2 số đó thì gần như không thể**. Public key chứa cái tích. Private key được tính từ 2 số nguyên tố gốc, mà chỉ người sinh key biết.
+
+Ví dụ đồ chơi (<T>RS256</T> thật dùng số dài khoảng 617 chữ số):
+
+```text
+Sinh key:  chọn 3 và 11 → n = 33.   Public = (n = 33, e = 3).   Private = d = 7 (tính được vì biết 3 và 11)
+
+Ký:        hash của token = 4   →   signature = 4^7 mod 33 = 16      (cần d = 7)
+
+Kiểm:      16^3 mod 33 = 4   →   bằng hash 4 → chữ ký đúng          (chỉ cần e = 3, n = 33)
+```
+
+Muốn giả chữ ký thì cần d. Muốn có d thì phải tách 33 thành 3 × 11. Với 33 thì dễ, với số 617 chữ số thì máy tính hiện nay chạy hàng tỷ năm cũng chưa xong. Nên public key đăng công khai mà không lộ private key.
+:::
 
 ::: info Dễ nhầm
 **JWT được ký, không được mã hoá.** Payload chỉ là **Base64Url**: ai cầm token cũng decode được (dán vào jwt.io là đọc). Đừng bao giờ để số tài khoản, lương, dữ liệu bệnh nhân vào claim. Chữ ký chỉ đảm bảo **không ai sửa được**, không đảm bảo **không ai đọc được**.

@@ -329,7 +329,8 @@ const terms: Record<string, TermDef> = {
   'refresh token': {
     title: 'Refresh token',
     group: security,
-    def: '[[Token]] sống lâu hơn access token và được giữ cẩn thận hơn, dùng để xin access token mới mà không bắt user đăng nhập lại.',
+    def: '[[Token]] sống lâu (vài giờ tới 90 ngày), chỉ gửi tới IdP hoặc auth server để **đổi lấy access token mới** mà không bắt user đăng nhập lại. Thường là chuỗi ngẫu nhiên server lưu trong DB, nên **thu hồi được** (logout, đổi mật khẩu). Mỗi lần đổi nên cấp refresh token mới (rotation).',
+    link: '/aspnet-core/api-security#step-7',
   },
   authorization: {
     title: 'Authorization',
