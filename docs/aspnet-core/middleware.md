@@ -305,6 +305,51 @@ Filter chạy **bên trong** MVC, quanh việc thực thi action, nên biết ac
 <T>Minimal API</T> không có <T>MVC</T> filter, thay vào đó là **endpoint filter** (`AddEndpointFilter`).
 :::
 
+**Filter nằm ở đâu so với middleware:** cả pipeline middleware bọc ngoài; filter là một củ hành nhỏ **bên trong endpoint MVC**, chỉ chạy khi request đã được chọn tới một action.
+
+```mermaid
+flowchart TB
+    Req([Request]) --> MW["Middleware: mọi request<br/>Routing, Cors, Auth…"]
+    MW --> AF
+    subgraph MVC ["Bên trong endpoint MVC: PayoutsController.Approve"]
+        AF[Authorization filter] --> RF[Resource filter] --> MB[Model binding] --> ACF[Action filter] --> ACT[["Approve(id)"]] --> RSF[Result filter]
+    end
+    RSF --> Res([Response])
+```
+
+Request tới `/health`, file tĩnh hay một URL không khớp route thì **chỉ đi qua middleware**, không chạm filter nào.
+
+::: info Dễ nhầm: middleware và filter
+| | Middleware | Filter |
+|---|---|---|
+| Chạy cho | **Mọi** request: cả health check, file tĩnh, 404 | Chỉ request vào **action MVC** (minimal API: endpoint filter) |
+| Thấy gì | Chỉ `HttpContext` | Thêm action nào (`ActionDescriptor`), tham số **đã bind** (`ActionArguments`), `ModelState`, kết quả (`IActionResult`) |
+| Đăng ký | `app.Use…` trong `Program.cs`; thứ tự dòng code = thứ tự chạy | Attribute trên action/controller, hoặc toàn cục trong `AddControllers(o => o.Filters.Add<...>())` |
+| Dùng cho | Log mọi request, correlation id, CORS, auth, bắt lỗi toàn cục | Validate `ModelState`, audit theo action, cache theo action |
+
+Giống nhau: cả hai đều nhận một `next` và có code **trước / sau** `next`, cùng hình củ hành.
+:::
+
+Ví dụ: ghi audit mỗi lần duyệt payout. Middleware không làm được việc này gọn, vì nó chưa biết action nào và `id` là bao nhiêu (chưa model binding).
+
+```csharp
+public class AuditApproveFilter(ILogger<AuditApproveFilter> log) : IAsyncActionFilter
+{
+    public async Task OnActionExecutionAsync(ActionExecutingContext ctx, ActionExecutionDelegate next)
+    {
+        var id = ctx.ActionArguments["id"];   // đã model binding: middleware không có
+        var done = await next();              // chạy action (và các filter bên trong)
+
+        log.LogInformation("{Action} payout {Id} by {User} → {Result}",
+            ctx.ActionDescriptor.DisplayName, id,
+            ctx.HttpContext.User.Identity?.Name, done.Result?.GetType().Name);
+    }
+}
+
+// Program.cs: builder.Services.AddScoped<AuditApproveFilter>();
+// Controller: [ServiceFilter(typeof(AuditApproveFilter))] trên action Approve
+```
+
 ::: warning Bẫy & follow-up
 **"Exception filter có bắt được lỗi trong middleware không?"**
 
