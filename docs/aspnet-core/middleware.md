@@ -40,10 +40,6 @@ app.Use(async (ctx, next) =>
 **Middleware** bọc _mọi_ request, chỉ biết `HttpContext`. **[Filter](/aspnet-core/middleware#filters)** là một pipeline nhỏ hơn nằm bên trong endpoint MVC, biết action nào, có `ModelState`. Cùng hình củ hành, chỉ khác là filter nằm trong lõi.
 :::
 
-::: details PayoutHub chưa gọi UseRouting(), vậy routing chạy ở đâu?
-`WebApplication` tự chèn routing ở đầu pipeline, trước mọi `Use…` của bạn, nên lớp nào cũng đã thấy endpoint. Bẫy về thứ tự Routing chỉ xảy ra khi bạn tự gọi `UseRouting()` ở sai chỗ.
-:::
-
 ## 2. Exception và short-circuit
 
 **Exception** bay ngược lên qua các hàm đang gọi dở, giống `throw` trong method lồng nhau: code sau lời gọi **bị bỏ qua** (trừ `finally`) cho tới hàm có `catch`.
@@ -83,6 +79,29 @@ Một lớp **chủ động không gọi** `next` mà tự ghi response rồi `r
 ### Routing và CORS {#routing}
 
 **UseRouting**: chọn endpoint cho request và **gắn nhãn** lên `HttpContext` (endpoint nào, có attribute gì). Các lớp sau đọc nhãn này.
+
+**Không gọi `UseRouting()` thì sao?** Với `WebApplication` (.NET 6 trở lên) app vẫn chạy bình thường. Chỉ cần có một `Map…`, `WebApplication` **tự thêm** `UseRouting` ở **đầu** pipeline, trước mọi `Use…` của bạn, và tự thêm lớp chạy endpoint (`UseEndpoints`) ở **cuối**. PayoutHub đang chạy kiểu này, nên lớp nào cũng đã thấy nhãn endpoint.
+
+**Routing ngầm** (không gọi `UseRouting`): nhãn được dán trước tất cả.
+
+```mermaid
+flowchart LR
+    R["UseRouting<br/>(tự thêm)"]:::auto --> E[ExceptionHandler] --> H[HttpsRedirection] --> C[Cors] --> A[Auth] --> X["Endpoint<br/>(tự thêm)"]:::auto
+    classDef auto stroke-dasharray: 5 4
+```
+
+**Tự gọi `UseRouting()`**: routing đứng **đúng chỗ bạn gọi**. Cần khi có lớp phải chạy **trước khi chọn endpoint**, thường là lớp **đổi đường dẫn** như `UsePathBase` hay `UseRewriter`.
+
+```mermaid
+flowchart LR
+    W["UseRewriter<br/>/old/7 → /payouts/7"] --> R[UseRouting] --> C[Cors] --> A[Auth] --> X[Endpoint]
+```
+
+Nếu để routing ngầm, endpoint đã được chọn theo path **cũ** trước khi rewriter kịp đổi, nên request rơi vào 404 hoặc sai endpoint mà không báo lỗi gì.
+
+::: details Còn Startup.cs kiểu cũ (.NET Core 3.x, .NET 5)?
+Ở đó không có gì tự thêm. Có `UseEndpoints` mà quên `UseRouting` thì app **ném `InvalidOperationException` lúc start**: "EndpointRoutingMiddleware ... must be added to the request execution pipeline before EndpointMiddleware". Dự án migrate từ Startup sang `WebApplication` thường vẫn giữ cặp `UseRouting` / `UseEndpoints` cũ; vẫn chạy, chỉ là không bắt buộc nữa.
+:::
 
 **`Map…` không phải middleware.** `MapControllers`, `MapGet`, `MapHealthChecks` không xếp thêm lớp vào hàng đợi; chúng **thêm dòng vào route table**. Routing nhìn **cả bảng một lúc** rồi chọn route **cụ thể nhất** (route precedence): literal `/payouts/new` thắng `/payouts/{id}` dù đăng ký trước hay sau. Vì vậy `MapGet` đứng trước hay sau `MapControllers` không quan trọng. Hai route giống hệt nhau (cùng path, cùng method) không báo lỗi lúc start mà ném **`AmbiguousMatchException`** lúc có request khớp.
 
