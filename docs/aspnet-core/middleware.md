@@ -82,7 +82,7 @@ Một lớp **chủ động không gọi** `next` mà tự ghi response rồi `r
 
 **Không gọi `UseRouting()` thì sao?** Với `WebApplication` (.NET 6 trở lên) app vẫn chạy bình thường. Chỉ cần có một `Map…`, `WebApplication` **tự thêm** `UseRouting` ở **đầu** pipeline, trước mọi `Use…` của bạn, và tự thêm lớp chạy endpoint (`UseEndpoints`) ở **cuối**. PayoutHub đang chạy kiểu này, nên lớp nào cũng đã thấy nhãn endpoint.
 
-**Routing ngầm** (không gọi `UseRouting`): nhãn được dán trước tất cả.
+**Routing ngầm** (không gọi `UseRouting`): nhãn được dán trước tất cả, **kể cả trước `UseExceptionHandler`**.
 
 ```mermaid
 flowchart LR
@@ -98,6 +98,20 @@ flowchart LR
 ```
 
 Nếu để routing ngầm, endpoint đã được chọn theo path **cũ** trước khi rewriter kịp đổi, nên request rơi vào 404 hoặc sai endpoint mà không báo lỗi gì.
+
+::: info Dễ nhầm: UseRouting và UseEndpoints
+| | `UseRouting` | `UseEndpoints` (lớp chạy endpoint) |
+|---|---|---|
+| Làm gì | **Chọn** endpoint: so URL + method với route table, dán nhãn lên `HttpContext` | **Chạy** endpoint đã chọn: gọi action / handler |
+| Vị trí | Đầu đoạn cần nhãn | Cuối pipeline |
+| Không có endpoint khớp | Nhãn = null, vẫn gọi `next` | Không có gì để chạy, đi tiếp tới cuối → **404** |
+
+Hai lớp tách nhau để các lớp **ở giữa** (CORS, Authentication, Authorization, RateLimiter) đọc được nhãn và chặn **trước khi** code của bạn chạy. Ở Startup cũ, route được khai báo bên trong `UseEndpoints(e => e.MapControllers())`; với `WebApplication` bạn gọi `app.MapControllers()` trực tiếp.
+:::
+
+::: details Routing ngầm đứng trước UseExceptionHandler: có sao không?
+Gần như không. Khi có lỗi, `UseExceptionHandler("/error")` chạy lại pipeline với path `/error`; với `WebApplication` nó tự chạy routing lại cho lần chạy này, nên endpoint `/error` vẫn được tìm thấy. Ngoại lệ hiếm: lỗi ném **ngay trong lúc chọn endpoint**, ví dụ `AmbiguousMatchException` khi hai route trùng nhau, xảy ra ở lớp routing nằm **ngoài** `UseExceptionHandler`, nên không được nó bắt (môi trường Development thì vẫn thấy trang lỗi, vì Developer Exception Page được thêm trước cả routing).
+:::
 
 ::: details Còn Startup.cs kiểu cũ (.NET Core 3.x, .NET 5)?
 Ở đó không có gì tự thêm. Có `UseEndpoints` mà quên `UseRouting` thì app **ném `InvalidOperationException` lúc start**: "EndpointRoutingMiddleware ... must be added to the request execution pipeline before EndpointMiddleware". Dự án migrate từ Startup sang `WebApplication` thường vẫn giữ cặp `UseRouting` / `UseEndpoints` cũ; vẫn chạy, chỉ là không bắt buộc nữa.
