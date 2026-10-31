@@ -190,6 +190,25 @@ public async Task<IActionResult> Approve(int id) { ... }
 | `Filters.Add<T>()` | **Mọi** action MVC | Framework, lấy từ DI | Có |
 | Attribute tự viết | Action hoặc controller có attribute | C#, lúc đọc attribute | **Không** |
 
+::: info Dễ nhầm: ServiceFilter và TypeFilter
+Cả hai đều cho filter nhận service qua constructor. Khác nhau ở chỗ **ai tạo object filter**:
+
+```text
+ServiceFilter:  request ──► "DI ơi, đưa tao AuditApproveFilter"   ──► DI tạo theo lifetime đã đăng ký
+TypeFilter:     request ──► framework tự new AuditApproveFilter(…)  ──► hỏi DI từng tham số ctor
+                                                         + tham số tay qua Arguments
+```
+
+| | `ServiceFilter` | `TypeFilter` |
+|---|---|---|
+| Filter có phải là service trong DI không | **Có**: phải `AddScoped<AuditApproveFilter>()`, quên là lỗi lúc chạy | **Không**: không cần đăng ký |
+| Lifetime của filter | Theo đăng ký DI (scoped, singleton…) | Tạo mới mỗi request |
+| Truyền tham số không có trong DI | **Không** được | **Được**: `[TypeFilter(typeof(AuditFilter), Arguments = ["approve"])]` |
+| Dùng khi | Filter có dependency, muốn quản lý lifetime ở một chỗ | Filter cần thêm tham số cấu hình theo từng action |
+
+Bẫy: đăng ký filter là `AddSingleton` nhưng nó nhận `DbContext` (scoped) qua ctor là lỗi **captive dependency**, giống service thường ([DI lifetimes](/aspnet-core/dependency-injection#lifetimes)).
+:::
+
 Chọn nhanh: cần cho mọi action thì **global**; cho vài action và cần service thì **`ServiceFilter`**; filter không cần service (chỉ đọc `ctx`) thì attribute tự viết là gọn nhất. Gắn attribute lên **controller** thì mọi action trong controller đó đều chạy filter.
 
 ## 5. Minimal API: endpoint filter {#endpoint-filter}
