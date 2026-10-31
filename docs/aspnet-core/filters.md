@@ -209,7 +209,24 @@ TypeFilter:     request ──► framework tự new AuditApproveFilter(…)  �
 Bẫy: đăng ký filter là `AddSingleton` nhưng nó nhận `DbContext` (scoped) qua ctor là lỗi **captive dependency**, giống service thường ([DI lifetimes](/aspnet-core/dependency-injection#lifetimes)).
 :::
 
-Chọn nhanh: cần cho mọi action thì **global**; cho vài action và cần service thì **`ServiceFilter`**; filter không cần service (chỉ đọc `ctx`) thì attribute tự viết là gọn nhất. Gắn attribute lên **controller** thì mọi action trong controller đó đều chạy filter.
+**Vì sao có tới 2 cách cho cùng một việc?** Attribute là metadata của C#: tham số chỉ được là hằng số, C# tạo nó bằng reflection, không có DI. Muốn filter có service thì cần một "cầu nối" tạo filter giùm, gọi là `IFilterFactory`. `ServiceFilter` và `TypeFilter` chỉ là **hai cầu nối làm sẵn** của cùng cơ chế đó: một cái xin DI, một cái tự `new` rồi nhờ DI điền tham số.
+
+Chọn nhanh:
+
+- Cần cho **mọi** action: **global** `Filters.Add<T>()`.
+- Cho vài action và cần service: **`TypeFilter`** là mặc định ổn. Bọc nó thành attribute tên đẹp để controller gọn:
+
+  ```cs
+  public class AuditApproveAttribute() : TypeFilterAttribute(typeof(AuditApproveFilter));
+
+  [AuditApprove]   // vẫn có DI, không cần AddScoped
+  public async Task<IActionResult> Approve(int id) { ... }
+  ```
+
+- Chọn **`ServiceFilter`** khi muốn DI quản lý lifetime (ví dụ singleton dùng lại, đỡ tạo object mỗi request), hoặc muốn lỗi thiếu dependency hiện ra lúc khởi động app (`ValidateOnBuild` chỉ kiểm được service đã đăng ký). Với `TypeFilter`, thiếu dependency thì tới lúc có request mới lỗi.
+- Filter không cần service: attribute tự viết là gọn nhất.
+
+Gắn attribute lên **controller** thì mọi action trong controller đó đều chạy filter.
 
 ## 5. Minimal API: endpoint filter {#endpoint-filter}
 
