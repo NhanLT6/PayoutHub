@@ -181,7 +181,7 @@ Lỗi 404 là chuyện bình thường nên handler này **không log Error**. H
 
 | Dễ nhầm | Khác nhau ở đâu |
 |---|---|
-| `IExceptionHandler` và `IExceptionFilter` | Middleware bắt lỗi của **mọi** request, chỉ có `HttpContext`. Filter chỉ bắt lỗi trong action MVC, biết action nào, có `ModelState` ([Filter](/aspnet-core/middleware#filters)). Mặc định chọn middleware |
+| `IExceptionHandler` và `IExceptionFilter` | Middleware bắt lỗi của **mọi** request, chỉ có `HttpContext`. Filter chỉ bắt lỗi trong action MVC, biết action nào, có `ModelState` ([Filter](/aspnet-core/filters#vs-middleware)). Mặc định chọn middleware |
 | `title` và `detail` | `title` cố định theo loại lỗi; `detail` cho lần xảy ra này, không lộ thông tin nội bộ ở Production |
 | ExceptionHandler và Developer Exception Page | Trang stack trace chỉ có ở Development, nằm ngoài cùng; handler của bạn nằm trong nên bắt trước |
 | Lỗi có exception và lỗi không có exception | 404 sai route, 405 sai method không ném exception nên handler không chạy. Muốn chúng cũng trả ProblemDetails thì thêm `app.UseStatusCodePages()` |

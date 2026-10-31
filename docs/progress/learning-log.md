@@ -70,7 +70,7 @@ Mẫu:
 
 ## 2026-10-22 → 23 · M1
 - **Đã làm:** chuyển sang học qua project (cloud thread, Claude đọc repo trên máy). Lab 1 M1: middleware ném lỗi đặt trước `UseExceptionHandler` → Developer Exception Page, sau → ProblemDetails. Đã so `TraceId` ở `/boom`. Tick bước 5. Dựng site document VitePress (`pnpm docs:dev`), home mới thay `docs/README.md`, handbook cũ chuyển sang `docs/public/`. Note mới/viết lại theo format hình + Q&A: middleware-pipeline, health-checks, exception-handling. Thêm `.gitattributes` (CRLF/LF).
-- **Khái niệm đã chạm:** [Middleware](/aspnet-core/middleware#middleware), [Filter](/aspnet-core/middleware#filters), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency); pipeline = các hàm gọi lồng nhau; exception vs short-circuit; HSTS vs HttpsRedirection; CORS; vị trí `UseRateLimiter`; convention class vs `IMiddleware`; closure.
+- **Khái niệm đã chạm:** [Middleware](/aspnet-core/middleware#middleware), [Filter](/aspnet-core/filters), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency); pipeline = các hàm gọi lồng nhau; exception vs short-circuit; HSTS vs HttpsRedirection; CORS; vị trí `UseRateLimiter`; convention class vs `IMiddleware`; closure.
 - **Chỗ yếu:**
   - Hiểu nhầm CORS lâu nay là filter chặn request ở server; đúng là server dặn browser, browser thực thi, không bảo vệ API.
   - Gộp exception với short-circuit thành một khái niệm; exception bỏ qua code sau `next` cho tới chỗ có `catch`.

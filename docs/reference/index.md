@@ -104,7 +104,7 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 ### [Middleware](/aspnet-core/middleware#interview)
 
 - [Middleware là gì? Thứ tự có quan trọng không?](/aspnet-core/middleware#middleware)
-- [Filter là gì? Khác middleware chỗ nào?](/aspnet-core/middleware#filters)
+- [Filter là gì? Khác middleware chỗ nào?](/aspnet-core/filters#filters-vs-middleware)
 
 ### [Exception handling](/aspnet-core/exception-handling#interview)
 

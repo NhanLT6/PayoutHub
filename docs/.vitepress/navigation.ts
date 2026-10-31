@@ -39,6 +39,7 @@ export const sidebar: DefaultTheme.Sidebar = [
       { text: 'Options pattern', link: '/aspnet-core/options-pattern' },
       { text: 'Logging', link: '/aspnet-core/logging' },
       { text: 'Middleware pipeline', link: '/aspnet-core/middleware' },
+      { text: 'Filter', link: '/aspnet-core/filters' },
       { text: 'Exception handling', link: '/aspnet-core/exception-handling' },
       { text: 'Result pattern', link: '/aspnet-core/result-pattern' },
       { text: 'Health check', link: '/aspnet-core/health-checks' },

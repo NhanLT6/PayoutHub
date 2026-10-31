@@ -119,9 +119,14 @@ const groups: Group[] = [
         link: '/aspnet-core/middleware',
         q: [
           { text: 'Thứ tự', link: '/aspnet-core/middleware#middleware' },
-          { text: 'Filter', link: '/aspnet-core/middleware#filters' },
           { text: 'Route table', link: '/aspnet-core/middleware#routing' },
         ],
+      },
+      {
+        text: 'Filter',
+        desc: 'Pipeline nhỏ bên trong action MVC. 5 loại filter, khi nào filter thay vì middleware, endpoint filter.',
+        link: '/aspnet-core/filters',
+        q: [{ text: 'Filter vs middleware', link: '/aspnet-core/filters#filters-vs-middleware' }],
       },
       {
         text: 'Exception handling',

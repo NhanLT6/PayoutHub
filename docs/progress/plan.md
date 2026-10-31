@@ -152,7 +152,7 @@ Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần ch�
 1. Bắn 2 request duyệt cùng lúc để thấy payout bị duyệt 2 lần, rồi sửa bằng `rowversion` (optimistic concurrency) và trả 409.
 2. Đăng ký một singleton giữ `DbContext` (captive dependency). Ở môi trường Development, `ValidateScopes`/`ValidateOnBuild` đã bật sẵn nên app báo lỗi ngay; chạy thử với Production để thấy lỗi lọt qua.
 
-**Ôn:** [SOLID](/dotnet/oop-fundamentals#solid), [Design patterns](/dotnet/oop-fundamentals#design-patterns), [Thread safety](/runtime/async#thread-safety), [Filter](/aspnet-core/middleware#filters), [Thiết kế REST](/aspnet-core/questions#rest-design), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Container dispose](/aspnet-core/dependency-injection#disposal), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations)
+**Ôn:** [SOLID](/dotnet/oop-fundamentals#solid), [Design patterns](/dotnet/oop-fundamentals#design-patterns), [Thread safety](/runtime/async#thread-safety), [Filter](/aspnet-core/filters), [Thiết kế REST](/aspnet-core/questions#rest-design), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Container dispose](/aspnet-core/dependency-injection#disposal), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations)
 
 ## M4: Thực thi payout (khoảng 4 ngày)
 

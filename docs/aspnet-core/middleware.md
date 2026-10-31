@@ -37,7 +37,7 @@ app.Use(async (ctx, next) =>
 3. **Không gọi `next`** thì lớp trong không chạy (short-circuit).
 
 ::: details Dễ nhầm: middleware và filter khác nhau thế nào?
-**Middleware** bọc _mọi_ request, chỉ biết `HttpContext`. **[Filter](/aspnet-core/middleware#filters)** là một pipeline nhỏ hơn nằm bên trong endpoint MVC, biết action nào, có `ModelState`. Cùng hình củ hành, chỉ khác là filter nằm trong lõi.
+**Middleware** bọc _mọi_ request, chỉ biết `HttpContext`. **[Filter](/aspnet-core/filters)** là một pipeline nhỏ hơn nằm bên trong endpoint MVC, biết action nào, có `ModelState`. Cùng hình củ hành, chỉ khác là filter nằm trong lõi.
 :::
 
 ## 2. Exception và short-circuit
@@ -223,12 +223,12 @@ app.UseMiddleware<TimingMiddleware>();
 :::
 
 ::: tip Chọn nhanh
-Chỉ liên quan action MVC thì dùng filter ([Filter](/aspnet-core/middleware#filters)). Vài dòng hoặc lab thì dùng `app.Use(…)`. Còn lại dùng `IMiddleware`. Convention class chỉ khi viết library hoặc <T>hot path</T> cực nóng; các middleware có sẵn của ASP.NET đều là convention class vì lý do đó.
+Chỉ liên quan action MVC thì dùng filter ([Filter](/aspnet-core/filters#vs-middleware)). Vài dòng hoặc lab thì dùng `app.Use(…)`. Còn lại dùng `IMiddleware`. Convention class chỉ khi viết library hoặc <T>hot path</T> cực nóng; các middleware có sẵn của ASP.NET đều là convention class vì lý do đó.
 :::
 
 ## Câu hỏi phỏng vấn {#interview}
 
-Ôn nhanh trước khi đi phỏng vấn. Mỗi câu có trả lời nhanh, bản chất, ví dụ thật và bẫy.
+Chỉ gồm câu hỏi và cách trả lời; khái niệm nằm ở các mục phía trên. Câu về filter: [trang Filter](/aspnet-core/filters#interview).
 
 ### Middleware là gì? Thứ tự có quan trọng không? <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#middleware}
 
@@ -236,8 +236,8 @@ Chỉ liên quan action MVC thì dùng filter ([Filter](/aspnet-core/middleware#
 Middleware là các bước nối tiếp nhau mà mọi request đi qua. Mỗi bước có thể xử lý trước, gọi bước kế tiếp (`next`), xử lý response sau khi bước kế tiếp xong, hoặc dừng luôn không gọi tiếp (short-circuit). Thứ tự đăng ký chính là thứ tự chạy, nên rất quan trọng: request đi xuôi, response đi ngược lại.
 :::
 
-::: info Bản chất
-Thứ tự chuẩn (bỏ những cái app không dùng):
+::: info Thứ tự chuẩn để kể
+Bỏ những cái app không dùng:
 
 1. `UseExceptionHandler`: đứng đầu để bắt lỗi của mọi bước sau
 2. `UseHsts`, `UseHttpsRedirection`
@@ -249,21 +249,7 @@ Thứ tự chuẩn (bỏ những cái app không dùng):
 8. `UseRateLimiter`, middleware tự viết
 9. `MapControllers` / `MapGet`: endpoint, điểm cuối của pipeline
 
-```csharp
-public class CorrelationIdMiddleware(RequestDelegate next)
-{
-    public async Task InvokeAsync(HttpContext ctx, ILogger<CorrelationIdMiddleware> logger)
-    {
-        var id = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
-        ctx.Response.Headers["X-Correlation-Id"] = id;
-        using (logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = id }))
-        {
-            await next(ctx);   // phần trước: request; phần sau: response
-        }
-    }
-}
-app.UseMiddleware<CorrelationIdMiddleware>();
-```
+Từng lớp làm gì: [mục 3](#_3-cac-middleware-co-san-moi-cai-mot-dong). Viết một middleware: [mục 4](#_4-ba-cach-viet-middleware).
 :::
 
 ::: details Ở dự án thật
@@ -286,74 +272,6 @@ Không. `MapGet`/`MapControllers` thêm route vào route table, không phải mi
 **"Sửa header sau khi đã gọi `next` được không?"**
 
 Nếu response đã bắt đầu gửi về client thì không, sẽ ném lỗi. Kiểm tra `ctx.Response.HasStarted`, hoặc đăng ký `Response.OnStarting`.
-:::
-
-### Filter là gì? Khác middleware chỗ nào? {#filters}
-
-::: tip Trả lời nhanh
-Filter chạy **bên trong** MVC, quanh việc thực thi action, nên biết action nào, controller nào, model binding ra sao, ModelState hợp lệ không. Middleware chạy cho mọi request và chỉ thấy `HttpContext`. Logic chung cho cả app (log, correlation id) dùng middleware; logic cần ngữ cảnh action (validate, audit theo action) dùng filter.
-:::
-
-::: info Thứ tự chạy
-1. **Authorization filter**
-2. **Resource filter**: trước model binding, hợp cho cache
-3. Model binding và validation
-4. **Action filter**: trước và sau action
-5. **Exception filter**: chỉ khi action hoặc filter trước nó ném lỗi
-6. **Result filter**: trước và sau khi ghi kết quả
-
-<T>Minimal API</T> không có <T>MVC</T> filter, thay vào đó là **endpoint filter** (`AddEndpointFilter`).
-:::
-
-**Filter nằm ở đâu so với middleware:** cả pipeline middleware bọc ngoài; filter là một củ hành nhỏ **bên trong endpoint MVC**, chỉ chạy khi request đã được chọn tới một action.
-
-```mermaid
-flowchart TB
-    Req([Request]) --> MW["Middleware: mọi request<br/>Routing, Cors, Auth…"]
-    MW --> AF
-    subgraph MVC ["Bên trong endpoint MVC: PayoutsController.Approve"]
-        AF[Authorization filter] --> RF[Resource filter] --> MB[Model binding] --> ACF[Action filter] --> ACT[["Approve(id)"]] --> RSF[Result filter]
-    end
-    RSF --> Res([Response])
-```
-
-Request tới `/health`, file tĩnh hay một URL không khớp route thì **chỉ đi qua middleware**, không chạm filter nào.
-
-::: info Dễ nhầm: middleware và filter
-| | Middleware | Filter |
-|---|---|---|
-| Chạy cho | **Mọi** request: cả health check, file tĩnh, 404 | Chỉ request vào **action MVC** (minimal API: endpoint filter) |
-| Thấy gì | Chỉ `HttpContext` | Thêm action nào (`ActionDescriptor`), tham số **đã bind** (`ActionArguments`), `ModelState`, kết quả (`IActionResult`) |
-| Đăng ký | `app.Use…` trong `Program.cs`; thứ tự dòng code = thứ tự chạy | Attribute trên action/controller, hoặc toàn cục trong `AddControllers(o => o.Filters.Add<...>())` |
-| Dùng cho | Log mọi request, correlation id, CORS, auth, bắt lỗi toàn cục | Validate `ModelState`, audit theo action, cache theo action |
-
-Giống nhau: cả hai đều nhận một `next` và có code **trước / sau** `next`, cùng hình củ hành.
-:::
-
-Ví dụ: ghi audit mỗi lần duyệt payout. Middleware không làm được việc này gọn, vì nó chưa biết action nào và `id` là bao nhiêu (chưa model binding).
-
-```csharp
-public class AuditApproveFilter(ILogger<AuditApproveFilter> log) : IAsyncActionFilter
-{
-    public async Task OnActionExecutionAsync(ActionExecutingContext ctx, ActionExecutionDelegate next)
-    {
-        var id = ctx.ActionArguments["id"];   // đã model binding: middleware không có
-        var done = await next();              // chạy action (và các filter bên trong)
-
-        log.LogInformation("{Action} payout {Id} by {User} → {Result}",
-            ctx.ActionDescriptor.DisplayName, id,
-            ctx.HttpContext.User.Identity?.Name, done.Result?.GetType().Name);
-    }
-}
-
-// Program.cs: builder.Services.AddScoped<AuditApproveFilter>();
-// Controller: [ServiceFilter(typeof(AuditApproveFilter))] trên action Approve
-```
-
-::: warning Bẫy & follow-up
-**"Exception filter có bắt được lỗi trong middleware không?"**
-
-Không. Nó chỉ bắt lỗi trong phạm vi MVC. Lỗi toàn cục phải xử lý bằng `UseExceptionHandler`.
 :::
 
 ## Hỏi đáp
@@ -432,7 +350,7 @@ Thêm: CORS phải đứng **trước** Authentication/Authorization, vì <T>pre
 | Log thời gian xử lý mọi request (cần `ILogger`) | `IMiddleware` | Class riêng, inject logger, compiler kiểm tra chữ ký |
 | Ghi audit vào DB cho mọi request ghi dữ liệu (cần `PayoutDbContext`) | `IMiddleware` | Service scoped inject thẳng vào constructor, không lo captive |
 | Verify chữ ký HMAC của webhook FakeBank (M5) | **Filter**, không phải middleware | Chỉ áp cho một endpoint; middleware chạy cho mọi request |
-| Validate `ModelState`, cần biết action nào | **[Filter](/aspnet-core/middleware#filters)** | Middleware không thấy action |
+| Validate `ModelState`, cần biết action nào | **[Filter](/aspnet-core/filters)** | Middleware không thấy action |
 | Đóng gói thành NuGet dùng cho nhiều service | Convention class | Không bắt người dùng đăng ký DI, tạo một lần nên rẻ, giống các middleware có sẵn |
 
 Tóm lại, trong code ứng dụng gần như không bao giờ cần convention class. Bạn gặp nó chủ yếu khi **đọc** code của framework và thư viện.
