@@ -30,6 +30,20 @@ title: "Filter"
 
 **Phạm vi đăng ký** cũng là thứ tự bọc: filter **toàn cục** ở ngoài cùng, rồi tới filter trên **controller**, trong cùng là filter trên **action**.
 
+### Khi nào thật sự cần từng loại {#when}
+
+Authorization và exception thì middleware đã lo phần lớn, nên trong app mới bạn **hiếm khi tự viết** hai loại này. Nhưng chính framework vẫn dùng cả 5 loại: nhiều attribute quen thuộc thật ra là filter.
+
+| Loại | Ví dụ tiêu biểu | Vì sao là filter, không phải middleware | Ngày nay |
+|---|---|---|---|
+| **1. Authorization** | `[ValidateAntiForgeryToken]` (chống [CSRF](/aspnet-core/authentication-jwt#csrf)) là một authorization filter có sẵn. Code cũ từ ASP.NET MVC 5 hay có class kế thừa `AuthorizeAttribute` | Chỉ cần chạy cho vài action POST của form, và phải chặn trước khi bind | Kiểm quyền tự viết: dùng **policy** + `UseAuthorization`, không viết authorization filter. Khi migrate từ MVC 5, `AuthorizeAttribute` tự viết được đổi thành policy + `AuthorizationHandler` |
+| **2. Resource** | **Idempotency-Key** cho `POST /payouts/42/approve`: key đã xử lý rồi thì trả lại response cũ, không duyệt lần hai | Chạy **trước model binding**, nên chặn được trước khi tốn công đọc body; chỉ gắn lên action có `[Idempotent]` | Vẫn hợp lý. Cache response thì nay dùng **OutputCache middleware** (.NET 7) |
+| **3. Action** | `[ApiController]` tự trả `400` khi `ModelState` sai: đó là một action filter có sẵn. Audit duyệt payout ([mục 4](#write)) | Cần tham số **đã bind** và `ModelState` | Loại được tự viết **nhiều nhất** |
+| **4. Exception** | Một controller cũ (API v1) phải trả lỗi theo định dạng riêng mà client cũ đang đọc, khác phần còn lại của app | Chỉ áp cho một controller, biết action nào đang lỗi | Lỗi toàn cục: `UseExceptionHandler` + `IExceptionHandler` (.NET 8), xem [Exception handling](/aspnet-core/exception-handling) |
+| **5. Result** | Bọc kết quả của các action v1 thành `{ data, meta }`, hoặc thêm header `ETag` từ object trả về | Cần `IActionResult` và object kết quả **trước khi** ghi ra response; middleware lúc đó chỉ còn thấy byte | Vẫn hợp lý, nhưng ít gặp |
+
+Câu nhớ: **action filter là loại chính**; resource và result dùng khi cần chặn sớm trước binding hoặc sửa kết quả trước khi ghi; authorization và exception phần lớn đã chuyển sang middleware.
+
 ## 3. Middleware hay filter? {#vs-middleware}
 
 ::: info Dễ nhầm: middleware và filter
@@ -46,35 +60,141 @@ Câu hỏi để chọn: **việc này có cần biết action nào không?** C�
 
 ## 4. Viết và đăng ký một filter {#write}
 
-Ví dụ: ghi audit mỗi lần duyệt payout. Middleware không làm việc này gọn được, vì lúc đó chưa biết action nào và chưa có `id` (chưa model binding).
+Có hai bước tách biệt: **viết** class filter (code chạy gì), rồi **đăng ký** (chạy cho action nào, ai tạo object filter). Viết xong mà chưa đăng ký thì không action nào chạy nó.
 
-```csharp
+### Viết: audit mỗi lần duyệt payout {#write-code}
+
+Việc này middleware cũng làm được, nhưng phải tự làm những thứ filter có sẵn. So hai tab:
+
+::: code-group
+
+```cs [Filter]
 public class AuditApproveFilter(ILogger<AuditApproveFilter> log) : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext ctx, ActionExecutionDelegate next)
     {
-        var id = ctx.ActionArguments["id"];   // đã model binding: middleware không có
+        var id = ctx.ActionArguments["id"];   // int đã bind và validate
         var done = await next();              // chạy action (và các filter bên trong)
 
         log.LogInformation("{Action} payout {Id} by {User} → {Result}",
             ctx.ActionDescriptor.DisplayName, id,
-            ctx.HttpContext.User.Identity?.Name, done.Result?.GetType().Name);
+            ctx.HttpContext.User.Identity?.Name,
+            done.Result?.GetType().Name);     // OkResult, NotFoundResult…
     }
 }
+
+// Controller: chỉ action này chạy filter
+[HttpPost("{id:int}/approve")]
+[ServiceFilter(typeof(AuditApproveFilter))]
+public async Task<IActionResult> Approve(int id) { ... }
 ```
 
-Có 4 cách gắn filter vào action, khác nhau ở chỗ **filter được tạo ra thế nào**:
+```cs [Middleware (làm được, nhưng vòng)]
+public class AuditApproveMiddleware(RequestDelegate next, ILogger<AuditApproveMiddleware> log)
+{
+    public async Task InvokeAsync(HttpContext ctx)
+    {
+        // 1. Chạy cho MỌI request, nên phải tự lọc ra đúng action
+        var action = ctx.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
+        if (action is not { ControllerName: "Payouts", ActionName: "Approve" })
+        {
+            await next(ctx);
+            return;
+        }
 
-| Cách gắn | Filter được tạo bởi | Inject service qua ctor? |
+        // 2. Chưa có model binding: id chỉ là chuỗi thô trong URL
+        var id = ctx.GetRouteValue("id");
+
+        await next(ctx);
+
+        // 3. Không thấy IActionResult, chỉ còn status code đã ghi
+        log.LogInformation("{Action} payout {Id} by {User} → {Status}",
+            action.DisplayName, id, ctx.User.Identity?.Name, ctx.Response.StatusCode);
+    }
+}
+
+// Program.cs: phải đặt SAU UseAuthentication, nếu không User còn trống
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<AuditApproveMiddleware>();
+```
+
+:::
+
+::: info Dễ nhầm: cùng một việc audit, hai cách
+| | Filter | Middleware |
 |---|---|---|
-| `[AuditApprove]` (filter kế thừa `ActionFilterAttribute`) | Chính attribute, một lần | Không |
-| `[ServiceFilter(typeof(AuditApproveFilter))]` | DI container | Có, nhưng phải đăng ký `AddScoped<AuditApproveFilter>()` |
-| `[TypeFilter(typeof(AuditApproveFilter))]` | `ActivatorUtilities`, lấy tham số từ DI | Có, không cần đăng ký |
-| `AddControllers(o => o.Filters.Add<AuditApproveFilter>())` | Framework, cho **mọi** action | Có |
+| Chạy cho action nào | Gắn attribute lên đúng action | Chạy cho mọi request, tự `if` theo tên controller/action (đổi tên action là quên sửa) |
+| Lấy `id` | `ActionArguments["id"]`: `int` đã bind, đã validate | `GetRouteValue("id")`: chuỗi thô, có thể là `"abc"` |
+| Thấy kết quả | `IActionResult` (`OkResult`, `NotFoundResult`…) | Chỉ status code |
+| Thứ tự | Framework lo: luôn sau auth, sau binding | Bạn lo: đặt sai dòng trong `Program.cs` là `User` trống |
+:::
+
+Đó là nghĩa của "middleware không làm gọn được": làm được, nhưng phải tự lọc, tự parse, và mất thông tin MVC đã có sẵn.
+
+::: details Cách middleware gọn hơn: đọc metadata thay vì so tên
+Gắn một attribute đánh dấu `[Audit]` lên action, rồi middleware hỏi `ctx.GetEndpoint()?.Metadata.GetMetadata<AuditAttribute>() is not null`. Hết phải so tên controller/action, nhưng `id` vẫn là chuỗi thô và vẫn không thấy `IActionResult`. Cách này hợp khi việc cần làm **không cần** tham số đã bind, ví dụ đo thời gian các endpoint có đánh dấu.
+:::
+
+### Đăng ký: chạy cho action nào, ai tạo filter {#register}
+
+Đăng ký trả lời hai câu:
+
+- **Chạy cho action nào?** Một action, cả controller, hay mọi action trong app.
+- **Ai tạo object filter?** Quyết định filter có nhận được service qua constructor không (ví dụ `ILogger`, `DbContext`).
+
+::: code-group
+
+```cs [ServiceFilter (hay dùng)]
+// Program.cs: DI container tạo filter, nên phải đăng ký nó
+builder.Services.AddScoped<AuditApproveFilter>();
+
+// Controller
+[ServiceFilter(typeof(AuditApproveFilter))]
+public async Task<IActionResult> Approve(int id) { ... }
+```
+
+```cs [TypeFilter]
+// Không cần đăng ký trong DI: framework tự new, lấy tham số ctor từ DI
+[TypeFilter(typeof(AuditApproveFilter))]
+public async Task<IActionResult> Approve(int id) { ... }
+```
+
+```cs [Global]
+// Chạy cho MỌI action MVC trong app
+builder.Services.AddControllers(o => o.Filters.Add<AuditApproveFilter>());
+```
+
+```cs [Attribute tự viết]
+// Filter chính là attribute: C# tạo nó, không qua DI, nên ctor không inject được
+public class AuditApproveAttribute : ActionFilterAttribute
+{
+    public override async Task OnActionExecutionAsync(ActionExecutingContext ctx, ActionExecutionDelegate next)
+    {
+        // Muốn dùng service thì phải tự lấy (service locator): kém sạch
+        var log = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<AuditApproveAttribute>>();
+        ...
+    }
+}
+
+[AuditApprove]
+public async Task<IActionResult> Approve(int id) { ... }
+```
+
+:::
+
+| Cách | Chạy cho | Ai tạo filter | Inject qua ctor |
+|---|---|---|---|
+| `[ServiceFilter]` | Action hoặc controller có attribute | DI container | Có; phải `AddScoped<...>()` |
+| `[TypeFilter]` | Action hoặc controller có attribute | Framework, lấy tham số ctor từ DI | Có; không cần đăng ký |
+| `Filters.Add<T>()` | **Mọi** action MVC | Framework, lấy từ DI | Có |
+| Attribute tự viết | Action hoặc controller có attribute | C#, lúc đọc attribute | **Không** |
+
+Chọn nhanh: cần cho mọi action thì **global**; cho vài action và cần service thì **`ServiceFilter`**; filter không cần service (chỉ đọc `ctx`) thì attribute tự viết là gọn nhất. Gắn attribute lên **controller** thì mọi action trong controller đó đều chạy filter.
 
 ## 5. Minimal API: endpoint filter {#endpoint-filter}
 
-Minimal API không có 5 loại filter ở trên. Chỉ có một loại, gắn bằng `AddEndpointFilter`, cũng có code trước và sau `next`:
+Minimal API chỉ có **một** loại filter, gắn bằng `AddEndpointFilter`. Nó chạy sau khi tham số đã bind, có code trước và sau `next`, và đọc được giá trị trả về: gần giống action filter gộp với result filter.
 
 ```csharp
 app.MapPost("/payouts/{id:int}/approve", ApprovePayout)
@@ -82,9 +202,24 @@ app.MapPost("/payouts/{id:int}/approve", ApprovePayout)
    {
        var id = ctx.GetArgument<int>(0);           // tham số đã bind
        if (id <= 0) return Results.BadRequest();   // short-circuit
-       return await next(ctx);
+
+       return await next(ctx);                     // giá trị handler trả về
    });
 ```
+
+### Vì sao không còn 5 loại {#why-one}
+
+5 loại filter của MVC gắn với **5 chặng** trong pipeline MVC. Minimal API không có các chặng đó, nên không có chỗ để gắn:
+
+| Chặng trong MVC | Minimal API |
+|---|---|
+| Authorization filter | Đã có `UseAuthorization` middleware và `.RequireAuthorization()` |
+| Resource filter, trước một bước model binding riêng | Không có bước binding riêng: lúc khởi động, framework sinh sẵn một hàm vừa bind tham số vừa gọi handler |
+| Action filter quanh action | **Endpoint filter** đứng đúng chỗ này |
+| Exception filter | Đã có `UseExceptionHandler` |
+| Result filter quanh việc ghi `IActionResult` | Handler trả `IResult`, nó tự ghi ra response; endpoint filter đã đọc được giá trị trả về |
+
+Minimal API (.NET 6) được thiết kế nhẹ và nhanh ngay từ đầu, không mang theo `ActionDescriptor`, `ModelState` hay bước thực thi kết quả của MVC. Endpoint filter chỉ được thêm ở .NET 7, đặt đúng một chỗ còn thiếu: quanh lời gọi handler, sau khi đã bind. Hai việc auth và bắt lỗi thì từ lâu đã nằm ở middleware.
 
 ## Câu hỏi phỏng vấn {#interview}
 
@@ -105,7 +240,7 @@ Không. Nó chỉ bắt lỗi trong phạm vi MVC. Lỗi toàn cục phải xử
 
 **"Filter cần inject service thì làm sao?"**
 
-Dùng `ServiceFilter` (filter đăng ký trong DI), `TypeFilter`, hoặc đăng ký toàn cục `Filters.Add<T>()`. Attribute thường không inject qua constructor được. Xem [mục 4](#write).
+Dùng `ServiceFilter` (filter đăng ký trong DI), `TypeFilter`, hoặc đăng ký toàn cục `Filters.Add<T>()`. Attribute thường không inject qua constructor được. Xem [Đăng ký](#register).
 
 **"Minimal API có filter không?"**
 
