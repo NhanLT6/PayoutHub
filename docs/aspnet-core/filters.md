@@ -13,11 +13,14 @@ flowchart TB
     Req([Request]) --> MW["Middleware: mọi request<br/>Routing, Cors, Auth…"]
     MW --> AF
     subgraph MVC ["Bên trong endpoint MVC: PayoutsController.Approve"]
-        AF[Authorization filter] --> RF[Resource filter] --> MB[Model binding] --> ACF[Action filter] --> ACT[["Approve(id)"]] --> RSF[Result filter]
+        AF["<b>1.</b> Authorization filter"] --> RF["<b>2.</b> Resource filter"] --> MB["Model binding"] --> ACF["<b>3.</b> Action filter"] --> ACT[["Approve(id)"]] --> RSF["<b>5.</b> Result filter"]
+        ACT -. "nếu ném lỗi" .-> EXF["<b>4.</b> Exception filter"]
     end
     RSF --> Res([Response])
+    EXF -. "bỏ qua Result filter" .-> Res
 ```
 
+- Số trên hình khớp cột **Thứ tự** ở [bảng mục 2](#order). Nét đứt: Exception filter chỉ chạy khi action hoặc action filter ném lỗi; nếu nó xử lý lỗi bằng một kết quả thì kết quả đó được ghi ra luôn, Result filter không chạy.
 - Request tới `/health`, file tĩnh hay một URL không khớp route thì **chỉ đi qua middleware**, không chạm filter nào.
 - Filter có cùng hình củ hành với middleware: mỗi filter có code **trước** và **sau** lời gọi `next`.
 - <T>Minimal API</T> không có <T>MVC</T> filter; thay vào đó là **endpoint filter** ([mục 5](#endpoint-filter)).
