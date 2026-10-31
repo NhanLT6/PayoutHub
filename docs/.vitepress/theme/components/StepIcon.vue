@@ -219,6 +219,39 @@ defineProps<{ name: string }>()
       <text class="t s" x="104" y="42">no await</text>
     </g>
 
+    <!-- runtime/async, bản đồ thread: pool thread đang ngủ được đánh thức (Waiting → Ready) -->
+    <g v-else-if="name === 'wake'">
+      <rect class="board" x="4" y="10" width="44" height="58" rx="4" />
+      <circle class="person" cx="26" cy="38" r="6" />
+      <text class="t s" x="34" y="26">z z</text>
+      <text class="t s mono" x="26" y="62" text-anchor="middle">W2</text>
+      <text class="t s" x="26" y="82" text-anchor="middle">Waiting</text>
+      <path class="arrow" d="M54 38 H76" />
+      <path class="head" d="M76 34 l6 4 l-6 4 z" />
+      <circle class="person" cx="104" cy="20" r="6" />
+      <path class="person-ln" d="M104 26 v18 M104 44 l-6 12 M104 44 l6 12 M96 32 h16" />
+      <text class="t s warn tb" x="104" y="82" text-anchor="middle">Ready</text>
+    </g>
+
+    <!-- runtime/async, bản đồ thread: OS scheduler xếp thread Ready lên một chỗ trống trên CPU -->
+    <g v-else-if="name === 'schedule'">
+      <circle class="person" cx="12" cy="40" r="7" />
+      <circle class="person" cx="30" cy="40" r="7" />
+      <circle class="person" cx="48" cy="40" r="7" />
+      <text class="t s mono" x="12" y="60" text-anchor="middle">T9</text>
+      <text class="t s mono" x="30" y="60" text-anchor="middle">SQL</text>
+      <text class="t s mono acc" x="48" y="60" text-anchor="middle">W2</text>
+      <text class="t s" x="30" y="22" text-anchor="middle">Ready</text>
+      <path class="arrow" d="M60 40 H74" />
+      <path class="head" d="M74 36 l6 4 l-6 4 z" />
+      <rect class="chip" x="84" y="8" width="44" height="64" rx="5" />
+      <rect class="box" x="90" y="14" width="32" height="24" rx="3" />
+      <text class="t s mono" x="106" y="30" text-anchor="middle">LP2</text>
+      <rect class="card" x="90" y="42" width="32" height="24" rx="3" />
+      <text class="t s mono acc" x="106" y="58" text-anchor="middle">W2</text>
+      <text class="t s" x="106" y="84" text-anchor="middle">CPU</text>
+    </g>
+
     <!-- 13. SaveChangesAsync: UPDATE tới DB, vòng lặp lại -->
     <g v-else-if="name === 'save'">
       <rect class="card" x="4" y="14" width="40" height="22" rx="2" />

@@ -45,6 +45,8 @@ const layerColors: Record<string, string> = {
   Edge: 'indigo',
   Gateway: 'purple',
   Monitoring: 'gray',
+  // runtime/async
+  CPU: 'indigo',
 }
 const color = computed(() => layerColors[props.layer] ?? 'gray')
 
