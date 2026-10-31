@@ -8,6 +8,7 @@ import HomeToc from './components/HomeToc.vue'
 import SecurityMap from './components/SecurityMap.vue'
 import Term from './components/Term.vue'
 import ThreadMap from './components/ThreadMap.vue'
+import FilterMap from './components/FilterMap.vue'
 import Timeline from './components/Timeline.vue'
 import './custom.css'
 
@@ -25,6 +26,7 @@ export default {
     app.component('SecurityMap', SecurityMap)
     app.component('T', Term)
     app.component('ThreadMap', ThreadMap)
+    app.component('FilterMap', FilterMap)
     app.component('Timeline', Timeline)
     if (typeof window !== 'undefined') enableDiagramZoom()
   },
