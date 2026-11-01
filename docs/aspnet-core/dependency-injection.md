@@ -4,7 +4,7 @@ title: "Dependency Injection"
 
 # Dependency Injection
 
-Phần đầu là bài học kèm hình. [Câu hỏi phỏng vấn](#interview) nằm ở cuối, để ôn nhanh. Liên quan: <T>SOLID</T> (chữ D).
+**Dependency Injection** là cách để class chỉ *dùng* dependency, còn việc *tạo* dependency nào thì dồn về một chỗ. Nhờ vậy logic nghiệp vụ test được không cần DB thật, và hạ tầng thay được mà không đụng nghiệp vụ. Trang này đi từ cái đau khi chưa có DI, suy ra các khái niệm, rồi mở container ra xem bên trong và tự viết lại một bản nhỏ. Liên quan: <T>SOLID</T> (chữ D).
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="dInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="dOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="dBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
@@ -49,7 +49,7 @@ Không cần thuộc định nghĩa. Lấy `PayoutService` ở trên, chữa t�
 <text x="36" y="34" font-size="14" font-weight="600" class="badT">Nấc 0 · Tự new</text>
 <text x="36" y="57" font-size="11.5" class="mono">_repo = new SqlPayoutRepository();</text>
 <text x="470" y="36" font-size="12">đau: unit test cần DB thật</text>
-<text x="470" y="56" font-size="12" class="muted">đau: đổi sang Dapper phải sửa class này</text>
+<text x="470" y="56" font-size="12" class="muted">đau: đổi sang Dapper = sửa class này</text>
 <line class="ln" x1="560" y1="72" x2="560" y2="85" marker-end="url(#dInk)"/>
 <rect class="boxAcc" x="20" y="88" width="680" height="62" rx="8"/>
 <text x="36" y="112" font-size="14" font-weight="600" class="accT">Nấc 1 · DI: nhận từ ngoài vào</text>
@@ -81,11 +81,20 @@ Không cần thuộc định nghĩa. Lấy `PayoutService` ở trên, chữa t�
 Đọc lại hình là suy ra được từng khái niệm:
 
 - **DI** (Nấc 1) chỉ trả lời _ai tạo dependency_: không phải class. Chưa nói gì tới interface.
-- **DIP** (Nấc 2) trả lời _class biết tới cái gì_: chỉ biết interface do Core định nghĩa. Nấc 1 đã có DI mà chưa có DIP, nên hai thứ độc lập với nhau.
-- **Composition root** (Nấc 3) là _chỗ_ duy nhất viết `new` cho class cụ thể; ở PayoutHub là `Program.cs` của Api. Làm tay như vậy gọi là <T>Pure DI</T>.
-- **DI container** (Nấc 4) chỉ là _công cụ_ làm hộ Nấc 3. Bỏ container đi vẫn còn DI.
+- **DIP** (Nấc 2) trả lời _class biết tới cái gì_: chỉ biết interface do Core định nghĩa. Nhìn theo mũi tên reference giữa các project:
+  ```
+  Không DIP:  Core ──► Infrastructure     Core gọi thẳng SqlPayoutRepository
+  DIP:        Core ◄── Infrastructure     IPayoutRepository nằm TRONG Core, Infrastructure implement
+  ```
+  Điểm chính không phải "có interface" mà là **interface thuộc về ai**: phía nghiệp vụ đặt ra, hạ tầng chạy theo, mũi tên bị lật ngược nên gọi là _Inversion_. Nấc 1 đã có DI mà chưa có DIP, nên hai thứ độc lập với nhau.
+- **Composition root** (Nấc 3) trả lời _ghép object **ở đâu**_: một chỗ duy nhất viết `new` cho class cụ thể, gần điểm khởi động; ở PayoutHub là `Program.cs` của Api. "Root" ở đây là gốc của code: chỗ bắt đầu ghép cả cây (khác với _root provider_ ở [mục 3](#lifetime-cache)). Làm tay như vậy gọi là <T>Pure DI</T>.
+- **DI container** (Nấc 4) trả lời _ghép **bằng gì**_: công cụ làm hộ Nấc 3. Ngoài thực tế hai nấc này gộp làm một: `Program.cs` có `builder.Services.Add…` chính là composition root dùng container. Tách ra để thấy hai trường hợp lệch nhau: **có nấc 3 mà không có nấc 4** là unit test tự viết `new PayoutService(fakeRepo, fakeClock)`; **có nấc 4 mà mất nấc 3** là `GetService` rải khắp code, tức service locator.
 - **IoC** không phải một bước riêng mà là hệ quả: khi container tạo object thì bạn cũng không tự gọi controller nữa, framework gọi. IoC là ý tưởng "framework gọi bạn"; DI là IoC áp vào việc tạo object.
 - **Service locator** là đi ngược Nấc 1: class nhận `IServiceProvider` rồi tự `GetService`, tức là lại tự đi lấy dependency. Có container nhưng không còn là DI, xem [mục 6](#who-calls).
+
+::: info Nếu hệ thống dính chặt SQL Server thì có cần interface không?
+"Sau này đổi DB" là lý do **yếu nhất** cho DIP: gần như không ai đổi DB. Cái giá thật khi Core gọi thẳng SQL/EF là **test logic tiền phải có DB thật** và rule nghiệp vụ trộn với chi tiết SQL. Nhiều team cố ý không làm repository interface trên EF Core: coi `DbContext` là lớp trừu tượng và test bằng DB thật (SQLite, Testcontainers). Hợp lệ. Chỗ DIP thật sự đáng làm là ranh giới **chậm hoặc không ổn định**: gọi FakeBank qua HTTP, `TimeProvider`, message bus, email; không có bản giả thì không test được "bank trả 500".
+:::
 
 ### Nấc 3 viết tay trông thế nào {#pure-di}
 
@@ -154,7 +163,7 @@ Scoped    : [obj A] request 1   [obj B] request 2   [obj C] request 3
 Transient : mỗi lần xin là 1 object mới, kể cả trong cùng 1 request
 ```
 
-**Root provider**: provider gốc, sống cả đời app, giữ **singleton**. **Scope**: provider con, trong web là một scope cho mỗi request (`HttpContext.RequestServices`), giữ **scoped**. **Transient** không được giữ.
+**Root provider**: provider gốc do `Build()` tạo ra, mọi scope là con của nó; sống cả đời app, giữ **singleton**. (Không liên quan tới _composition root_: đó là chỗ trong code, còn đây là một object lúc chạy.) **Scope**: provider con, trong web là một scope cho mỗi request (`HttpContext.RequestServices`), giữ **scoped**. **Transient** không được giữ.
 
 <div class="fig">
 <svg viewBox="0 0 720 300" role="img" aria-label="Root provider giữ singleton, mỗi request có scope riêng giữ scoped"><rect class="boxOk" x="20" y="16" width="680" height="84" rx="10"/><text x="38" y="42" font-size="14" font-weight="600" class="okT">Root provider · sống cả đời app</text><g font-size="12" class="mono" text-anchor="middle"><rect class="box" x="38" y="56" width="150" height="30" rx="6"/><text x="113" y="76">IMemoryCache</text><rect class="box" x="200" y="56" width="150" height="30" rx="6"/><text x="275" y="76">TimeProvider</text><rect class="box" x="362" y="56" width="150" height="30" rx="6"/><text x="437" y="76">ILogger&lt;T&gt;</text></g><text x="528" y="76" font-size="12" class="muted">singleton: dùng chung</text><g><rect class="boxAcc" x="20" y="140" width="320" height="140" rx="10"/><text x="36" y="164" font-size="13" font-weight="600" class="accT">Scope của request A</text><rect class="boxAcc" x="380" y="140" width="320" height="140" rx="10"/><text x="396" y="164" font-size="13" font-weight="600" class="accT">Scope của request B</text></g><g font-size="12" class="mono" text-anchor="middle"><rect class="box" x="36" y="176" width="140" height="28" rx="6"/><text x="106" y="195">DbContext #A</text><rect class="box" x="186" y="176" width="140" height="28" rx="6"/><text x="256" y="195">PayoutService #A</text><rect class="box" x="396" y="176" width="140" height="28" rx="6"/><text x="466" y="195">DbContext #B</text><rect class="box" x="546" y="176" width="140" height="28" rx="6"/><text x="616" y="195">PayoutService #B</text><rect class="box dash" x="36" y="214" width="290" height="28" rx="6"/><text x="181" y="233">transient: mới mỗi lần hỏi</text><rect class="box dash" x="396" y="214" width="290" height="28" rx="6"/><text x="541" y="233">transient: mới mỗi lần hỏi</text></g><g font-size="12"><text x="36" y="266" class="muted">hết request: Dispose ngược thứ tự tạo</text><text x="396" y="266" class="muted">hết request: Dispose ngược thứ tự tạo</text></g><line class="lnAcc dash" x1="180" y1="138" x2="180" y2="104" marker-end="url(#dAcc)"/><line class="lnAcc dash" x1="540" y1="138" x2="540" y2="104" marker-end="url(#dAcc)"/><text x="190" y="126" font-size="12" class="accT">hỏi singleton → lấy ở root</text><text x="550" y="126" font-size="12" class="accT">hỏi singleton → lấy ở root</text></svg>
