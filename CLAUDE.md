@@ -85,6 +85,7 @@ docs/
 - Giáo trình **adaptive**: khi Nhan học được điều mới hoặc hiểu sai một chỗ, sửa hoặc bổ sung vào **đúng phần nội dung chính** đang nói về điều đó (thêm hình, thêm dòng vào bảng "Dễ nhầm", thêm vào khối "Bẫy & follow-up"), để tài liệu đọc liền mạch. Không dồn mọi câu hỏi mới xuống "Hỏi đáp". "Hỏi đáp" chỉ dành cho câu hỏi đào sâu thật sự tách riêng. Đọc lại cả trang trước khi thêm để tránh lặp và manh mún.
 - **Code mẫu copy được:** ví dụ một class (handler, middleware, service...) thì viết **cả class**: `using`, `namespace`, khai báo class + interface nó implement, constructor. Không chỉ trích một method. Kèm dòng đăng ký trong `Program.cs`. Nhiều file liên quan thì dùng `::: code-group` với tên file làm tab.
 - So sánh trước/sau: component `<Compare :labels="['A', 'B']">` với `<template #a>` / `<template #b>`. Code nhiều biến thể: `::: code-group`. Sơ đồ đơn giản: khối ```` ```mermaid ````.
+- **Không dùng ký tự số tròn (① ② ③...)** ở bất kỳ đâu (markdown, code block, SVG): với font của site chúng render rất nhỏ, Nhan không đọc được. Dùng số thường in đậm (**1**, **2**), "Bước 1", hoặc vòng tròn vẽ bằng SVG có số bên trong đủ to.
 - Bẫy Markdown + Vue: generic ngoài backtick (`Span<T>`) làm build lỗi; luôn bọc trong backtick. Frontmatter có dấu `:` trong giá trị thì đặt trong ngoặc kép. Markdown không chạy bên trong thẻ HTML (`<p>`), ở đó dùng `<a :href="$withBase('/...')">`.
 - Chủ đề chưa có trang (EF Core, Testing, Auth...) thì giải thích trực tiếp hoặc viết trang mới, không link bừa.
 

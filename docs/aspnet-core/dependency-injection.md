@@ -8,21 +8,27 @@ Phần đầu là bài học kèm hình. [Câu hỏi phỏng vấn](#interview) 
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="dInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="dOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="dBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
-## 1. Bốn khái niệm hay bị trộn {#concepts}
+## 1. DI giải quyết vấn đề gì {#why}
 
-Mỗi khái niệm trả lời **một câu hỏi khác nhau**. Nhớ câu hỏi là không bị lẫn.
+Bắt đầu từ code chưa có DI. `PayoutService` cần đọc payout từ DB nên tự `new` repository:
 
-- **IoC (Inversion of Control)**: _ai điều khiển luồng chạy?_ Framework gọi code của bạn, không phải bạn gọi framework. "Don't call us, we'll call you."
-- **DI (Dependency Injection)**: _ai tạo dependency?_ Không phải class tự `new`, mà được **đưa từ ngoài vào**, thường qua constructor. DI là một dạng IoC: đảo quyền _tạo object_.
-- **DI container**: _ai làm việc đưa vào đó?_ Công cụ đọc constructor, tự tạo cả cây object, quản lý lifetime và dispose. Không có container vẫn làm DI được.
-- **DIP (Dependency Inversion Principle)**: _mũi tên phụ thuộc trong source code trỏ về đâu?_ Code nghiệp vụ phụ thuộc interface do chính nó định nghĩa, không phụ thuộc class hạ tầng cụ thể. Là nguyên tắc thiết kế, không phải cơ chế chạy.
+```csharp
+public class PayoutService
+{
+    private readonly SqlPayoutRepository _repo = new(); // [!code highlight]
 
-<div class="fig">
-<svg viewBox="0 0 720 300" role="img" aria-label="IoC chứa DI, DI chứa container; DIP là nguyên tắc nằm riêng"><rect class="box" x="20" y="20" width="440" height="262" rx="10"/><text x="38" y="48" font-size="15" font-weight="600">IoC · ý tưởng</text><text x="38" y="68" font-size="12" class="muted">framework gọi code của bạn (controller, event, Page_Load)</text><rect class="boxAcc" x="48" y="88" width="384" height="176" rx="10"/><text x="66" y="116" font-size="15" font-weight="600" class="accT">DI · kỹ thuật</text><text x="66" y="136" font-size="12">IoC áp vào việc tạo object: dependency được đưa vào</text><rect class="boxOk" x="78" y="160" width="324" height="86" rx="10"/><text x="96" y="188" font-size="15" font-weight="600" class="okT">DI container · công cụ</text><text x="96" y="208" font-size="12">tự đọc constructor, tạo cả cây object,</text><text x="96" y="224" font-size="12">giữ lifetime, dispose đúng lúc</text><rect class="box" x="500" y="88" width="200" height="110" rx="10"/><text x="600" y="116" font-size="15" font-weight="600" text-anchor="middle">DIP · nguyên tắc</text><text x="600" y="140" font-size="12" text-anchor="middle">code nghiệp vụ phụ thuộc</text><text x="600" y="156" font-size="12" text-anchor="middle">interface, không phụ thuộc</text><text x="600" y="172" font-size="12" text-anchor="middle">class hạ tầng cụ thể</text><line class="lnAcc dash" x1="498" y1="150" x2="436" y2="150" marker-end="url(#dAcc)"/><text x="600" y="224" font-size="12" text-anchor="middle" class="accT">DI là cách phổ biến nhất</text><text x="600" y="240" font-size="12" text-anchor="middle" class="accT">để hiện thực DIP</text></svg>
-<p class="fig-caption">Vòng ngoài là ý tưởng, vòng trong là cách làm cụ thể hơn. DIP nằm riêng vì nó nói về hướng phụ thuộc, không nói ai tạo object.</p>
-</div>
+    public decimal TotalPending(int merchantId) =>
+        _repo.GetPending(merchantId).Sum(p => p.Amount);
+}
+```
 
-### Trước và sau khi có DI
+Một dòng `new` này gây ra 3 cái đau:
+
+- **Không test riêng được**: muốn test phép `Sum` thì phải có SQL Server thật, vì không có cách nào thay repository bằng bản giả.
+- **Đổi hạ tầng là sửa nghiệp vụ**: chuyển sang Dapper hay gọi API thì phải mở `PayoutService` ra sửa, dù cách tính tiền không đổi.
+- **Không ai điều phối việc dùng chung**: mỗi class tự `new` thì mỗi class một `DbContext`, không chung transaction; connection string và cấu hình rải khắp nơi.
+
+Gốc chung của cả 3: **class vừa dùng dependency, vừa tự quyết định tạo dependency nào**. DI tách hai việc đó ra: class chỉ dùng, việc tạo dồn về một chỗ.
 
 <Compare :labels="['Class tự new', 'Được inject']" caption="Tự new: PayoutService vừa dùng vừa tạo dependency. Được inject: chỉ dùng; việc tạo dồn về một chỗ là Program.cs.">
 <template #a>
@@ -33,20 +39,55 @@ Mỗi khái niệm trả lời **một câu hỏi khác nhau**. Nhớ câu hỏi
 </template>
 </Compare>
 
-```csharp
-// Trước: tự tạo, dính chặt vào SQL
-public class PayoutService
-{
-    private readonly SqlPayoutRepository _repo = new(); // [!code highlight]
-}
+## 2. Từ một đoạn code tới bốn khái niệm {#concepts}
 
-// Sau: nhận từ ngoài vào, chỉ biết interface
-public class PayoutService(IPayoutRepository repo) { } // [!code highlight]
-```
+Không cần thuộc định nghĩa. Lấy `PayoutService` ở trên, chữa từng cái đau một; chữa xong nấc nào thì nấc đó được dán một cái tên.
 
-## 2. DI không cần container {#pure-di}
+<div class="fig">
+<svg viewBox="0 0 720 400" role="img" aria-label="Năm bước tiến hoá của PayoutService: tự new, DI, DIP, composition root, container">
+<rect class="boxBad" x="20" y="10" width="680" height="62" rx="8"/>
+<text x="36" y="34" font-size="14" font-weight="600" class="badT">Nấc 0 · Tự new</text>
+<text x="36" y="57" font-size="11.5" class="mono">_repo = new SqlPayoutRepository();</text>
+<text x="470" y="36" font-size="12">đau: unit test cần DB thật</text>
+<text x="470" y="56" font-size="12" class="muted">đau: đổi sang Dapper phải sửa class này</text>
+<line class="ln" x1="560" y1="72" x2="560" y2="85" marker-end="url(#dInk)"/>
+<rect class="boxAcc" x="20" y="88" width="680" height="62" rx="8"/>
+<text x="36" y="112" font-size="14" font-weight="600" class="accT">Nấc 1 · DI: nhận từ ngoài vào</text>
+<text x="36" y="135" font-size="11.5" class="mono">PayoutService(SqlPayoutRepository repo)</text>
+<text x="470" y="114" font-size="12">hết: không còn tự new bên trong</text>
+<text x="470" y="134" font-size="12" class="muted">còn: Core vẫn biết class SQL</text>
+<line class="ln" x1="560" y1="150" x2="560" y2="163" marker-end="url(#dInk)"/>
+<rect class="boxOk" x="20" y="166" width="680" height="62" rx="8"/>
+<text x="36" y="190" font-size="14" font-weight="600" class="okT">Nấc 2 · DIP: phụ thuộc interface của Core</text>
+<text x="36" y="213" font-size="11.5" class="mono">PayoutService(IPayoutRepository repo)</text>
+<text x="470" y="192" font-size="12">hết: Core không biết gì về SQL</text>
+<text x="470" y="212" font-size="12" class="muted">còn: vậy ai new cả cây object?</text>
+<line class="ln" x1="560" y1="228" x2="560" y2="241" marker-end="url(#dInk)"/>
+<rect class="box" x="20" y="244" width="680" height="62" rx="8"/>
+<text x="36" y="268" font-size="14" font-weight="600">Nấc 3 · Composition root (Pure DI)</text>
+<text x="36" y="291" font-size="11.5" class="mono">new PayoutService(new SqlPayoutRepository(db), clock)</text>
+<text x="470" y="270" font-size="12">hết: chỉ một chỗ biết class cụ thể</text>
+<text x="470" y="290" font-size="12" class="muted">còn: 200 class, lifetime, dispose</text>
+<line class="ln" x1="560" y1="306" x2="560" y2="319" marker-end="url(#dInk)"/>
+<rect class="boxAcc" x="20" y="322" width="680" height="62" rx="8"/>
+<text x="36" y="346" font-size="14" font-weight="600" class="accT">Nấc 4 · DI container</text>
+<text x="36" y="369" font-size="11.5" class="mono">AddScoped&lt;IPayoutRepository, SqlPayoutRepository&gt;()</text>
+<text x="470" y="348" font-size="12">hết: công cụ tự new, giữ, dispose</text>
+<text x="470" y="368" font-size="12" class="muted">IoC: từ giờ framework gọi code bạn</text>
+</svg>
+<p class="fig-caption">Đọc từ trên xuống: mỗi nấc sinh ra để chữa cái "còn đau" của nấc trước. Tên khái niệm chỉ là nhãn dán lên từng bước.</p>
+</div>
 
-Container chỉ **tự động hoá** việc dưới đây. Tự viết tay một lần là hiểu container làm gì (gọi là <T>Pure DI</T>):
+Đọc lại hình là suy ra được từng khái niệm:
+
+- **DI** (Nấc 1) chỉ trả lời _ai tạo dependency_: không phải class. Chưa nói gì tới interface.
+- **DIP** (Nấc 2) trả lời _class biết tới cái gì_: chỉ biết interface do Core định nghĩa. Nấc 1 đã có DI mà chưa có DIP, nên hai thứ độc lập với nhau.
+- **Composition root** (Nấc 3) là _chỗ_ duy nhất viết `new` cho class cụ thể; ở PayoutHub là `Program.cs` của Api. Làm tay như vậy gọi là <T>Pure DI</T>.
+- **DI container** (Nấc 4) chỉ là _công cụ_ làm hộ Nấc 3. Bỏ container đi vẫn còn DI.
+- **IoC** không phải một bước riêng mà là hệ quả: khi container tạo object thì bạn cũng không tự gọi controller nữa, framework gọi. IoC là ý tưởng "framework gọi bạn"; DI là IoC áp vào việc tạo object.
+- **Service locator** là đi ngược Nấc 1: class nhận `IServiceProvider` rồi tự `GetService`, tức là lại tự đi lấy dependency. Có container nhưng không còn là DI, xem [mục 6](#who-calls).
+
+### Nấc 3 viết tay trông thế nào {#pure-di}
 
 ```csharp
 // Composition root viết tay: Main tự new cả cây, từ lá lên gốc
@@ -57,7 +98,7 @@ var job     = new GeneratePayoutsJob(service);
 await job.RunAsync();
 ```
 
-Chỗ duy nhất ghép object này gọi là <T>composition root</T>; ở PayoutHub là `Program.cs` của project Api (Core chỉ có interface, Infrastructure có implementation, Api nối hai bên). Với 5 class thì viết tay được. Với 200 class, lifetime khác nhau và cần dispose đúng lúc, thì cần container.
+Với 5 class thì viết tay được. Với 200 class, lifetime khác nhau và phải dispose đúng lúc, thì cần container: đó là mục tiếp theo.
 
 ## 3. Container hoạt động thế nào {#how-container-works}
 
@@ -101,7 +142,7 @@ Ba luật của bước này:
 
 - **Nhiều constructor**: chọn cái có **nhiều tham số nhất mà resolve được hết**; hai cái ngang nhau thì ném lỗi vì mơ hồ. Nên mỗi service chỉ một constructor public.
 - **Vòng tròn** (A cần B, B cần A): ném `InvalidOperationException` "A circular dependency was detected". Sửa bằng cách tách phần dùng chung ra class thứ ba; `Lazy<T>` hay inject `IServiceProvider` chỉ là giấu vấn đề.
-- **Chỉ constructor injection**: container của Microsoft không có property injection (Autofac có). Ngoài constructor chỉ có method injection ở chỗ framework gọi: tham số `InvokeAsync` của middleware, `[FromServices]` trong action, tham số lambda Minimal API.
+- **Chỉ constructor injection**: container của Microsoft chỉ tự làm constructor injection, xem [Ba cách đưa dependency vào](#injection-types).
 
 ### Bước 3: lifetime quyết định object được dùng lại ở đâu {#lifetime-cache}
 
@@ -157,15 +198,15 @@ Config cũng vậy: singleton cần giá trị mới nhất thì dùng `IOptions
 ### Bước 4: ai tạo thì người đó dispose {#dispose}
 
 ```
-tạo:      ① DbContext  ② Repository  ③ PayoutService  ④ Controller
-dispose:  ④ → ③ → ② → ①    (ngược thứ tự tạo, lúc scope kết thúc)
+tạo:      1 DbContext   2 Repository   3 PayoutService   4 Controller
+dispose:  4 → 3 → 2 → 1        (ngược thứ tự tạo, lúc scope kết thúc)
 ```
 
 - Container chỉ dispose object **nó tự tạo**: scoped và transient khi scope của chúng kết thúc, singleton khi app tắt.
 - Object bạn tự `new` rồi đăng ký bằng instance (`AddSingleton(myObj)`) thì container **không** dispose.
 - Transient `IDisposable` resolve từ **root** bị root giữ tham chiếu tới lúc app tắt: mỗi lần resolve lại giữ thêm một object, thành <T>memory leak</T>. Luôn resolve trong scope.
 
-### Tự viết một mini container {#mini-container}
+## 4. Tự viết một mini container {#mini-container}
 
 Khoảng 80 dòng là đủ cả 4 bước. Đọc theo số bước trong comment.
 
@@ -313,7 +354,56 @@ Bản thật khác bản mini ở đâu:
 | Không lock | Thread-safe: hai request cùng tạo một singleton vẫn chỉ ra một object |
 | Kiểm tra lúc resolve | `ValidateOnBuild` kiểm tra cả cây ngay lúc start |
 
-## 4. Ai gọi container: IoC trong ASP.NET Core
+## 5. Ba cách đưa dependency vào {#injection-types}
+
+Nhớ lại bài entity ở M2: constructor tồn tại để **object vừa sinh ra đã hợp lệ**. Ba cách inject khác nhau đúng ở chỗ đó: object có đủ dependency ngay lúc sinh ra không.
+
+```
+Constructor injection:  new PayoutService(repo) ─────────────────── đủ đồ ngay, suốt đời
+Method injection:       new() ── InvokeAsync(ctx, db) ── db chỉ có trong lần gọi đó
+Property injection:     new() ── [ Repo == null ] ── set Repo ── dùng được
+                                  └ khoảng hở: gọi method lúc này → NullReferenceException
+```
+
+- **Constructor injection**: dependency là tham số constructor, gán vào field `readonly`. Không có khoảng hở, không bị đổi sau khi tạo, đọc constructor là biết class cần gì. Đây là cách duy nhất container của Microsoft tự làm cho service.
+- **Method injection**: dependency là tham số của một method do framework gọi, chỉ sống trong lần gọi đó. Dùng khi object sống lâu hơn dependency: middleware convention là singleton nên `DbContext` scoped phải đi vào tham số `InvokeAsync`; ngoài ra có `[FromServices]` trong action và tham số lambda của Minimal API.
+- **Property injection** (setter injection): object được `new()` rỗng, rồi container gán property. Có khoảng hở như hình.
+
+### Vì sao Microsoft không làm property injection {#why-no-property-injection}
+
+Cả ba lý do đều suy ra từ cái khoảng hở trong hình:
+
+1. **Object có lúc thiếu đồ**: code chạy trong constructor, hoặc unit test `new` tay mà quên gán, sẽ gặp `NullReferenceException` lúc chạy, thay vì lỗi compile như khi thiếu tham số constructor.
+2. **Dependency bị giấu và trông như tuỳ chọn**: đọc constructor không biết class cần gì, property public thì ai cũng gán lại được. Gần giống service locator.
+3. **Container mặc định cố tình tối giản**: nó là mẫu số chung để Autofac, Lamar... cắm vào thay thế được (`builder.Host.UseServiceProviderFactory(...)`). Ít tính năng thì mọi container dễ tuân theo, và resolve nhanh, đơn giản. Muốn property injection thì cắm container khác vào.
+
+### Autofac có property injection: giải quyết gì, cần tránh gì {#autofac-property-injection}
+
+Nó giải quyết những chỗ **container không được gọi constructor**:
+
+- **Object do người khác tạo**: page và user control Web Forms được ASP.NET tạo bằng constructor rỗng. Autofac Web Forms integration để ASP.NET tạo page rồi gán dependency vào property. Đây đúng là loại code bạn đang làm hằng ngày.
+- **Attribute**: runtime .NET tạo attribute, không đi qua container.
+- **Dependency thật sự tuỳ chọn, có giá trị mặc định an toàn**: không gán vẫn chạy.
+
+```csharp
+// Autofac: bật property injection cho một đăng ký
+builder.RegisterType<PayoutReportService>().PropertiesAutowired();
+
+public class PayoutReportService(IPayoutRepository repo)    // bắt buộc: constructor
+{
+    public ILogger Logger { get; set; } = NullLogger.Instance; // tuỳ chọn: property, có mặc định
+}
+```
+
+Cần tránh:
+
+- Dùng cho dependency **bắt buộc**: lỗi thiếu đăng ký biến thành null lúc chạy.
+- Dùng để **giấu constructor quá dài**: 10 dependency vẫn là 10, chỉ là không còn nhìn thấy, xem [quá nhiều dependency](#too-many-dependencies).
+- Dùng để **lách vòng tròn** A cần B, B cần A: thiết kế vẫn lỗi, chỉ là lỗi chuyển sang lúc chạy.
+
+Quy tắc ngắn: **bắt buộc thì constructor**; property chỉ khi framework tạo object hộ bạn, hoặc dependency có mặc định an toàn.
+
+## 6. Ai gọi container: IoC trong ASP.NET Core {#who-calls}
 
 Trong code của bạn **không có chỗ nào gọi `GetService`**. Khi request vào, framework tạo scope (`HttpContext.RequestServices`), tìm controller, dựng controller kèm toàn bộ dependency, gọi action, rồi dispose scope. Đó là <T>IoC</T>: bạn chỉ khai báo "tôi cần gì" ở constructor.
 
@@ -330,7 +420,7 @@ Controller mặc định **không** nằm trong container: controller activator 
 
 Dùng `IServiceProvider` trực tiếp chỉ chấp nhận ở tầng hạ tầng: factory, chọn implementation theo key lúc runtime, hoặc chỗ framework không inject được. Rải trong business logic là <T>service locator</T>.
 
-## 5. Nhiều implementation, keyed services, decorator {#multiple-registrations}
+## 7. Nhiều implementation, keyed services, decorator {#multiple-registrations}
 
 Từ luật "list, bản cuối thắng" ở [Đăng ký](#register) có ba cách dùng nhiều implementation:
 
@@ -356,28 +446,6 @@ builder.Services.AddScoped<IMerchantRepository>(sp =>
 ```
 
 Container có sẵn không có API decorator; cách factory ở trên đủ dùng và không thêm package, hoặc dùng thư viện như <T>Scrutor</T>.
-
-## 6. Dễ nhầm {#confusions}
-
-Mỗi cặp dùng **cùng một ví dụ PayoutHub**: nhìn cột A, rồi cột B, rồi tự hỏi câu ở cột đầu.
-
-### Bốn khái niệm và service locator
-
-| Cặp · câu hỏi để phân biệt | A trông thế nào | B trông thế nào |
-|---|---|---|
-| **IoC** vs **DI**<br>_Ai **gọi** method?_ hay _ai **new** object?_ | **IoC không có DI**: `PayoutWorker.ExecuteAsync()`. Bạn không gọi nó, host gọi. Không có dependency nào được đưa vào | **DI**: `PayoutsController(IPayoutService svc)`. Bạn không `new` service, nó được đưa vào constructor. (DI là một trường hợp của IoC) |
-| **DI** vs **DIP**<br>_Ai tạo object?_ hay _class biết **class nào**?_ | **Có DI, không DIP**: `PayoutService(SqlPayoutRepository repo)`. Được inject, nhưng Core vẫn biết class SQL của Infrastructure | **Có cả hai**: `PayoutService(IPayoutRepository repo)`, interface nằm trong Core. Có DIP mà không DI: `var repo = RepoFactory.Create();` trả về `IPayoutRepository` |
-| **DI** vs **DI container**<br>_Ai viết dòng `new`?_ | **DI viết tay** (Pure DI): trong `Main` bạn viết `new PayoutService(new SqlPayoutRepository(db), clock)` | **DI có container**: bạn chỉ viết `AddScoped<IPayoutService, PayoutService>()`, container tự `new` khi request vào |
-| **DI** vs **Service locator**<br>_Nhìn constructor có biết class cần gì không?_ | **DI**: `PayoutsController(IPayoutService svc)`. Đọc constructor là thấy | **Service locator**: `PayoutsController(IServiceProvider sp)`, rồi trong method `sp.GetRequiredService<IPayoutService>()`. Phải đọc hết thân method mới biết |
-| **Composition root** vs **container**<br>_Là một **chỗ** hay một **công cụ**?_ | **Chỗ**: file `Program.cs` của Api, nơi duy nhất biết `SqlPayoutRepository`. Pure DI cũng có composition root | **Công cụ**: thư viện `Microsoft.Extensions.DependencyInjection`, được dùng **tại** chỗ đó |
-
-### Bên trong container
-
-| Cặp · câu hỏi để phân biệt | A trông thế nào | B trông thế nào |
-|---|---|---|
-| `IServiceCollection` vs `IServiceProvider`<br>_Trước hay sau `Build()`?_ | **Sổ công thức**: `builder.Services.AddScoped<IPayoutRepository, SqlPayoutRepository>()`. Mới ghi một dòng, **chưa có object nào** | **Bếp nấu ra object**: `app.Services`, `HttpContext.RequestServices`. Hỏi `IPayoutRepository` thì nhận về một `SqlPayoutRepository` thật |
-| **Root provider** vs **scope**<br>_Sống tới khi nào? Giữ cái gì?_ | **Root** = `app.Services`: sống tới khi app tắt, giữ `TimeProvider`, `ILogger<T>` (singleton) | **Scope** = `HttpContext.RequestServices` của request 42: sống hết request 42, giữ `PayoutDbContext #42` (scoped), xong thì dispose |
-| **Scoped** vs **Transient**<br>_Hỏi 2 lần trong 1 request thì được mấy object?_ | **Scoped**: `PayoutService` và `PayoutRepository` cùng hỏi `PayoutDbContext` → **1** object, chung một transaction | **Transient**: hai chỗ cùng hỏi `IPayoutValidator` → **2** object khác nhau |
 
 ## Câu hỏi phỏng vấn {#interview}
 
@@ -487,6 +555,22 @@ Inject `T` nhận bản đăng ký **cuối cùng**, `IEnumerable<T>` nhận t�
 **"Inject `IServiceProvider` rồi tự `GetService` có ổn không?"**
 
 Đó là service locator, che giấu dependency thật. Chấp nhận ở tầng hạ tầng (factory, chọn theo key lúc runtime), không rải trong business logic.
+:::
+
+### Có mấy cách inject? Sao container của Microsoft không có property injection? {#injection-types-q}
+
+::: tip Trả lời nhanh
+Ba cách: constructor (mặc định), method (tham số `InvokeAsync`, `[FromServices]`, lambda Minimal API), property. Microsoft bỏ property injection vì object có khoảng thời gian thiếu dependency (null), dependency bị giấu, và container mặc định cố tình tối giản để container khác cắm vào được. Xem [Ba cách đưa dependency vào](#injection-types).
+:::
+
+::: details Câu trả lời mẫu (English)
+There are three kinds: constructor, method and property injection. Constructor injection is the default because the object is complete the moment it is created, the dependencies are visible in the signature and can be readonly. Method injection is for things the framework calls, like a middleware's `InvokeAsync`, when the object lives longer than the dependency. Microsoft's container leaves out property injection on purpose: a property can be null until someone sets it, it hides required dependencies, and the built-in container is kept minimal so Autofac or others can replace it. I'd use Autofac's property injection only where the framework creates the object for me, like Web Forms pages or attributes, or for optional dependencies with a safe default.
+:::
+
+::: warning Bẫy & follow-up
+**"Vậy property injection của Autofac dùng cho gì?"**
+
+Object không do container gọi constructor (page Web Forms, attribute) và dependency tuỳ chọn có mặc định. Không dùng để giấu constructor dài hay lách vòng tròn. Xem [Autofac](#autofac-property-injection).
 :::
 
 ### Constructor có quá nhiều dependency {#too-many-dependencies}

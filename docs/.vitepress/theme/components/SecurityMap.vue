@@ -76,7 +76,7 @@ const stops: Stop[] = [
         <!-- Vùng 3: khu tường bao của mình -->
         <rect class="z z-you" x="460" y="24" width="530" height="394" rx="16" />
         <text class="zt" x="500" y="48">Khu tường bao: VNet của bạn</text>
-        <text class="zs" x="500" y="64">mạng riêng trên Azure, không có IP public, chỉ vào qua cổng ④</text>
+        <text class="zs" x="500" y="64">mạng riêng trên Azure, không có IP public, chỉ vào qua cổng số 4</text>
 
         <!-- Toà nhà app -->
         <rect class="z z-code" x="525" y="92" width="315" height="150" rx="10" />
