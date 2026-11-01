@@ -117,21 +117,24 @@ Với 5 class thì viết tay được. Với 200 class, lifetime khác nhau và
 
 ## 3. Container hoạt động thế nào {#how-container-works}
 
-Theo một request `GET /payouts/42` đi qua 4 bước. Mỗi mục bên dưới phóng to một bước.
+Bản đồ dưới đây cho thấy các thành phần liên quan nhau thế nào, theo một request `GET /payouts/42`. Các mục con bên dưới phóng to từng chặng.
 
 <div class="fig">
-<svg viewBox="0 0 720 240" role="img" aria-label="Bốn bước của container: Register, Build lúc khởi động; Resolve, Dispose lặp lại cho mỗi request"><g text-anchor="middle"><rect class="box" x="20" y="30" width="160" height="140" rx="8"/><text x="100" y="56" font-size="14" font-weight="600">Bước 1 · Register</text><text x="100" y="80" font-size="11" class="mono">builder.Services.Add…</text><text x="100" y="102" font-size="12">ghi công thức vào list</text><text x="100" y="120" font-size="12" class="muted">chưa tạo object nào</text><rect class="boxAcc" x="195" y="30" width="160" height="140" rx="8"/><text x="275" y="56" font-size="14" font-weight="600">Bước 2 · Build</text><text x="275" y="80" font-size="11" class="mono">builder.Build()</text><text x="275" y="102" font-size="12">khoá list, tạo root</text><text x="275" y="120" font-size="12">kiểm tra đăng ký</text><text x="275" y="138" font-size="12">và captive (Dev)</text><rect class="boxOk" x="370" y="30" width="160" height="140" rx="8"/><text x="450" y="56" font-size="14" font-weight="600">Bước 3 · Resolve</text><text x="450" y="80" font-size="11" class="mono">GET /payouts/42</text><text x="450" y="102" font-size="12">tạo scope cho request</text><text x="450" y="120" font-size="12">dựng cây constructor</text><text x="450" y="138" font-size="12">cache theo lifetime</text><rect class="box" x="545" y="30" width="160" height="140" rx="8"/><text x="625" y="56" font-size="14" font-weight="600">Bước 4 · Dispose</text><text x="625" y="80" font-size="11" class="mono">scope.Dispose()</text><text x="625" y="102" font-size="12">request xong</text><text x="625" y="120" font-size="12">dispose ngược thứ tự</text><text x="625" y="138" font-size="12" class="muted">singleton: lúc app tắt</text></g><g class="ln"><line x1="180" y1="100" x2="191" y2="100" marker-end="url(#dInk)"/><line x1="355" y1="100" x2="366" y2="100" marker-end="url(#dInk)"/><line x1="530" y1="100" x2="541" y2="100" marker-end="url(#dInk)"/></g><line class="ln" x1="20" y1="196" x2="355" y2="196"/><line class="lnAcc" x1="370" y1="196" x2="705" y2="196"/><g font-size="12" text-anchor="middle"><text x="187" y="218" class="muted">1 lần, lúc app khởi động</text><text x="537" y="218" class="accT">lặp lại cho mỗi request</text></g></svg>
-<p class="fig-caption">Bạn chỉ viết Bước 1. Ba bước sau framework và container tự làm.</p>
+<svg viewBox="0 0 720 440" role="img" aria-label="Bản đồ thành phần DI container: IServiceCollection, root provider, scope của request, controller"><line class="ln dash" x1="262" y1="10" x2="262" y2="430"/><text x="135" y="28" font-size="13" font-weight="600" text-anchor="middle" class="muted">Lúc khởi động · Program.cs</text><text x="492" y="28" font-size="13" font-weight="600" text-anchor="middle" class="muted">Mỗi request · ví dụ request 42</text><rect class="box" x="26" y="50" width="226" height="104" rx="8"/><text x="48" y="74" font-size="13" font-weight="600" class="mono">IServiceCollection</text><text x="48" y="94" font-size="11.5" class="muted">list ServiceDescriptor (công thức)</text><text x="40" y="116" font-size="11" class="mono">IPayoutRepo → SqlRepo · Scoped</text><text x="40" y="136" font-size="11" class="mono">TimeProvider → System · Singleton</text><circle class="boxAcc" cx="30" cy="50" r="12"/><text x="30" y="55" font-size="14" font-weight="700" text-anchor="middle" class="accT">1</text><line class="ln" x1="135" y1="154" x2="135" y2="204" marker-end="url(#dInk)"/><text x="145" y="184" font-size="12" class="mono">Build()</text><rect class="boxOk" x="26" y="208" width="226" height="206" rx="8"/><text x="48" y="232" font-size="13" font-weight="600" class="okT">Root provider</text><text x="48" y="250" font-size="11" class="muted">IServiceProvider gốc · cả đời app</text><rect class="boxOk dash" x="44" y="262" width="182" height="40" rx="6"/><text x="135" y="287" font-size="12" text-anchor="middle">bảng công thức (đã khoá)</text><rect class="boxOk dash" x="44" y="316" width="182" height="54" rx="6"/><text x="135" y="338" font-size="12" text-anchor="middle">kho singleton</text><text x="135" y="358" font-size="11" text-anchor="middle" class="mono">TimeProvider, ILogger</text><text x="135" y="398" font-size="11" text-anchor="middle" class="muted">dispose singleton khi app tắt</text><circle class="boxAcc" cx="30" cy="208" r="12"/><text x="30" y="213" font-size="14" font-weight="700" text-anchor="middle" class="accT">2</text><rect class="box" x="400" y="44" width="290" height="40" rx="8"/><text x="545" y="69" font-size="12.5" text-anchor="middle">ASP.NET Core nhận request 42</text><path class="lnAcc" d="M252 236 C 320 236, 330 150, 396 150" fill="none" marker-end="url(#dAcc)"/><text x="272" y="196" font-size="11.5" class="mono accT">CreateScope()</text><circle class="boxAcc" cx="282" cy="226" r="12"/><text x="282" y="231" font-size="14" font-weight="700" text-anchor="middle" class="accT">3</text><line class="ln" x1="545" y1="84" x2="545" y2="118" marker-end="url(#dInk)"/><text x="580" y="106" font-size="11.5">xin PayoutsController</text><circle class="boxAcc" cx="562" cy="101" r="12"/><text x="562" y="106" font-size="14" font-weight="700" text-anchor="middle" class="accT">4</text><rect class="boxAcc" x="400" y="122" width="290" height="150" rx="8"/><text x="416" y="146" font-size="13" font-weight="600" class="accT">Scope của request 42</text><text x="416" y="164" font-size="11" class="mono">= HttpContext.RequestServices</text><rect class="boxAcc dash" x="414" y="176" width="262" height="40" rx="6"/><text x="545" y="194" font-size="12" text-anchor="middle">kho scoped</text><text x="545" y="209" font-size="11" text-anchor="middle" class="mono">DbContext#42, PayoutService#42</text><rect class="boxAcc dash" x="414" y="224" width="262" height="34" rx="6"/><text x="545" y="246" font-size="12" text-anchor="middle">danh sách object cần Dispose</text><line class="lnAcc dash" x1="398" y1="286" x2="230" y2="286" marker-end="url(#dAcc)"/><text x="270" y="279" font-size="11" class="accT">tra công thức</text><line class="lnAcc dash" x1="398" y1="340" x2="230" y2="340" marker-end="url(#dAcc)"/><text x="270" y="333" font-size="11" class="accT">hỏi singleton</text><path class="lnAcc dash" d="M440 272 L440 340 L398 340" fill="none"/><path class="lnAcc dash" d="M420 272 L420 286 L398 286" fill="none"/><line class="ln" x1="600" y1="272" x2="600" y2="306" marker-end="url(#dInk)"/><text x="612" y="294" font-size="11.5">tạo cây đệ quy</text><circle class="boxAcc" cx="584" cy="289" r="12"/><text x="584" y="294" font-size="14" font-weight="700" text-anchor="middle" class="accT">5</text><rect class="boxOk" x="460" y="310" width="230" height="46" rx="8"/><text x="575" y="331" font-size="12" text-anchor="middle" class="mono">PayoutsController + cả cây</text><text x="575" y="348" font-size="11" text-anchor="middle" class="muted">action chạy</text><circle class="boxAcc" cx="460" cy="310" r="12"/><text x="460" y="315" font-size="14" font-weight="700" text-anchor="middle" class="accT">6</text><rect class="box dash" x="460" y="372" width="230" height="42" rx="8"/><text x="575" y="398" font-size="12" text-anchor="middle">hết request: <tspan class="mono">scope.Dispose()</tspan></text><circle class="boxAcc" cx="460" cy="372" r="12"/><text x="460" y="377" font-size="14" font-weight="700" text-anchor="middle" class="accT">7</text></svg>
+<p class="fig-caption">Trái: dựng một lần lúc khởi động. Phải: lặp lại cho mỗi request. Scope không có bảng công thức riêng, nó dùng chung bảng của root; singleton cũng luôn lấy ở root.</p>
 </div>
 
-| Bước | Container làm gì | Mục |
-|---|---|---|
-| **1** Register | Ghi công thức vào một list | [Đăng ký](#register) |
-| **2** Build | Khoá list, tạo root provider, kiểm tra | [Đăng ký](#register), [Captive](#captive-rule) |
-| **3** Resolve | Dựng cây constructor, dùng lại object theo lifetime | [Resolve](#resolve), [Lifetime](#lifetime-cache) |
-| **4** Dispose | Dispose object nó đã tạo khi scope kết thúc | [Dispose](#dispose) |
+1. **Program.cs** ghi công thức (`ServiceDescriptor`: hỏi type nào, trả class nào, sống bao lâu) vào `IServiceCollection`. Chưa object nào được tạo.
+2. **`Build()`** biến list đó thành **root provider**: khoá bảng công thức lại, và mở một kho để giữ singleton.
+3. **Request 42 vào**: ASP.NET Core nhờ root tạo một **scope** con, gắn vào `HttpContext.RequestServices`. Scope có kho scoped riêng và danh sách cần dispose riêng, nhưng **dùng chung bảng công thức** của root.
+4. **Framework xin `PayoutsController`** từ scope. Trong code bạn không có dòng nào làm việc này: đó là IoC.
+5. **Scope tạo cả cây đệ quy**: tra công thức; gặp scoped thì giữ trong kho của mình, gặp singleton thì hỏi root, gặp transient thì tạo mới và không giữ.
+6. **Action chạy** với cây object đó.
+7. **Hết request**: scope dispose những gì nó tạo, ngược thứ tự tạo. Request 43 lặp lại từ chặng 3 với một scope mới.
 
-### Bước 1–2: đăng ký là một list công thức {#register}
+Gói lại thành một câu: **`IServiceCollection` là bảng công thức, provider là thứ làm ra và giữ object; có một provider gốc cho cả app (giữ singleton) và một provider con cho mỗi request (giữ scoped)**. Mọi lần "xin một object" đều là xin một trong hai provider đó.
+
+### Chặng 1–2: đăng ký là một list công thức {#register}
 
 **ServiceDescriptor**: một dòng đăng ký, gồm 3 thứ: _hỏi type nào_ (`IPayoutRepository`), _trả gì_ (class, factory hoặc instance có sẵn), _sống bao lâu_ (lifetime). **`IServiceCollection`** chỉ là một list các dòng này.
 
@@ -144,7 +147,7 @@ Theo một request `GET /payouts/42` đi qua 4 bước. Mỗi mục bên dưới
 - **Open generic**: một dòng `typeof(ILogger<>) → typeof(Logger<>)` phục vụ mọi `ILogger<X>`; container đóng generic lúc resolve.
 - **Build** (`builder.Build()`) chụp lại list thành **`IServiceProvider`**, sau đó list bị khoá: thêm đăng ký sau `Build()` thì ASP.NET Core ném lỗi. Ở Development, `ValidateOnBuild` + `ValidateScopes` kiểm tra luôn: thiếu đăng ký, [captive dependency](#captive-rule).
 
-### Bước 3: resolve là đệ quy {#resolve}
+### Chặng 4–5: resolve là đệ quy {#resolve}
 
 Muốn tạo `PayoutsController` thì đọc constructor, thấy cần `IPayoutService`, đi resolve cái đó, cứ thế xuống tới lá. **Tạo object từ lá ngược lên gốc.** Container dùng <T>reflection</T> để đọc constructor ở lần resolve đầu, các lần sau dùng công thức đã biên dịch và cache (call site), gần bằng tự `new`.
 
@@ -159,7 +162,7 @@ Ba luật của bước này:
 - **Vòng tròn** (A cần B, B cần A): ném `InvalidOperationException` "A circular dependency was detected". Sửa bằng cách tách phần dùng chung ra class thứ ba; `Lazy<T>` hay inject `IServiceProvider` chỉ là giấu vấn đề.
 - **Chỉ constructor injection**: container của Microsoft chỉ tự làm constructor injection, xem [Ba cách đưa dependency vào](#injection-types).
 
-### Bước 3: lifetime quyết định object được dùng lại ở đâu {#lifetime-cache}
+### Chặng 5: lifetime quyết định object được dùng lại ở đâu {#lifetime-cache}
 
 Lifetime trả lời: **container tạo bao nhiêu object, và giữ lại để dùng lại trong phạm vi nào**.
 
@@ -210,7 +213,7 @@ public class DailyReportJob(IServiceScopeFactory scopes) : BackgroundService
 
 Config cũng vậy: singleton cần giá trị mới nhất thì dùng `IOptionsMonitor` (singleton), không dùng `IOptionsSnapshot` (scoped), xem [Options pattern](/aspnet-core/options-pattern#three-interfaces).
 
-### Bước 4: ai tạo thì người đó dispose {#dispose}
+### Chặng 7: ai tạo thì người đó dispose {#dispose}
 
 ```
 tạo:      1 DbContext   2 Repository   3 PayoutService   4 Controller
@@ -223,7 +226,7 @@ dispose:  4 → 3 → 2 → 1        (ngược thứ tự tạo, lúc scope kế
 
 ## 4. Tự viết một mini container {#mini-container}
 
-Khoảng 80 dòng là đủ cả 4 bước. Đọc theo số bước trong comment.
+Khoảng 80 dòng là đủ các chặng trên [bản đồ](#how-container-works). Đọc theo số chặng trong comment.
 
 ::: code-group
 
@@ -235,7 +238,7 @@ public enum Lifetime { Transient, Scoped, Singleton }
 // Một dòng đăng ký: ServiceDescriptor thu nhỏ
 public sealed record Registration(Type ServiceType, Type ImplType, Lifetime Lifetime);
 
-// Bước 1: IServiceCollection thu nhỏ, chỉ là một list
+// Chặng 1: IServiceCollection thu nhỏ, chỉ là một list
 public sealed class MiniServices
 {
     private readonly List<Registration> _list = [];
@@ -246,7 +249,7 @@ public sealed class MiniServices
         return this;
     }
 
-    // Bước 2: chụp lại list, tạo root provider
+    // Chặng 2: chụp lại list, tạo root provider
     public MiniProvider Build() => new([.. _list], root: null);
 }
 
@@ -269,7 +272,7 @@ public sealed class MiniProvider : IDisposable
 
     public T Get<T>() => (T)Get(typeof(T));
 
-    // Bước 3: resolve
+    // Chặng 4–5: resolve
     public object Get(Type serviceType)
     {
         var reg = _registrations.LastOrDefault(r => r.ServiceType == serviceType)   // trùng: lấy bản cuối
@@ -316,7 +319,7 @@ public sealed class MiniProvider : IDisposable
         }
     }
 
-    // Bước 4: dispose ngược thứ tự tạo
+    // Chặng 7: dispose ngược thứ tự tạo
     public void Dispose()
     {
         for (var i = _disposables.Count - 1; i >= 0; i--)
@@ -423,69 +426,22 @@ Cả ba lý do đều suy ra từ cái khoảng hở ở hình trên:
 2. **Dependency bị giấu**: đọc constructor không biết class cần gì; property public thì ai cũng gán lại được.
 3. **Container mặc định cố tình tối giản**: nó là mẫu số chung để Autofac, Lamar... cắm vào thay thế (`builder.Host.UseServiceProviderFactory(...)`). Cần thêm tính năng thì cắm container khác.
 
-### Autofac: khi nào cần, và nó inject lúc nào {#autofac}
+## 6. Autofac: thay container có sẵn bằng container khác {#autofac}
 
-**Autofac inject lúc nào?** Constructor thì luôn luôn, giống container của Microsoft. Property thì **không tự động**, chỉ có hai trường hợp:
+**Nguyên lý**: ở [bản đồ](#how-container-works), framework chỉ nói chuyện với `IServiceProvider` (chặng 3–5). Ai đứng sau interface đó cũng được, nên có thể rút container có sẵn ra và cắm Autofac vào:
 
 ```csharp
-// 1. Bật cho một đăng ký: gán mọi property public có setter
-builder.RegisterType<PayoutService>().PropertiesAutowired();
-
-// 2. Từ Autofac 7: property có từ khoá `required` luôn được inject, như tham số constructor
-public class PayoutService
-{
-    public required IPayoutRepository Repo { get; init; }   // thiếu đăng ký → lỗi lúc resolve
-}
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 ```
 
-`required` vá đúng lý do 1 ở trên: compiler bắt `new PayoutService()` phải gán `Repo`, còn container thiếu đăng ký thì báo lỗi lúc resolve chứ không để null. Vì vậy tài liệu Autofac khuyên property bắt buộc thì đánh dấu `required`, và vẫn ưu tiên constructor.
+Vậy câu hỏi "có cần Autofac không" chỉ là: **container có sẵn có thiếu thứ mình cần không?**
 
-**Đã có DI rồi, sao còn cần Autofac?** Bạn nói đúng: với app .NET 8 mới, container có sẵn thường là đủ. Autofac cần ở 2 hoàn cảnh:
+- **.NET Framework (MVC 5, Web API 2, Web Forms)**: không có container có sẵn. MVC 5 tự `new` controller bằng constructor rỗng, nên controller có tham số sẽ lỗi "No parameterless constructor defined". Framework chỉ chừa một chỗ cắm (`DependencyResolver` cho MVC 5, `HttpRuntime.WebObjectActivator` cho Web Forms 4.7.2+), và chỗ đó trống. Muốn DI thì phải cắm một container: đây là lý do Autofac, Unity, Ninject có mặt trong hầu hết code cũ.
+- **.NET 8**: container có sẵn đủ cho đa số app. Autofac chỉ đáng thêm khi cần thứ nó không có: đăng ký hàng loạt theo quy ước, decorator, interceptor, property injection.
 
-- **App .NET Framework (Web Forms, MVC 5, Web API 2)**: "container" ở đây là đúng cái [DI container ở Nấc 4](#concepts), thứ đứng sau `builder.Services` trong ASP.NET Core. ASP.NET Core có sẵn một cái (`Microsoft.Extensions.DependencyInjection`) và tự dùng nó để tạo controller. .NET Framework **không có**: MVC 5 tạo controller bằng constructor rỗng, Web Forms tạo page bằng constructor rỗng. Framework chỉ chừa một **chỗ cắm** để bạn gắn container ngoài vào: `DependencyResolver.SetResolver(...)` cho MVC 5, `GlobalConfiguration.Configuration.DependencyResolver` cho Web API 2, `HttpRuntime.WebObjectActivator` cho Web Forms 4.7.2+. Không cắm gì thì controller có tham số constructor sẽ lỗi "No parameterless constructor defined". Vì vậy app Framework muốn DI là phải cài Autofac, Unity, Ninject...
-- **Cần tính năng container có sẵn không có**: quét assembly để đăng ký hàng loạt, decorator, interceptor (bọc mọi method để log thời gian), module đăng ký theo từng project, multi-tenant. Hai thứ đầu bây giờ có thể dùng <T>Scrutor</T> bổ sung cho container có sẵn, nên ít ai thêm Autofac chỉ vì chúng.
+Property injection của Autofac **không tự động**. Nó chỉ chạy khi bạn bật `PropertiesAutowired()`, hoặc khi property có `required` (Autofac 7+; thiếu đăng ký thì báo lỗi như tham số constructor, không để null). Dùng cho object mà container không được gọi constructor (page Web Forms do ASP.NET tự `new`) hoặc dependency tuỳ chọn; không dùng để giấu constructor quá dài.
 
-Ví dụ cụ thể:
-
-::: code-group
-
-```csharp [Web Forms: property injection]
-// ASP.NET tự new PayoutReport() bằng constructor rỗng, Autofac không được gọi constructor.
-// PropertyInjectionModule (khai báo trong web.config) chạy trước Page_Load và gán property.
-public partial class PayoutReport : System.Web.UI.Page
-{
-    public IPayoutService PayoutService { get; set; }
-
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        grid.DataSource = PayoutService.GetPending();
-        grid.DataBind();
-    }
-}
-```
-
-```csharp [Quét assembly]
-// Đăng ký mọi class *Handler trong project Core, mỗi class theo interface của nó
-builder.RegisterAssemblyTypes(typeof(ApprovePayoutHandler).Assembly)
-       .Where(t => t.Name.EndsWith("Handler"))
-       .AsImplementedInterfaces()
-       .InstancePerLifetimeScope();   // = scoped
-```
-
-```csharp [Decorator]
-// Bọc mọi ICommandHandler<T> bằng một lớp log, không sửa từng handler
-builder.RegisterGenericDecorator(typeof(LoggingHandler<>), typeof(ICommandHandler<>));
-```
-
-:::
-
-Cần tránh khi dùng property injection của Autofac:
-
-- Bật `PropertiesAutowired()` cho dependency **bắt buộc** mà không có `required`: thiếu đăng ký thì im lặng để null.
-- Dùng để **giấu constructor quá dài**: 10 dependency vẫn là 10, xem [quá nhiều dependency](#too-many-dependencies).
-- Dùng để **lách vòng tròn** A cần B, B cần A: lỗi thiết kế vẫn còn, chỉ chuyển sang lúc chạy.
-
-## 6. Ai gọi container: IoC trong ASP.NET Core {#who-calls}
+## 7. Ai gọi container: IoC trong ASP.NET Core {#who-calls}
 
 Trong code của bạn **không có chỗ nào gọi `GetService`**. Khi request vào, framework tạo scope (`HttpContext.RequestServices`), tìm controller, dựng controller kèm toàn bộ dependency, gọi action, rồi dispose scope. Đó là <T>IoC</T>: bạn chỉ khai báo "tôi cần gì" ở constructor.
 
@@ -526,7 +482,7 @@ Bốn cái giá, đều do dependency bị giấu khỏi constructor:
 Chấp nhận được khi **chính framework không inject được** hoặc **chỉ biết cần gì lúc chạy**: factory chọn implementation theo key (`GetRequiredKeyedService`), `IServiceScopeFactory` trong `BackgroundService`. Giữ những chỗ này ở tầng hạ tầng, không rải trong nghiệp vụ.
 
 
-## 7. Nhiều implementation, keyed services, decorator {#multiple-registrations}
+## 8. Nhiều implementation, keyed services, decorator {#multiple-registrations}
 
 Từ luật "list, bản cuối thắng" ở [Đăng ký](#register) có ba cách dùng nhiều implementation:
 
