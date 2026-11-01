@@ -28,6 +28,7 @@ Nhan có thể gõ tiếng Anh (đỡ đổi bộ gõ); vẫn trả lời tiến
 Nhan học bằng **suy luận từ hình**, không học thuộc danh sách. Khung dựa trên Diátaxis (loại "explanation": vì sao, liên hệ), nguyên tắc multimedia của Mayer (bỏ thứ thừa, chia đoạn, có tín hiệu dẫn mắt) và concreteness fading (cụ thể trước, trừu tượng sau). Trang mẫu: `aspnet-core/dependency-injection.md`.
 
 1. **Mở đầu = giới thiệu chủ đề**: nó là gì, giải quyết gì, trang đi qua những gì. Không nhắc lại mục lục bên phải.
+   Ngay dưới là **bản đồ chủ đề**: một hình đủ để ôn lại cả chủ đề mà không đọc chữ (advance organizer / progressive disclosure). Nó chứa **khung xương**, không chứa toàn bộ nội dung: vấn đề, các thành phần và quan hệ giữa chúng, 3–5 luật/bẫy hay bị hỏi, theo cùng một ví dụ. Khoảng 12 nút trở xuống, mỗi nút đánh số và link tới mục chi tiết. Ai đã học một lần thì nhìn nút là nhớ lại được; chưa nhớ thì bấm vào đọc mục đó.
 2. **Vấn đề trước**: code thật bị đau ở đâu khi chưa có thứ này.
 3. **Một ví dụ tiến hoá** (một hình): mỗi bước chữa cái đau của bước trước, tên khái niệm chỉ là nhãn dán lên bước đó. Khác biệt giữa các khái niệm phải tự hiện ra từ câu chuyện. **Không làm bảng "Dễ nhầm" A vs B** bắt nhớ từng dòng.
 4. **Cơ chế bên trong**: một **bản đồ tổng quan** cho thấy các thành phần liên quan nhau (ai giữ gì, ai gọi ai), theo một ví dụ đi qua các chặng có đánh số; rồi mỗi chặng một mục con với hình nhỏ riêng.
