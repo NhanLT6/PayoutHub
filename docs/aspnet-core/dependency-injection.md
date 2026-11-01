@@ -357,18 +357,27 @@ builder.Services.AddScoped<IMerchantRepository>(sp =>
 
 Container có sẵn không có API decorator; cách factory ở trên đủ dùng và không thêm package, hoặc dùng thư viện như <T>Scrutor</T>.
 
-## 6. Dễ nhầm
+## 6. Dễ nhầm {#confusions}
 
-| Cặp | Phân biệt |
-|---|---|
-| **IoC** và **DI** | IoC là ý tưởng chung (ai điều khiển). DI là một dạng IoC, chỉ về việc tạo dependency. Event handler là IoC nhưng không phải DI |
-| **DI** và **DIP** | DI: ai tạo object (cơ chế lúc chạy). DIP: mũi tên phụ thuộc trỏ về đâu (thiết kế source code). Inject class cụ thể là có DI mà không có DIP |
-| **DI** và **DI container** | DI là kỹ thuật, làm tay được. Container là công cụ tự động hoá nó |
-| **DI** và **Service locator** | Cùng có container. DI: được đưa vào. Service locator: tự đi xin `GetService`, dependency bị giấu |
-| `IServiceCollection` và `IServiceProvider` | Collection: list công thức, dùng trước `Build()`. Provider: thứ tạo và giữ object, dùng sau `Build()` |
-| **Công thức** và **instance** | List đăng ký chỉ chứa công thức. Object thật nằm ở root (singleton) hoặc scope (scoped) |
-| **Root provider** và **scope** | Root sống cả đời app, giữ singleton. Scope sống một request, giữ scoped. Resolve scoped từ root là lỗi |
-| **Composition root** và **container** | Composition root là _chỗ_ ghép object (Program.cs). Container là _công cụ_ dùng ở chỗ đó |
+Mỗi cặp dùng **cùng một ví dụ PayoutHub**: nhìn cột A, rồi cột B, rồi tự hỏi câu ở cột đầu.
+
+### Bốn khái niệm và service locator
+
+| Cặp · câu hỏi để phân biệt | A trông thế nào | B trông thế nào |
+|---|---|---|
+| **IoC** vs **DI**<br>_Ai **gọi** method?_ hay _ai **new** object?_ | **IoC không có DI**: `PayoutWorker.ExecuteAsync()`. Bạn không gọi nó, host gọi. Không có dependency nào được đưa vào | **DI**: `PayoutsController(IPayoutService svc)`. Bạn không `new` service, nó được đưa vào constructor. (DI là một trường hợp của IoC) |
+| **DI** vs **DIP**<br>_Ai tạo object?_ hay _class biết **class nào**?_ | **Có DI, không DIP**: `PayoutService(SqlPayoutRepository repo)`. Được inject, nhưng Core vẫn biết class SQL của Infrastructure | **Có cả hai**: `PayoutService(IPayoutRepository repo)`, interface nằm trong Core. Có DIP mà không DI: `var repo = RepoFactory.Create();` trả về `IPayoutRepository` |
+| **DI** vs **DI container**<br>_Ai viết dòng `new`?_ | **DI viết tay** (Pure DI): trong `Main` bạn viết `new PayoutService(new SqlPayoutRepository(db), clock)` | **DI có container**: bạn chỉ viết `AddScoped<IPayoutService, PayoutService>()`, container tự `new` khi request vào |
+| **DI** vs **Service locator**<br>_Nhìn constructor có biết class cần gì không?_ | **DI**: `PayoutsController(IPayoutService svc)`. Đọc constructor là thấy | **Service locator**: `PayoutsController(IServiceProvider sp)`, rồi trong method `sp.GetRequiredService<IPayoutService>()`. Phải đọc hết thân method mới biết |
+| **Composition root** vs **container**<br>_Là một **chỗ** hay một **công cụ**?_ | **Chỗ**: file `Program.cs` của Api, nơi duy nhất biết `SqlPayoutRepository`. Pure DI cũng có composition root | **Công cụ**: thư viện `Microsoft.Extensions.DependencyInjection`, được dùng **tại** chỗ đó |
+
+### Bên trong container
+
+| Cặp · câu hỏi để phân biệt | A trông thế nào | B trông thế nào |
+|---|---|---|
+| `IServiceCollection` vs `IServiceProvider`<br>_Trước hay sau `Build()`?_ | **Sổ công thức**: `builder.Services.AddScoped<IPayoutRepository, SqlPayoutRepository>()`. Mới ghi một dòng, **chưa có object nào** | **Bếp nấu ra object**: `app.Services`, `HttpContext.RequestServices`. Hỏi `IPayoutRepository` thì nhận về một `SqlPayoutRepository` thật |
+| **Root provider** vs **scope**<br>_Sống tới khi nào? Giữ cái gì?_ | **Root** = `app.Services`: sống tới khi app tắt, giữ `TimeProvider`, `ILogger<T>` (singleton) | **Scope** = `HttpContext.RequestServices` của request 42: sống hết request 42, giữ `PayoutDbContext #42` (scoped), xong thì dispose |
+| **Scoped** vs **Transient**<br>_Hỏi 2 lần trong 1 request thì được mấy object?_ | **Scoped**: `PayoutService` và `PayoutRepository` cùng hỏi `PayoutDbContext` → **1** object, chung một transaction | **Transient**: hai chỗ cùng hỏi `IPayoutValidator` → **2** object khác nhau |
 
 ## Câu hỏi phỏng vấn {#interview}
 
