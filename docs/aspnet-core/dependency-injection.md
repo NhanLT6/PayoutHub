@@ -442,7 +442,7 @@ public class PayoutService
 
 **Đã có DI rồi, sao còn cần Autofac?** Bạn nói đúng: với app .NET 8 mới, container có sẵn thường là đủ. Autofac cần ở 2 hoàn cảnh:
 
-- **App .NET Framework (Web Forms, MVC 5, Web API 2)**: Framework **không có container có sẵn**. Muốn DI thì phải chọn một container: Autofac, Unity, Ninject... Nếu bạn gặp Autofac ở công ty thì gần như chắc là vì lý do này.
+- **App .NET Framework (Web Forms, MVC 5, Web API 2)**: "container" ở đây là đúng cái [DI container ở Nấc 4](#concepts), thứ đứng sau `builder.Services` trong ASP.NET Core. ASP.NET Core có sẵn một cái (`Microsoft.Extensions.DependencyInjection`) và tự dùng nó để tạo controller. .NET Framework **không có**: MVC 5 tạo controller bằng constructor rỗng, Web Forms tạo page bằng constructor rỗng. Framework chỉ chừa một **chỗ cắm** để bạn gắn container ngoài vào: `DependencyResolver.SetResolver(...)` cho MVC 5, `GlobalConfiguration.Configuration.DependencyResolver` cho Web API 2, `HttpRuntime.WebObjectActivator` cho Web Forms 4.7.2+. Không cắm gì thì controller có tham số constructor sẽ lỗi "No parameterless constructor defined". Vì vậy app Framework muốn DI là phải cài Autofac, Unity, Ninject...
 - **Cần tính năng container có sẵn không có**: quét assembly để đăng ký hàng loạt, decorator, interceptor (bọc mọi method để log thời gian), module đăng ký theo từng project, multi-tenant. Hai thứ đầu bây giờ có thể dùng <T>Scrutor</T> bổ sung cho container có sẵn, nên ít ai thêm Autofac chỉ vì chúng.
 
 Ví dụ cụ thể:
