@@ -266,7 +266,7 @@ const terms: Record<string, TermDef> = {
     full: 'Dependency Inversion Principle',
     group: design,
     def: 'Tầng nghiệp vụ không phụ thuộc trực tiếp vào hạ tầng; cả hai phụ thuộc abstraction, và abstraction do tầng nghiệp vụ định nghĩa. Khác với [[DI]] (kỹ thuật) và [[IoC]] (ý tưởng chung).',
-    link: '/dotnet/oop-fundamentals#solid',
+    link: '/aspnet-core/dependency-injection#dip-arrow',
   },
   strategy: {
     title: 'Strategy',

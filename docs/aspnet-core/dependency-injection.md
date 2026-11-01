@@ -81,16 +81,22 @@ Không cần thuộc định nghĩa. Lấy `PayoutService` ở trên, chữa t�
 Đọc lại hình là suy ra được từng khái niệm:
 
 - **DI** (Nấc 1) chỉ trả lời _ai tạo dependency_: không phải class. Chưa nói gì tới interface.
-- **DIP** (Nấc 2) trả lời _class biết tới cái gì_: chỉ biết interface do Core định nghĩa. Nhìn theo mũi tên reference giữa các project:
-  ```
-  Không DIP:  Core ──► Infrastructure     Core gọi thẳng SqlPayoutRepository
-  DIP:        Core ◄── Infrastructure     IPayoutRepository nằm TRONG Core, Infrastructure implement
-  ```
-  Điểm chính không phải "có interface" mà là **interface thuộc về ai**: phía nghiệp vụ đặt ra, hạ tầng chạy theo, mũi tên bị lật ngược nên gọi là _Inversion_. Nấc 1 đã có DI mà chưa có DIP, nên hai thứ độc lập với nhau.
+- **<T>DIP</T>** (Nấc 2) trả lời _class biết tới cái gì_: chỉ biết interface do Core định nghĩa, mũi tên phụ thuộc giữa project bị lật ngược, xem [cách đọc mũi tên](#dip-arrow). Nấc 1 đã có DI mà chưa có DIP, nên hai thứ độc lập với nhau.
 - **Composition root** (Nấc 3) trả lời _ghép object **ở đâu**_: một chỗ duy nhất viết `new` cho class cụ thể, gần điểm khởi động; ở PayoutHub là `Program.cs` của Api. "Root" ở đây là gốc của code: chỗ bắt đầu ghép cả cây (khác với _root provider_ ở [mục 3](#lifetime-cache)). Làm tay như vậy gọi là <T>Pure DI</T>.
 - **DI container** (Nấc 4) trả lời _ghép **bằng gì**_: công cụ làm hộ Nấc 3. Ngoài thực tế hai nấc này gộp làm một: `Program.cs` có `builder.Services.Add…` chính là composition root dùng container. Tách ra để thấy hai trường hợp lệch nhau: **có nấc 3 mà không có nấc 4** là unit test tự viết `new PayoutService(fakeRepo, fakeClock)`; **có nấc 4 mà mất nấc 3** là `GetService` rải khắp code, tức service locator.
 - **IoC** không phải một bước riêng mà là hệ quả: khi container tạo object thì bạn cũng không tự gọi controller nữa, framework gọi. IoC là ý tưởng "framework gọi bạn"; DI là IoC áp vào việc tạo object.
-- **Service locator** là đi ngược Nấc 1: class nhận `IServiceProvider` rồi tự `GetService`, tức là lại tự đi lấy dependency. Có container nhưng không còn là DI, xem [mục 6](#who-calls).
+- **Service locator** là đi ngược Nấc 1: class nhận `IServiceProvider` rồi tự `GetService`, tức là lại tự đi lấy dependency. Có container nhưng không còn là DI, xem [Service locator](#service-locator).
+
+### Nấc 2: đọc mũi tên phụ thuộc thế nào {#dip-arrow}
+
+Mũi tên `A ──► B` nghĩa là **A biết B tồn tại**: trong code A có `using` tới B, project A reference project B. Hệ quả: **B đổi thì A có thể phải sửa và build lại**. Mũi tên này **không phải chiều gọi hàm lúc chạy**.
+
+<div class="fig">
+<svg viewBox="0 0 720 300" role="img" aria-label="Không DIP: Core trỏ xuống Infrastructure. Có DIP: interface nằm trong Core, Infrastructure trỏ lên Core, nhưng lúc chạy Core vẫn gọi xuống"><g font-size="14" font-weight="600" text-anchor="middle"><text x="185" y="28">Không DIP</text><text x="535" y="28">Có DIP</text></g><rect class="box" x="40" y="50" width="290" height="70" rx="8"/><text x="56" y="74" font-size="13" font-weight="600">Core</text><text x="56" y="102" font-size="12" class="mono">PayoutService</text><rect class="boxBad" x="40" y="180" width="290" height="60" rx="8"/><text x="56" y="204" font-size="13" font-weight="600">Infrastructure</text><text x="56" y="228" font-size="12" class="mono">SqlPayoutRepository</text><line class="lnBad" x1="185" y1="120" x2="185" y2="176" marker-end="url(#dBad)"/><text x="196" y="144" font-size="11.5" class="mono badT">using Infrastructure;</text><text x="196" y="162" font-size="12" class="badT">Core biết class SQL</text><text x="185" y="270" font-size="12" text-anchor="middle" class="badT">SqlPayoutRepository đổi → PayoutService bị ảnh hưởng</text><rect class="boxOk" x="390" y="50" width="290" height="100" rx="8"/><text x="406" y="74" font-size="13" font-weight="600" class="okT">Core</text><text x="406" y="98" font-size="12" class="mono">PayoutService</text><rect class="boxOk dash" x="406" y="108" width="258" height="30" rx="6"/><text x="535" y="128" font-size="12" class="mono" text-anchor="middle">IPayoutRepository (Core đặt ra)</text><rect class="box" x="390" y="200" width="290" height="60" rx="8"/><text x="406" y="224" font-size="13" font-weight="600">Infrastructure</text><text x="406" y="248" font-size="11.5" class="mono">SqlPayoutRepository : IPayoutRepository</text><line class="lnOk" x1="620" y1="198" x2="620" y2="142" marker-end="url(#dOk)"/><text x="628" y="176" font-size="11.5" class="mono okT">using Core;</text><line class="lnAcc dash" x1="440" y1="140" x2="440" y2="196" marker-end="url(#dAcc)"/><text x="450" y="176" font-size="11.5" class="accT">lúc chạy vẫn gọi xuống</text><text x="535" y="286" font-size="12" text-anchor="middle" class="okT">Core không biết Infrastructure tồn tại</text></svg>
+<p class="fig-caption">Chiều gọi hàm lúc chạy không đổi (nét đứt): PayoutService vẫn gọi SqlPayoutRepository. Chỉ chiều "ai biết ai" trong source code bị lật lên: đó là chữ Inversion.</p>
+</div>
+
+Điểm chính không phải "có interface" mà là **interface nằm ở đâu, do ai đặt ra**: nó nằm trong Core và mang hình dạng Core cần, nên Infrastructure phải chạy theo Core. Nếu đặt `IPayoutRepository` trong Infrastructure thì mũi tên vẫn trỏ xuống như bên trái, có interface mà vẫn không có DIP.
 
 ::: info Nếu hệ thống dính chặt SQL Server thì có cần interface không?
 "Sau này đổi DB" là lý do **yếu nhất** cho DIP: gần như không ai đổi DB. Cái giá thật khi Core gọi thẳng SQL/EF là **test logic tiền phải có DB thật** và rule nghiệp vụ trộn với chi tiết SQL. Nhiều team cố ý không làm repository interface trên EF Core: coi `DbContext` là lớp trừu tượng và test bằng DB thật (SQLite, Testcontainers). Hợp lệ. Chỗ DIP thật sự đáng làm là ranh giới **chậm hoặc không ổn định**: gọi FakeBank qua HTTP, `TimeProvider`, message bus, email; không có bản giả thì không test được "bank trả 500".
@@ -365,52 +371,119 @@ Bản thật khác bản mini ở đâu:
 
 ## 5. Ba cách đưa dependency vào {#injection-types}
 
-Nhớ lại bài entity ở M2: constructor tồn tại để **object vừa sinh ra đã hợp lệ**. Ba cách inject khác nhau đúng ở chỗ đó: object có đủ dependency ngay lúc sinh ra không.
+Ba cách khác nhau ở một điểm: **lúc object vừa được tạo xong, nó đã có đủ dependency chưa**.
 
-```
-Constructor injection:  new PayoutService(repo) ─────────────────── đủ đồ ngay, suốt đời
-Method injection:       new() ── InvokeAsync(ctx, db) ── db chỉ có trong lần gọi đó
-Property injection:     new() ── [ Repo == null ] ── set Repo ── dùng được
-                                  └ khoảng hở: gọi method lúc này → NullReferenceException
-```
+::: code-group
 
-- **Constructor injection**: dependency là tham số constructor, gán vào field `readonly`. Không có khoảng hở, không bị đổi sau khi tạo, đọc constructor là biết class cần gì. Đây là cách duy nhất container của Microsoft tự làm cho service.
-- **Method injection**: dependency là tham số của một method do framework gọi, chỉ sống trong lần gọi đó. Dùng khi object sống lâu hơn dependency: middleware convention là singleton nên `DbContext` scoped phải đi vào tham số `InvokeAsync`; ngoài ra có `[FromServices]` trong action và tham số lambda của Minimal API.
-- **Property injection** (setter injection): object được `new()` rỗng, rồi container gán property. Có khoảng hở như hình.
-
-### Vì sao Microsoft không làm property injection {#why-no-property-injection}
-
-Cả ba lý do đều suy ra từ cái khoảng hở trong hình:
-
-1. **Object có lúc thiếu đồ**: code chạy trong constructor, hoặc unit test `new` tay mà quên gán, sẽ gặp `NullReferenceException` lúc chạy, thay vì lỗi compile như khi thiếu tham số constructor.
-2. **Dependency bị giấu và trông như tuỳ chọn**: đọc constructor không biết class cần gì, property public thì ai cũng gán lại được. Gần giống service locator.
-3. **Container mặc định cố tình tối giản**: nó là mẫu số chung để Autofac, Lamar... cắm vào thay thế được (`builder.Host.UseServiceProviderFactory(...)`). Ít tính năng thì mọi container dễ tuân theo, và resolve nhanh, đơn giản. Muốn property injection thì cắm container khác vào.
-
-### Autofac có property injection: giải quyết gì, cần tránh gì {#autofac-property-injection}
-
-Nó giải quyết những chỗ **container không được gọi constructor**:
-
-- **Object do người khác tạo**: page và user control Web Forms được ASP.NET tạo bằng constructor rỗng. Autofac Web Forms integration để ASP.NET tạo page rồi gán dependency vào property. Đây đúng là loại code bạn đang làm hằng ngày.
-- **Attribute**: runtime .NET tạo attribute, không đi qua container.
-- **Dependency thật sự tuỳ chọn, có giá trị mặc định an toàn**: không gán vẫn chạy.
-
-```csharp
-// Autofac: bật property injection cho một đăng ký
-builder.RegisterType<PayoutReportService>().PropertiesAutowired();
-
-public class PayoutReportService(IPayoutRepository repo)    // bắt buộc: constructor
+```csharp [Constructor (mặc định)]
+public class PayoutService(IPayoutRepository repo)   // thiếu repo thì không new được
 {
-    public ILogger Logger { get; set; } = NullLogger.Instance; // tuỳ chọn: property, có mặc định
+    public Task<decimal> TotalPendingAsync(int merchantId) => repo.SumPendingAsync(merchantId);
 }
 ```
 
-Cần tránh:
+```csharp [Method]
+// Middleware convention là singleton; DbContext là scoped nên đi vào tham số của lần gọi
+public class AuditMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext ctx, PayoutDbContext db)   // db chỉ sống trong lần gọi này
+    {
+        await next(ctx);
+        db.AuditLogs.Add(new AuditLog(ctx.Request.Path));
+        await db.SaveChangesAsync();
+    }
+}
+```
 
-- Dùng cho dependency **bắt buộc**: lỗi thiếu đăng ký biến thành null lúc chạy.
-- Dùng để **giấu constructor quá dài**: 10 dependency vẫn là 10, chỉ là không còn nhìn thấy, xem [quá nhiều dependency](#too-many-dependencies).
-- Dùng để **lách vòng tròn** A cần B, B cần A: thiết kế vẫn lỗi, chỉ là lỗi chuyển sang lúc chạy.
+```csharp [Property (Autofac)]
+public class PayoutService
+{
+    public IPayoutRepository Repo { get; set; } = null!;   // null cho tới khi container gán
 
-Quy tắc ngắn: **bắt buộc thì constructor**; property chỉ khi framework tạo object hộ bạn, hoặc dependency có mặc định an toàn.
+    public Task<decimal> TotalPendingAsync(int merchantId) => Repo.SumPendingAsync(merchantId);
+}
+```
+
+:::
+
+```
+Constructor:  new PayoutService(repo) ──────────────────── đủ đồ ngay, suốt đời
+Method:       new() ── InvokeAsync(ctx, db) ── db chỉ có trong lần gọi đó
+Property:     new() ── [ Repo == null ] ── container gán Repo ── dùng được
+                         └ khoảng hở: ai gọi method lúc này → NullReferenceException
+```
+
+Container của Microsoft chỉ tự làm **constructor injection**; method injection chỉ có ở chỗ framework gọi (`InvokeAsync`, `[FromServices]` trong action, tham số lambda Minimal API).
+
+### Vì sao Microsoft không làm property injection {#why-no-property-injection}
+
+Cả ba lý do đều suy ra từ cái khoảng hở ở hình trên:
+
+1. **Object có lúc thiếu đồ**: unit test `new PayoutService()` mà quên gán `Repo` thì compile vẫn qua, chạy mới nổ `NullReferenceException`. Thiếu tham số constructor thì compile báo lỗi ngay.
+2. **Dependency bị giấu**: đọc constructor không biết class cần gì; property public thì ai cũng gán lại được.
+3. **Container mặc định cố tình tối giản**: nó là mẫu số chung để Autofac, Lamar... cắm vào thay thế (`builder.Host.UseServiceProviderFactory(...)`). Cần thêm tính năng thì cắm container khác.
+
+### Autofac: khi nào cần, và nó inject lúc nào {#autofac}
+
+**Autofac inject lúc nào?** Constructor thì luôn luôn, giống container của Microsoft. Property thì **không tự động**, chỉ có hai trường hợp:
+
+```csharp
+// 1. Bật cho một đăng ký: gán mọi property public có setter
+builder.RegisterType<PayoutService>().PropertiesAutowired();
+
+// 2. Từ Autofac 7: property có từ khoá `required` luôn được inject, như tham số constructor
+public class PayoutService
+{
+    public required IPayoutRepository Repo { get; init; }   // thiếu đăng ký → lỗi lúc resolve
+}
+```
+
+`required` vá đúng lý do 1 ở trên: compiler bắt `new PayoutService()` phải gán `Repo`, còn container thiếu đăng ký thì báo lỗi lúc resolve chứ không để null. Vì vậy tài liệu Autofac khuyên property bắt buộc thì đánh dấu `required`, và vẫn ưu tiên constructor.
+
+**Đã có DI rồi, sao còn cần Autofac?** Bạn nói đúng: với app .NET 8 mới, container có sẵn thường là đủ. Autofac cần ở 2 hoàn cảnh:
+
+- **App .NET Framework (Web Forms, MVC 5, Web API 2)**: Framework **không có container có sẵn**. Muốn DI thì phải chọn một container: Autofac, Unity, Ninject... Nếu bạn gặp Autofac ở công ty thì gần như chắc là vì lý do này.
+- **Cần tính năng container có sẵn không có**: quét assembly để đăng ký hàng loạt, decorator, interceptor (bọc mọi method để log thời gian), module đăng ký theo từng project, multi-tenant. Hai thứ đầu bây giờ có thể dùng <T>Scrutor</T> bổ sung cho container có sẵn, nên ít ai thêm Autofac chỉ vì chúng.
+
+Ví dụ cụ thể:
+
+::: code-group
+
+```csharp [Web Forms: property injection]
+// ASP.NET tự new PayoutReport() bằng constructor rỗng, Autofac không được gọi constructor.
+// PropertyInjectionModule (khai báo trong web.config) chạy trước Page_Load và gán property.
+public partial class PayoutReport : System.Web.UI.Page
+{
+    public IPayoutService PayoutService { get; set; }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        grid.DataSource = PayoutService.GetPending();
+        grid.DataBind();
+    }
+}
+```
+
+```csharp [Quét assembly]
+// Đăng ký mọi class *Handler trong project Core, mỗi class theo interface của nó
+builder.RegisterAssemblyTypes(typeof(ApprovePayoutHandler).Assembly)
+       .Where(t => t.Name.EndsWith("Handler"))
+       .AsImplementedInterfaces()
+       .InstancePerLifetimeScope();   // = scoped
+```
+
+```csharp [Decorator]
+// Bọc mọi ICommandHandler<T> bằng một lớp log, không sửa từng handler
+builder.RegisterGenericDecorator(typeof(LoggingHandler<>), typeof(ICommandHandler<>));
+```
+
+:::
+
+Cần tránh khi dùng property injection của Autofac:
+
+- Bật `PropertiesAutowired()` cho dependency **bắt buộc** mà không có `required`: thiếu đăng ký thì im lặng để null.
+- Dùng để **giấu constructor quá dài**: 10 dependency vẫn là 10, xem [quá nhiều dependency](#too-many-dependencies).
+- Dùng để **lách vòng tròn** A cần B, B cần A: lỗi thiết kế vẫn còn, chỉ chuyển sang lúc chạy.
 
 ## 6. Ai gọi container: IoC trong ASP.NET Core {#who-calls}
 
@@ -427,7 +500,31 @@ Controller mặc định **không** nằm trong container: controller activator 
 </template>
 </Compare>
 
-Dùng `IServiceProvider` trực tiếp chỉ chấp nhận ở tầng hạ tầng: factory, chọn implementation theo key lúc runtime, hoặc chỗ framework không inject được. Rải trong business logic là <T>service locator</T>.
+### Service locator là gì, sao không nên dùng {#service-locator}
+
+**Service locator**: class nhận "cái kho" (`IServiceProvider`) rồi tự lấy thứ nó cần khi chạy tới, thay vì khai báo thứ nó cần ở constructor.
+
+```csharp
+public class PayoutService(IServiceProvider sp)        // constructor không nói gì về nhu cầu thật
+{
+    public async Task ApproveAsync(int id)
+    {
+        var repo  = sp.GetRequiredService<IPayoutRepository>();   // nhu cầu thật nằm rải trong method
+        var clock = sp.GetRequiredService<TimeProvider>();
+        // ...
+    }
+}
+```
+
+Bốn cái giá, đều do dependency bị giấu khỏi constructor:
+
+1. **Đọc không biết class cần gì**: phải đọc hết thân method.
+2. **Lỗi thiếu đăng ký nổ muộn**: `ValidateOnBuild` không thấy nhu cầu nằm trong method, nên lỗi chỉ hiện khi chạy tới đúng dòng đó, có khi là trên production.
+3. **Test khó**: không `new PayoutService(fakeRepo, fakeClock)` được, phải dựng cả container giả.
+4. **Dễ dính captive**: `sp` trong một singleton là root provider, lấy service scoped từ đó chính là [captive dependency](#captive-rule).
+
+Chấp nhận được khi **chính framework không inject được** hoặc **chỉ biết cần gì lúc chạy**: factory chọn implementation theo key (`GetRequiredKeyedService`), `IServiceScopeFactory` trong `BackgroundService`. Giữ những chỗ này ở tầng hạ tầng, không rải trong nghiệp vụ.
+
 
 ## 7. Nhiều implementation, keyed services, decorator {#multiple-registrations}
 
@@ -579,7 +676,7 @@ There are three kinds: constructor, method and property injection. Constructor i
 ::: warning Bẫy & follow-up
 **"Vậy property injection của Autofac dùng cho gì?"**
 
-Object không do container gọi constructor (page Web Forms, attribute) và dependency tuỳ chọn có mặc định. Không dùng để giấu constructor dài hay lách vòng tròn. Xem [Autofac](#autofac-property-injection).
+Object không do container gọi constructor (page Web Forms, attribute) và dependency tuỳ chọn có mặc định. Không dùng để giấu constructor dài hay lách vòng tròn. Xem [Autofac](#autofac).
 :::
 
 ### Constructor có quá nhiều dependency {#too-many-dependencies}
