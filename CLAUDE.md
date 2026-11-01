@@ -23,6 +23,33 @@ Nhan có thể gõ tiếng Anh (đỡ đổi bộ gõ); vẫn trả lời tiến
 
 ## Viết bài / giải thích
 
+### Cách viết một trang chủ đề
+
+Nhan học bằng **suy luận từ hình**, không học thuộc danh sách. Khung dựa trên Diátaxis (loại "explanation": vì sao, liên hệ), nguyên tắc multimedia của Mayer (bỏ thứ thừa, chia đoạn, có tín hiệu dẫn mắt) và concreteness fading (cụ thể trước, trừu tượng sau). Trang mẫu: `aspnet-core/dependency-injection.md`.
+
+1. **Mở đầu = giới thiệu chủ đề**: nó là gì, giải quyết gì, trang đi qua những gì. Không nhắc lại mục lục bên phải.
+2. **Vấn đề trước**: code thật bị đau ở đâu khi chưa có thứ này.
+3. **Một ví dụ tiến hoá** (một hình): mỗi bước chữa cái đau của bước trước, tên khái niệm chỉ là nhãn dán lên bước đó. Khác biệt giữa các khái niệm phải tự hiện ra từ câu chuyện. **Không làm bảng "Dễ nhầm" A vs B** bắt nhớ từng dòng.
+4. **Cơ chế bên trong**: một **bản đồ tổng quan** cho thấy các thành phần liên quan nhau (ai giữ gì, ai gọi ai), theo một ví dụ đi qua các chặng có đánh số; rồi mỗi chặng một mục con với hình nhỏ riêng.
+5. **Tự làm lại bản mini** nếu chủ đề cho phép (vd mini container).
+6. **Biến thể và trade-off**, viết theo kiểu "vì cơ chế X nên Y", kể cả khi nào **không** cần dùng.
+7. Câu hỏi phỏng vấn, Hỏi đáp (chỉ câu đào sâu thật sự tách riêng), Tự kiểm tra (câu "tại sao / nếu... thì sao").
+
+Quy tắc câu chữ:
+
+- **Nguyên lý trước**: mỗi mục mở bằng một câu nói cơ chế gây ra hành vi; các ý sau suy ra từ đó ("vì... nên..."). Ý không suy ra được thì cắt, hoặc nó là một nguyên lý mới. Không liệt kê sự thật rời rạc.
+- **Cắt chữ thừa**: câu không thêm thông tin thì bỏ.
+- **Chủ đề phụ** (vd Autofac trong trang DI) = một mục ngắn riêng: nguyên lý + khi nào cần + link ngoài. Không đi sâu.
+- **Không nhắc chung chung**: không viết "nhớ lại bài X", "như đã nói". Có chỗ để dẫn thì link đúng heading; không thì giải thích lại tại chỗ như người đọc chưa từng thấy.
+- **Code mẫu**: đặt ngay cạnh ý nó minh hoạ, ngắn. Nhiều biến thể thì `::: code-group`.
+- **Định nghĩa tại chỗ**: viết tắt và thuật ngữ mới (TLS, WAF...) gắn `<T>` hoặc giải thích ngay lần đầu; không giả định người đọc đã biết.
+- **Không dùng ký tự số tròn (① ② ③...)** ở bất kỳ đâu: font của site render rất nhỏ. Dùng số thường in đậm, "Bước 1", hoặc vòng tròn SVG có số to.
+- **Hình**: kiểm tra chữ không tràn khung (chụp màn hình bản build); một góc nhìn nhất quán cho mỗi khái niệm, không trộn nhiều ẩn dụ.
+
+Khi trả lời câu hỏi trong chat: kiểm tra cách hiểu của Nhan trước và nói thẳng chỗ sai; dựng lại từ thứ Nhan đã thấy trên trang; code mới tối đa khoảng 8 dòng và đặt ngay trong câu trả lời, không đưa một đoạn lớn rồi bàn như thể Nhan đã có sẵn. Nếu Nhan đã đọc trang mà vẫn hỏi thì trang chưa rõ: sửa đúng mục đó trong thân bài.
+
+### Độ chính xác
+
 Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc định không, hay phải bật gì. Đối chiếu với `Program.cs` / `appsettings` hiện tại trước khi nói "sẽ thấy X". Lý do: note từng viết "log mang trace id" mà thiếu điều kiện `IncludeScopes`, Nhan chạy thử không thấy và phải quay lại hỏi.
 
 ## Vai trò của Claude: mentor, không làm thay
@@ -75,8 +102,8 @@ docs/
 - **Link** luôn tuyệt đối từ gốc `docs/`, không đuôi `.md`: `[Filter](/aspnet-core/middleware#filters)`, `[Middleware](/aspnet-core/middleware)`.
 - **Mỗi chủ đề một trang** (vd `aspnet-core/dependency-injection.md`), theo thứ tự:
   1. Frontmatter `title`, `# Tiêu đề`, một dòng giới thiệu (đọc gì trước, link liên quan).
-  2. **Bài học**: các mục `## 1.`, `## 2.`... Thuật ngữ **in đậm** + định nghĩa 1–2 dòng, hình minh hoạ (SVG nhúng, dùng class trong `docs/.vitepress/theme/custom.css`), bảng "Dễ nhầm".
-  3. `## Câu hỏi phỏng vấn {#interview}`: mỗi câu là một `###` có anchor cố định `{#slug}` (đổi tiêu đề thoải mái, không đổi slug). Bốn khối: `::: tip Trả lời nhanh`, `::: info Bản chất`, `::: details Ở dự án thật`, `::: warning Bẫy & follow-up`.
+  2. **Bài học**: các mục `## 1.`, `## 2.`... theo khung ở "Cách viết một trang chủ đề". Hình minh hoạ là SVG nhúng, dùng class trong `docs/.vitepress/theme/custom.css`.
+  3. `## Câu hỏi phỏng vấn {#interview}`: chỉ có câu hỏi, không dạy khái niệm (khái niệm nằm ở bài học, câu trả lời link về đó). Mỗi câu là một `###` có anchor cố định `{#slug}` (đổi tiêu đề thoải mái, không đổi slug). Ba khối: `::: tip Trả lời nhanh` (kèm link mục bài học), `::: details Câu trả lời mẫu (English)`, `::: warning Bẫy & follow-up`.
   4. `## Hỏi đáp`: câu đào sâu trong `::: details`, gom bằng `###`.
   5. `## Tự kiểm tra`.
 - Câu hỏi của nhóm chưa có bài học nằm tạm trong `<nhóm>/questions.md` (mỗi câu một `##`). Khi học tới, chuyển câu đó sang trang chủ đề mới, giữ slug, sửa link trong `reference/index.md`.
