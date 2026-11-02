@@ -180,6 +180,32 @@ const groups: Group[] = [
     ],
   },
   {
+    title: 'Data',
+    hint: 'EF Core và SQL Server dưới tải thật',
+    pages: [
+      {
+        text: 'EF Core',
+        desc: 'N+1 và cách chữa, change tracking và AsNoTracking dùng sai chỗ, optimistic concurrency qua API.',
+        link: '/data/ef-core',
+        q: [
+          { text: 'N+1', link: '/data/ef-core#n-plus-one-51-queries' },
+          { text: 'Tracking', link: '/data/ef-core#tracking-vs-no-tracking' },
+          { text: 'Lost update', link: '/data/ef-core#lost-update-api' },
+        ],
+      },
+      {
+        text: 'SQL chậm và index',
+        desc: 'Đo logical reads, đọc execution plan, index ghép đúng thứ tự cột, INCLUDE, keyset, giá của index.',
+        link: '/data/sql-performance',
+        q: [
+          { text: 'Điều tra query chậm', link: '/data/sql-performance#slow-query' },
+          { text: 'Index cho WHERE + ORDER BY', link: '/data/sql-performance#index-where-order-by' },
+          { text: 'Quá nhiều index', link: '/data/sql-performance#too-many-indexes' },
+        ],
+      },
+    ],
+  },
+  {
     title: 'Hệ thống',
     hint: 'Container, Kubernetes, microservices',
     soon: { text: 'Sắp học ở M8', link: '/progress/plan#m8' },

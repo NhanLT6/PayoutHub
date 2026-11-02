@@ -231,12 +231,14 @@ const terms: Record<string, TermDef> = {
     title: 'N+1 query',
     group: 'Dữ liệu',
     def: '1 query lấy danh sách rồi N query nữa, mỗi dòng một query, để lấy dữ liệu liên quan. Gộp lại bằng `Include` hoặc projection.',
+    link: '/data/ef-core#n-plus-one',
   },
   'execution plan': {
     title: 'Execution plan',
     full: 'kế hoạch thực thi',
     group: 'Dữ liệu',
     def: 'Các bước SQL Server chọn để chạy một query (dùng index nào, join kiểu gì). Xem nó để biết vì sao query chậm.',
+    link: '/data/sql-performance#read-plan',
   },
   opentelemetry: {
     title: 'OpenTelemetry',

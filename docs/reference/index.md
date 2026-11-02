@@ -138,6 +138,20 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Caching trong ASP.NET Core](/aspnet-core/questions#caching)
 - ["API chậm dần khi traffic tăng, bạn xử lý thế nào?"](/aspnet-core/questions#slow-api)
 
+## Data
+
+### [EF Core](/data/ef-core#interview)
+
+- [Trang list có 50 dòng mà chạy 51 query. Vì sao, sửa thế nào?](/data/ef-core#n-plus-one-51-queries)
+- [Tracking và AsNoTracking khác nhau thế nào? Dùng sai chỗ thì hỏng gì?](/data/ef-core#tracking-vs-no-tracking)
+- [Hai user cùng sửa một payout qua API. Chặn lost update thế nào?](/data/ef-core#lost-update-api)
+
+### [SQL chậm và index](/data/sql-performance#interview)
+
+- [Một query chậm trên production. Bạn điều tra thế nào?](/data/sql-performance#slow-query)
+- [`WHERE Status = 'Pending' ORDER BY CreatedAt`: tạo index gì?](/data/sql-performance#index-where-order-by)
+- [Sao không index hết các cột cho nhanh?](/data/sql-performance#too-many-indexes)
+
 ## Chưa viết
 
-AuthN/AuthZ · EF Core · Testing · Migration Framework → .NET · Kiến trúc mức senior · Question bank
+AuthN/AuthZ · Testing · Migration Framework → .NET · Kiến trúc mức senior · Question bank

@@ -49,6 +49,14 @@ export const sidebar: DefaultTheme.Sidebar = [
     ],
   },
   {
+    text: '4 · Data',
+    collapsed: false,
+    items: [
+      { text: 'EF Core: query, tracking, concurrency', link: '/data/ef-core' },
+      { text: 'SQL chậm và index', link: '/data/sql-performance' },
+    ],
+  },
+  {
     text: 'Tra cứu',
     items: [
       { text: 'Mục lục câu hỏi', link: '/reference/' },
