@@ -236,7 +236,7 @@ app.UseAuthentication();
 **Expiry**: access token sống ngắn (15–60 phút) vì không thu hồi được. Hết hạn thì client dùng <T>refresh token</T> đổi token mới ngầm, user không phải đăng nhập lại.
 
 ::: tip Đọc chi tiết: [Đăng nhập và JWT](/aspnet-core/authentication-jwt)
-[JWT chặn được gì](/aspnet-core/authentication-jwt#what-jwt-blocks) · [Server tự phát hành hay dùng Entra ID](/aspnet-core/authentication-jwt#issuing) · [Access, refresh, ID token](/aspnet-core/authentication-jwt#token-types) · [Hết hạn thì xử lý thế nào](/aspnet-core/authentication-jwt#expiry) · [Token bị trộm thì sao](/aspnet-core/authentication-jwt#stolen-token)
+[JWT chặn được gì](/aspnet-core/authentication-jwt#what-jwt-blocks) · [Server tự phát hành hay dùng Entra ID](/aspnet-core/authentication-jwt#issuing) · [Mỗi request: từ token tới policy](/aspnet-core/authentication-jwt#per-request) · [Access, refresh, ID token](/aspnet-core/authentication-jwt#token-types) · [Hết hạn thì xử lý thế nào](/aspnet-core/authentication-jwt#expiry) · [Token bị trộm thì sao](/aspnet-core/authentication-jwt#stolen-token)
 :::
 
 </FlowStep>

@@ -118,12 +118,21 @@ const terms: Record<string, TermDef> = {
     title: 'Idempotent',
     full: 'luỹ đẳng',
     group: web,
-    def: 'Gọi một thao tác nhiều lần cho cùng kết quả như gọi một lần. GET, PUT, DELETE là idempotent; POST thì không. Handler bị gọi lặp (retry, event bắn đôi) cũng cần idempotent.',
+    def: 'Gọi một thao tác nhiều lần để lại server ở cùng trạng thái như gọi một lần. GET, PUT, DELETE là idempotent; POST thì không. Handler bị gọi lặp (retry, event bắn đôi) cũng cần idempotent.',
+    link: '/aspnet-core/rest-api#method-semantics',
   },
   'idempotency key': {
     title: 'Idempotency key',
     group: web,
-    def: 'Mã duy nhất client gửi kèm request (thường qua header). Server thấy key đã xử lý thì trả lại kết quả cũ, nên retry không tạo bản ghi hay chuyển tiền hai lần.',
+    def: 'Mã duy nhất client sinh một lần cho mỗi thao tác và gửi lại ở mọi lần retry (header `Idempotency-Key`). Server thấy key đã xử lý thì trả lại kết quả cũ, nên retry không tạo bản ghi hay chuyển tiền hai lần.',
+    link: '/aspnet-core/rest-api#idempotency-key',
+  },
+  'at-least-once': {
+    title: 'At-least-once delivery',
+    full: 'giao ít nhất một lần',
+    group: web,
+    def: 'Cam kết của message queue (Azure Service Bus, RabbitMQ): message không bị mất, nhưng có thể tới **hơn một lần** (consumer xử lý xong mà chưa kịp xác nhận thì queue giao lại). Nên consumer phải [[idempotent]].',
+    link: '/aspnet-core/rest-api#unique-constraint',
   },
 
   // Logging

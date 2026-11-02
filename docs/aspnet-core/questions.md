@@ -4,7 +4,7 @@ title: "Câu hỏi ASP.NET Core khác"
 
 # Câu hỏi ASP.NET Core khác
 
-Các câu ASP.NET Core chưa có bài học riêng. Khi học tới chủ đề nào, câu đó được chuyển sang trang chủ đề của nó (như [Middleware](/aspnet-core/middleware), [Logging](/aspnet-core/logging) hay [Options pattern](/aspnet-core/options-pattern)).
+Các câu ASP.NET Core chưa có bài học riêng. Khi học tới chủ đề nào, câu đó được chuyển sang trang chủ đề của nó (như [Middleware](/aspnet-core/middleware), [Logging](/aspnet-core/logging), [Options pattern](/aspnet-core/options-pattern) hay [REST API](/aspnet-core/rest-api)).
 
 ## App ASP.NET Core khởi động thế nào? {#startup}
 
@@ -158,34 +158,6 @@ PayoutHub M4: request approve chỉ đẩy `payoutId` vào `Channel`, `PayoutWor
 - **"Deploy khi job đang chạy dở batch thì sao?"** Host cancel token, chờ tối đa `ShutdownTimeout` rồi thoát, item đang làm có thể bị cắt giữa chừng. An toàn = (1) dùng token để **ngừng nhận item mới**, kiểm tra token *giữa* các item, làm xong item hiện tại; batch dài thì tăng `builder.Services.Configure<HostOptions>(o => o.ShutdownTimeout = TimeSpan.FromSeconds(60))`. (2) **Resumable + idempotent**: mỗi item lưu trạng thái riêng ngay khi xong, restart thì chỉ lấy item chưa xong, gọi ra ngoài kèm Idempotency-Key để retry không chuyển tiền 2 lần. Dễ nhầm: chờ lâu hơn là `HostOptions`, không phải `IOptionsMonitor`.
 :::
 
-## Thiết kế REST API: status code và các quy ước {#rest-design}
-
-::: info Bản chất
-| Code | Khi nào |
-|---|---|
-| 200 OK | Thành công, có body |
-| 201 Created | Tạo mới thành công, kèm header `Location` |
-| 204 No Content | Thành công, không có body (thường là DELETE, PUT) |
-| 400 Bad Request | Dữ liệu gửi lên sai format hoặc không hợp lệ |
-| 401 Unauthorized | Chưa xác thực (thiếu hoặc sai token) |
-| 403 Forbidden | Đã xác thực nhưng không có quyền |
-| 404 Not Found | Không có resource |
-| 409 Conflict | Xung đột trạng thái: duyệt payout đã bị reject, sửa bản đã bị người khác sửa |
-| 422 Unprocessable | Đúng format nhưng sai rule nghiệp vụ (có team dùng 400 cho trường hợp này) |
-| 429 Too Many Requests | Vượt rate limit |
-| 500 / 503 | Lỗi server / service tạm thời không phục vụ được |
-
-- <T>Idempotent</T>: GET, PUT, DELETE gọi nhiều lần cho cùng kết quả. POST thì không, nên với thao tác nhạy cảm (tạo payout, thanh toán) dùng <T>idempotency key</T> gửi kèm request để retry không tạo bản ghi trùng.
-- URL là danh từ số nhiều: `/payouts/42`, hành động nghiệp vụ đặc biệt có thể là `POST /payouts/42/approve`.
-- Phân trang: `?page=2&pageSize=50`, hoặc cursor cho dữ liệu lớn. Versioning: qua URL `/v1/` hoặc header.
-:::
-
-::: warning Bẫy & follow-up
-**"PUT và PATCH khác nhau thế nào?"**
-
-PUT thay toàn bộ resource bằng nội dung gửi lên; PATCH chỉ sửa một phần.
-:::
-
 ## Gọi API bên ngoài: `IHttpClientFactory` và resilience {#httpclientfactory}
 
 ::: tip Trả lời nhanh
@@ -212,7 +184,7 @@ public class SeoDataClient(HttpClient http)
 ::: warning Bẫy & follow-up
 **"Retry có nguy hiểm không?"**
 
-Có, với request không idempotent (POST tạo đơn, chuyển tiền): retry có thể tạo bản ghi trùng. Chỉ retry tự động cho GET hoặc khi có idempotency key. Thêm <T k="backoff">backoff và jitter</T> để không dồn dập vào service đang lỗi.
+Có, với request không idempotent (POST tạo đơn, chuyển tiền): retry có thể tạo bản ghi trùng. Chỉ retry tự động cho GET hoặc khi có idempotency key (xem [Idempotency-Key](/aspnet-core/rest-api#idempotency-key)). `AddStandardResilienceHandler()` mặc định retry cả POST; tắt bằng `options.Retry.DisableForUnsafeHttpMethods()`. Thêm <T k="backoff">backoff và jitter</T> để không dồn dập vào service đang lỗi.
 
 **"<T>Circuit breaker</T> để làm gì?"**
 

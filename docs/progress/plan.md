@@ -51,7 +51,7 @@ Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần ch�
 | A3 | ASP.NET Core / .NET 8 | hosting, DI lifetimes, middleware, options, logging, minimal API vs controller, `BackgroundService`, exception handling | M1 đã làm: chỉ hỏi lại |
 | A4 | Migration Framework → .NET 8 | khác biệt hosting/DI/config, thay `System.Web`, EF6 → EF Core, strangler fig / side-by-side, câu chuyện thật của bạn | [Framework vs .NET](/dotnet/framework-vs-core) + phần mới |
 | A5 | EF Core + SQL | tracking/`AsNoTracking`, N+1, projection, pagination, migration, `rowversion`, index, transaction/isolation, data modeling | PayoutHub M2: làm xong `DbContext` tại đây |
-| A6 | REST API + test | status code, versioning, method idempotent, JWT + policy, unit vs integration test (`WebApplicationFactory`) | [REST](/aspnet-core/questions#rest-design) |
+| A6 | REST API + test | status code, versioning, method idempotent, JWT + policy, unit vs integration test (`WebApplicationFactory`) | [REST](/aspnet-core/rest-api#rest-design) |
 | | **Mock A** | 30' trộn A1–A6 | |
 
 ### Tầng B: microservices (PhoenixDX)
@@ -152,7 +152,7 @@ Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần ch�
 1. Bắn 2 request duyệt cùng lúc để thấy payout bị duyệt 2 lần, rồi sửa bằng `rowversion` (optimistic concurrency) và trả 409.
 2. Đăng ký một singleton giữ `DbContext` (captive dependency). Ở môi trường Development, `ValidateScopes`/`ValidateOnBuild` đã bật sẵn nên app báo lỗi ngay; chạy thử với Production để thấy lỗi lọt qua.
 
-**Ôn:** [SOLID](/dotnet/oop-fundamentals#solid), [Design patterns](/dotnet/oop-fundamentals#design-patterns), [Thread safety](/runtime/async#thread-safety), [Filter](/aspnet-core/filters), [Thiết kế REST](/aspnet-core/questions#rest-design), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Container dispose](/aspnet-core/dependency-injection#disposal), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations)
+**Ôn:** [SOLID](/dotnet/oop-fundamentals#solid), [Design patterns](/dotnet/oop-fundamentals#design-patterns), [Thread safety](/runtime/async#thread-safety), [Filter](/aspnet-core/filters), [Thiết kế REST](/aspnet-core/rest-api#rest-design), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Container dispose](/aspnet-core/dependency-injection#disposal), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations)
 
 ## M4: Thực thi payout (khoảng 4 ngày)
 

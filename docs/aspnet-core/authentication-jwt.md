@@ -1,11 +1,11 @@
 ---
 title: "Đăng nhập và JWT"
-description: "JWT chặn được gì, server tự phát hành hay dùng Entra ID, private/public key, access token và refresh token, xử lý khi token hết hạn."
+description: "JWT chặn được gì, server tự phát hành hay dùng Entra ID, private/public key, mỗi request từ Bearer token tới [Authorize], access token và refresh token, xử lý khi token hết hạn."
 ---
 
 # Đăng nhập và JWT
 
-Trang này đi sâu vào [bước 7 của Bảo mật API](/aspnet-core/api-security#step-7): API biết **bạn là ai** bằng cách nào. Đọc theo thứ tự: JWT chặn được gì, ai phát hành và ký token, các loại token, rồi chuyện hết hạn và bị trộm.
+Trang này đi sâu vào [bước 7 của Bảo mật API](/aspnet-core/api-security#step-7): API biết **bạn là ai** bằng cách nào. Đọc theo thứ tự: JWT chặn được gì, ai phát hành và ký token, mỗi request API kiểm token và quyền thế nào, các loại token, rồi chuyện hết hạn và bị trộm.
 
 ## 1. JWT chặn được gì, không chặn được gì {#what-jwt-blocks}
 
@@ -106,7 +106,168 @@ Ký là lũy thừa 7, kiểm là lũy thừa 3, gộp lại là lũy thừa 21.
 Muốn giả chữ ký thì cần d. Muốn có d thì phải có φ = 20, tức là phải tách 33 thành 3 × 11. Với 33 thì dễ, với số 617 chữ số thì máy tính hiện nay chạy hàng tỷ năm cũng chưa xong. Nên public key đăng công khai mà không lộ private key.
 :::
 
-## 3. Access token, refresh token, ID token {#token-types}
+## 3. Mỗi request: từ Bearer token tới `[Authorize]` {#per-request}
+
+**Login chỉ xảy ra một lần. Ở mỗi request sau đó, API tự dựng lại "người gọi là ai" từ chính token, không hỏi DB hay IdP.** Hai middleware chia nhau việc đó: `UseAuthentication` biến header `Authorization` thành `HttpContext.User`, rồi `UseAuthorization` so `User` với policy của endpoint. Vì là hai bước tách rời nên có hai mã lỗi: **401** khi không dựng được danh tính, **403** khi có danh tính nhưng policy không thoả.
+
+<div class="fig">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="pInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="pOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="pBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
+<svg viewBox="0 0 720 490" role="img" aria-label="Request mang Bearer token: JwtBearer kiểm chữ ký, iss, aud, exp; hợp lệ thì dựng ClaimsPrincipal trên HttpContext.User, không hợp lệ thì User ẩn danh; UseAuthorization so policy Finance: chưa xác thực trả 401, thiếu role trả 403, thoả thì action chạy">
+<rect class="box" x="20" y="10" width="680" height="46" rx="8"/>
+<text x="34" y="30" font-size="13" font-weight="600">Client: <tspan class="mono">POST /payouts/42/approve</tspan></text>
+<text x="34" y="48" font-size="11.5" class="mono muted">Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6…</text>
+<line class="ln" x1="230" y1="56" x2="230" y2="76" marker-end="url(#pInk)"/>
+<rect class="boxAcc" x="20" y="80" width="420" height="136" rx="8"/>
+<circle class="boxAcc" cx="44" cy="104" r="13"/><text x="44" y="109" font-size="13" text-anchor="middle" font-weight="700" class="accT">1</text>
+<text x="66" y="109" font-size="13" font-weight="600">UseAuthentication → JwtBearer handler</text>
+<text x="40" y="136" font-size="12">a. chữ ký khớp? (public key chọn theo <tspan class="mono">kid</tspan>)</text>
+<text x="40" y="156" font-size="12">b. <tspan class="mono">iss</tspan> đúng IdP? <tspan class="mono">aud</tspan> = <tspan class="mono">api://payouthub</tspan>?</text>
+<text x="40" y="176" font-size="12">c. <tspan class="mono">exp</tspan> chưa qua? (dung sai ClockSkew, mặc định 5 phút)</text>
+<text x="40" y="202" font-size="11.5" class="muted">chỉ dùng key đã cache và đồng hồ: không gọi DB, không gọi IdP</text>
+<rect class="box dash" x="480" y="80" width="220" height="136" rx="8"/>
+<text x="494" y="104" font-size="12.5" font-weight="600" class="badT">thiếu token / sai bước nào</text>
+<text x="494" y="128" font-size="12">chưa trả 401 ở đây:</text>
+<text x="494" y="146" font-size="12">User = ẩn danh,</text>
+<text x="494" y="164" font-size="12">request đi tiếp</text>
+<text x="494" y="190" font-size="11" class="muted">endpoint không có [Authorize]</text>
+<text x="494" y="206" font-size="11" class="muted">vẫn chạy bình thường</text>
+<line class="lnBad dash" x1="440" y1="148" x2="476" y2="148" marker-end="url(#pBad)"/>
+<line class="lnOk" x1="230" y1="216" x2="230" y2="236" marker-end="url(#pOk)"/>
+<text x="238" y="230" font-size="11" class="okT">hợp lệ</text>
+<rect class="boxOk" x="20" y="240" width="420" height="62" rx="8"/>
+<circle class="boxAcc" cx="44" cy="264" r="13"/><text x="44" y="269" font-size="13" text-anchor="middle" font-weight="700" class="accT">2</text>
+<text x="66" y="269" font-size="13" font-weight="600" class="okT">HttpContext.User = ClaimsPrincipal</text>
+<text x="66" y="291" font-size="11.5" class="mono">sub=42 · role=Finance · aud · exp</text>
+<line class="lnBad dash" x1="590" y1="216" x2="590" y2="322" marker-end="url(#pBad)"/>
+<text x="598" y="272" font-size="11" class="muted">User ẩn danh</text>
+<line class="ln" x1="230" y1="302" x2="230" y2="322" marker-end="url(#pInk)"/>
+<rect class="boxAcc" x="20" y="326" width="680" height="64" rx="8"/>
+<circle class="boxAcc" cx="44" cy="350" r="13"/><text x="44" y="355" font-size="13" text-anchor="middle" font-weight="700" class="accT">3</text>
+<text x="66" y="355" font-size="13" font-weight="600">UseAuthorization: endpoint có <tspan class="mono">[Authorize(Policy = "CanApprovePayout")]</tspan></text>
+<text x="66" y="378" font-size="11.5" class="mono">policy "CanApprovePayout" = RequireRole("Finance"), hoặc RequireClaim(…)</text>
+<line class="lnBad" x1="128" y1="390" x2="128" y2="414" marker-end="url(#pBad)"/>
+<line class="lnBad" x1="360" y1="390" x2="360" y2="414" marker-end="url(#pBad)"/>
+<line class="lnOk" x1="592" y1="390" x2="592" y2="414" marker-end="url(#pOk)"/>
+<rect class="boxBad" x="20" y="418" width="216" height="64" rx="8"/>
+<text x="34" y="439" font-size="12.5" font-weight="600" class="badT">chưa xác thực</text>
+<text x="34" y="457" font-size="12">Challenge → <tspan font-weight="700">401</tspan></text>
+<text x="34" y="474" font-size="10.5" class="mono">WWW-Authenticate: Bearer</text>
+<rect class="boxBad" x="252" y="418" width="216" height="64" rx="8"/>
+<text x="266" y="439" font-size="12.5" font-weight="600" class="badT">xác thực rồi, thiếu role</text>
+<text x="266" y="457" font-size="12">Forbid → <tspan font-weight="700">403</tspan></text>
+<text x="266" y="474" font-size="11" class="muted">gửi lại cùng token vẫn 403</text>
+<rect class="boxOk" x="484" y="418" width="216" height="64" rx="8"/>
+<text x="498" y="439" font-size="12.5" font-weight="600" class="okT">thoả policy</text>
+<text x="498" y="457" font-size="12">action <tspan class="mono">Approve</tspan> chạy</text>
+<text x="498" y="474" font-size="11" class="muted">đọc người gọi qua <tspan class="mono">User</tspan></text>
+</svg>
+<p class="fig-caption">401 không sinh ra ở bước 1 mà ở bước 3: JwtBearer chỉ dựng (hoặc không dựng được) danh tính; chỉ khi endpoint đòi danh tính thì authorization mới gọi lại JwtBearer để "challenge" và trả 401.</p>
+</div>
+
+### Bước 1: JwtBearer kiểm token {#jwt-validation}
+
+**JwtBearer chỉ tin những gì nó tự kiểm được bằng toán và đồng hồ.** Token là `header.payload.signature`, được **ký** chứ không **mã hoá**: payload chỉ là Base64Url, ai cầm cũng đọc được, nên không đặt bí mật vào claim; sửa một byte thì chữ ký không còn khớp ([mục 1](#what-jwt-blocks)). Vì vậy handler kiểm theo thứ tự:
+
+- **Chữ ký**: tính lại bằng public key lấy từ <T>JWKS</T> theo <T>kid</T> ([cách 2](#identity-provider)), hoặc bằng secret chung nếu tự phát hành HS256.
+- **`iss`** (ai cấp) và **`aud`** (token dành cho API nào): token Entra ID cấp cho một API khác cũng có chữ ký đúng, chỉ `aud` mới chặn được nó.
+- **`exp`** (và `nbf` nếu có): so với giờ server, cho lệch thêm <T k="clock skew">ClockSkew</T>, **mặc định 5 phút**. Nên token "hết hạn" lúc 10:00 vẫn được nhận tới 10:05; ai test "hết hạn sau 1 phút" sẽ thấy token sống 6 phút.
+
+Bốn kiểm tra này **bật mặc định** trong `TokenValidationParameters` (`ValidateIssuer`, `ValidateAudience`, `ValidateLifetime` đều là `true`). Tắt `ValidateAudience` cho "chạy được" là lỗi bảo mật hay gặp.
+
+Thiếu header hoặc sai một bước thì handler **không trả 401 ngay**: nó ghi log lý do (category `Microsoft.AspNetCore.Authentication`, mức Information) và để `User` ẩn danh. Lý do: middleware này chạy cho **mọi** request, kể cả endpoint không cần đăng nhập như `/health`; quyết định có chặn hay không thuộc về bước 3.
+
+### Bước 2: claim thành `HttpContext.User` {#claims-principal}
+
+**Token hợp lệ thì mỗi claim trong payload thành một `Claim` trong một <T>ClaimsPrincipal</T>, gán vào `HttpContext.User`.** Từ đây code chỉ đọc `User`, không đọc token nữa: `User.IsInRole("Finance")`, `User.FindFirstValue(...)`, và policy ở bước 3.
+
+::: warning Bẫy: role có trong token mà vẫn 403
+Mặc định `MapInboundClaims = true`: JwtBearer **đổi tên** claim ngắn sang tên dài kiểu .NET Framework, vd `role`/`roles` thành `ClaimTypes.Role` (`http://schemas.microsoft.com/ws/2008/06/identity/claims/role`), `sub` thành `ClaimTypes.NameIdentifier`. Vì `RequireRole` đọc claim có type bằng `RoleClaimType` (mặc định chính là `ClaimTypes.Role`), nên ở cấu hình mặc định role vẫn khớp, nhưng `User.FindFirst("sub")` lại ra `null`.
+
+Nhiều team tắt `MapInboundClaims = false` để giữ tên gốc. Khi đó claim role mang type `role` (hoặc `roles` với Entra ID), không khớp `RoleClaimType` mặc định, và `RequireRole("Finance")` trả **403 dù token có role**. Sửa bằng `TokenValidationParameters.RoleClaimType = "roles"` (đúng tên claim IdP của bạn dùng).
+:::
+
+### Bước 3: policy quyết 401 hay 403 {#policy-check}
+
+**`UseAuthorization` đọc metadata `[Authorize]` của endpoint đã được routing chọn, rồi đánh giá policy trên `User`.** Policy là một luật có tên: `RequireRole("Finance")`, hoặc `RequireClaim("department", "finance")`, hoặc requirement tự viết. Kết quả rẽ ba nhánh:
+
+- `User` **chưa xác thực** (bước 1 thất bại hoặc không có token): gọi *challenge* trên scheme JwtBearer, trả **401** kèm `WWW-Authenticate: Bearer` (token sai thì thêm `error="invalid_token"` và mô tả, vd token đã hết hạn).
+- Đã xác thực nhưng policy **không thoả**: gọi *forbid*, trả **403**.
+- Thoả: action chạy.
+
+Vì bước 3 đọc `User` do bước 1 dựng, `UseAuthentication` phải đứng **trước** `UseAuthorization`. Đảo ngược thì lúc authorization chạy `User` còn rỗng, mọi endpoint có `[Authorize]` đều 401. Xem [Middleware: thứ tự](/aspnet-core/middleware#middleware).
+
+### Code {#per-request-code}
+
+PayoutHub hiện chưa cài authentication: cần package `Microsoft.AspNetCore.Authentication.JwtBearer` (M3). Cấu hình `Auth:Authority` là địa chỉ IdP, vd `https://login.microsoftonline.com/<tenant-id>/v2.0`.
+
+::: code-group
+
+```csharp [Program.cs]
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.Authority = builder.Configuration["Auth:Authority"];   // iss và public key (JWKS) lấy từ đây
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidAudience = "api://payouthub",                    // aud phải là API này
+            ClockSkew = TimeSpan.FromMinutes(1),                  // mặc định 5 phút
+            // ValidateIssuer / ValidateAudience / ValidateLifetime mặc định true: đừng tắt
+        };
+    });
+
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("CanApprovePayout", p => p.RequireRole("Finance"));
+    // theo claim: o.AddPolicy("FinanceDept", p => p.RequireClaim("department", "finance"));
+});
+
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+app.UseAuthentication();   // header Authorization → HttpContext.User
+app.UseAuthorization();    // User + policy → cho qua, 401 hoặc 403
+app.MapControllers();
+
+app.Run();
+```
+
+```csharp [PayoutsController.cs]
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using PayoutHub.Core;
+
+namespace PayoutHub.Api.Controllers;
+
+[ApiController]
+[Route("payouts")]
+[Authorize(Policy = "CanApprovePayout")]                  // mọi action: phải có role Finance
+public class PayoutsController(IPayoutService payouts) : ControllerBase
+{
+    [HttpPost("{id:int}/approve")]
+    public async Task<IActionResult> Approve(int id, CancellationToken ct)
+    {
+        // Tới được đây: token hợp lệ VÀ có role Finance
+        var approverId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;   // "sub", đã bị map tên
+        await payouts.ApproveAsync(id, approverId, ct);
+        return NoContent();
+    }
+}
+```
+
+:::
+
+### Stateless: nhanh, nhưng không thu hồi được {#stateless}
+
+**Vì bước 1 chỉ cần key đã cache và đồng hồ, mỗi instance API tự kiểm token mà không gọi ai.** Thêm instance không cần chia sẻ session, và IdP chết vài phút thì token đã cấp vẫn dùng được. Cũng vì không tra cứu gì, token của user vừa bị khoá **vẫn hợp lệ tới `exp`**. Cách xử lý chuẩn là access token sống ngắn cộng refresh token thu hồi được ([mục 5](#expiry)). Cần khoá ngay lập tức thì phải thêm một lần tra cứu mỗi request (denylist theo `jti`, hoặc kiểm trạng thái user trong DB), tức là đổi lại một phần tính stateless.
+
+## 4. Access token, refresh token, ID token {#token-types}
 
 **Token** là tên chung. **JWT** là một **định dạng** (cách viết token). **Access token**, **refresh token**, **ID token** là ba **công dụng**:
 
@@ -118,7 +279,7 @@ Muốn giả chữ ký thì cần d. Muốn có d thì phải có φ = 20, tức
 
 Nên "JWT có phải token không?": có, JWT là một loại token. Access token **thường** là JWT, nhưng hai từ không đồng nghĩa.
 
-## 4. Token hết hạn thì xử lý thế nào {#expiry}
+## 5. Token hết hạn thì xử lý thế nào {#expiry}
 
 User **không** phải đăng nhập lại mỗi 15 phút. Access token hết hạn thì client tự đổi ngầm, user không thấy gì. User chỉ phải đăng nhập lại khi **refresh token** hết hạn hoặc bị thu hồi.
 
@@ -149,7 +310,7 @@ Vì sao phải tách hai loại? Access token **không thu hồi được**: API
 
 Thư viện như MSAL còn **làm mới trước** khi access token hết hạn (đọc `exp` ngay trong token), nên phần lớn thời gian user không gặp cả bước 401.
 
-## 5. Token bị trộm thì sao {#stolen-token}
+## 6. Token bị trộm thì sao {#stolen-token}
 
 Chữ ký không cứu được trường hợp này, vì token bị trộm là token thật. Phải giữ token và giới hạn thiệt hại: đi qua <T>TLS</T> để không bị nghe lén; `exp` ngắn để trộm được cũng chỉ dùng được một lúc; không lưu token ở chỗ script lạ đọc được (<T>XSS</T>), `localStorage` nguy hiểm hơn cookie `HttpOnly`; nâng cao thì gắn token với key riêng của client (DPoP, mTLS) để trộm token thôi chưa đủ.
 
@@ -250,6 +411,36 @@ Hàng rào này **thủng** khi: có <T>XSS</T> trên chính payouthub.com (scri
 :::
 
 ## Câu hỏi phỏng vấn {#interview}
+
+### Đi từ lúc login tới lúc `[Authorize]` cho qua: chuyện gì xảy ra? <Badge type="warning" text="hay bị hỏi" /> {#login-to-authorize}
+
+::: tip Trả lời nhanh
+Login chỉ để lấy token. Mỗi request sau: client gửi `Authorization: Bearer <token>`; `UseAuthentication` chạy JwtBearer kiểm chữ ký, `iss`, `aud`, `exp` (dung sai ClockSkew mặc định 5 phút) rồi dựng `ClaimsPrincipal` trên `HttpContext.User`; `UseAuthorization` đánh giá policy của endpoint, vd `RequireRole("Finance")`. Thiếu hoặc sai token → 401 (challenge), token đúng nhưng thiếu role → 403 (forbid). Xem [mỗi request](#per-request), [bước 3](#policy-check).
+:::
+
+::: details Câu trả lời mẫu (English)
+Login is only how the client gets the token. On every request after that, the client sends the JWT as a Bearer token in the `Authorization` header. `UseAuthentication` runs the JwtBearer handler, which validates the signature with the identity provider's public key, then the issuer, the audience and the expiry, with a default clock skew of five minutes. If that succeeds it builds a `ClaimsPrincipal` from the token's claims and puts it on `HttpContext.User`. Then `UseAuthorization` evaluates the endpoint's policy, for example a `Finance` policy that requires the Finance role. A missing or invalid token gives 401, through a challenge; a valid token without the role gives 403, through a forbid. Authentication has to come before authorization in the pipeline. The validation is stateless, so it scales, but a token can't be revoked before it expires, which is why access tokens are short-lived and paired with refresh tokens.
+:::
+
+::: warning Bẫy & follow-up
+**Dừng ở chỗ "server phát token" là thiếu nửa câu trả lời.** Câu hỏi muốn nghe phần mỗi request: ai kiểm token, kiểm những gì, `User` được dựng ở đâu, và ai quyết 401 hay 403.
+
+**"Token sai thì JwtBearer trả 401 luôn à?"**
+
+Không. Nó để `User` ẩn danh; endpoint không có `[Authorize]` vẫn chạy. 401 chỉ xuất hiện khi authorization cần danh tính mà không có. Xem [bước 1](#jwt-validation).
+
+**"Token có role Finance mà vẫn 403?"**
+
+Thường là claim type: tắt `MapInboundClaims` thì claim tên `role`/`roles` không khớp `RoleClaimType` mặc định. Xem [bước 2](#claims-principal).
+
+**"Đặt hạn 1 phút mà token sống tới 6 phút?"**
+
+ClockSkew mặc định 5 phút. Giảm nó trong `TokenValidationParameters`.
+
+**"User bị khoá thì token bị chặn ngay không?"**
+
+Không, vì kiểm token là stateless: còn hiệu lực tới `exp`. Xem [stateless](#stateless).
+:::
 
 ### JWT bị trộm thì sao? {#stolen-token-question}
 

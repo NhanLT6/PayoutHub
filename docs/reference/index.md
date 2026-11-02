@@ -125,6 +125,20 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [SQL injection xảy ra thế nào và chặn ra sao?](/aspnet-core/api-security#sql-injection)
 - [Thiết kế một API an toàn: checklist của bạn?](/aspnet-core/api-security#secure-api-checklist)
 
+### [Đăng nhập và JWT](/aspnet-core/authentication-jwt#interview)
+
+- [Đi từ lúc login tới lúc `[Authorize]` cho qua: chuyện gì xảy ra?](/aspnet-core/authentication-jwt#login-to-authorize)
+- [JWT bị trộm thì sao?](/aspnet-core/authentication-jwt#stolen-token-question)
+- [Access token và refresh token khác nhau thế nào? Hết hạn thì sao?](/aspnet-core/authentication-jwt#access-vs-refresh)
+- [Vì sao dùng RS256 thay vì HS256 khi có nhiều service?](/aspnet-core/authentication-jwt#rs256-vs-hs256)
+- [CSRF là gì? Chặn thế nào?](/aspnet-core/authentication-jwt#csrf-question)
+- [SPA nên lưu token ở đâu?](/aspnet-core/authentication-jwt#token-storage-question)
+
+### [REST API: status code và idempotency](/aspnet-core/rest-api#interview)
+
+- [Thiết kế REST API: status code và các quy ước](/aspnet-core/rest-api#rest-design)
+- [POST tạo payout bị timeout, client retry. Làm sao không tạo trùng?](/aspnet-core/rest-api#idempotent-post-retry)
+
 ### Chưa có câu phỏng vấn riêng
 
 - [Result pattern](/aspnet-core/result-pattern)
@@ -133,7 +147,6 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 
 - [App ASP.NET Core khởi động thế nào?](/aspnet-core/questions#startup)
 - [Controller hay Minimal API? Dùng cho app lớn được không?](/aspnet-core/questions#controllers-vs-minimal)
-- [Thiết kế REST API: status code và các quy ước](/aspnet-core/questions#rest-design)
 - [Gọi API bên ngoài: IHttpClientFactory và resilience](/aspnet-core/questions#httpclientfactory)
 - [Caching trong ASP.NET Core](/aspnet-core/questions#caching)
 - ["API chậm dần khi traffic tăng, bạn xử lý thế nào?"](/aspnet-core/questions#slow-api)

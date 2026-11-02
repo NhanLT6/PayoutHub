@@ -305,6 +305,19 @@ const terms: Record<string, TermDef> = {
     group: security,
     def: 'Một mẩu thông tin về user nằm trong payload của [[JWT]]: `sub` (user id), `role`, `exp` (hết hạn lúc nào), `aud` (token dành cho API nào), `iss` (ai cấp).',
   },
+  claimsprincipal: {
+    title: 'ClaimsPrincipal',
+    group: security,
+    def: 'Object .NET đại diện cho người gọi request, nằm ở `HttpContext.User`. Chứa một hoặc nhiều `ClaimsIdentity`, mỗi cái là một danh sách [[claim]]. JwtBearer dựng nó từ payload của [[JWT]]; `User.IsInRole` và [[policy]] đọc từ đây.',
+    link: '/aspnet-core/authentication-jwt#per-request',
+  },
+  'clock skew': {
+    title: 'ClockSkew',
+    full: 'độ lệch đồng hồ cho phép',
+    group: security,
+    def: 'Khoảng dung sai khi so `exp` và `nbf` của token với giờ server, vì đồng hồ IdP và API không khớp tuyệt đối. Mặc định trong `TokenValidationParameters` là **5 phút**: token "hết hạn" lúc 10:00 vẫn được nhận tới 10:05.',
+    link: '/aspnet-core/authentication-jwt#per-request',
+  },
   idp: {
     title: 'IdP',
     full: 'Identity Provider',

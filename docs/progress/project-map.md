@@ -145,7 +145,7 @@ stateDiagram-v2
 | [record, value object](/dotnet/oop-fundamentals#struct-class-record) | `Core/Domain/Money.cs` | M2 |
 | [Middleware lifetime](/aspnet-core/middleware#middleware-lifetime), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency) | `Api/AuditMiddleware.cs` | M2 |
 | [IEnumerable vs IQueryable](/dotnet/collections-linq#ienumerable-vs-iqueryable), N+1 | `GET /affiliates/{id}/conversions` | M2 |
-| Optimistic concurrency, [REST status](/aspnet-core/questions#rest-design) | `POST /payouts/{id}/approve` | M3 |
+| Optimistic concurrency, [REST status](/aspnet-core/rest-api#rest-design) | `POST /payouts/{id}/approve` | M3 |
 | [SOLID](/dotnet/oop-fundamentals#solid) (OCP), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations) | `Core/IPayoutMethod` + Bank/PayPal/Wise | M3 |
 | [Async](/runtime/async), scope trong singleton | `Api/PayoutWorker.cs` | M4 |
 | [IHttpClientFactory](/aspnet-core/questions#httpclientfactory), idempotency | `Infrastructure/FakeBankClient.cs` | M4 |

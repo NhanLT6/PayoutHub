@@ -21,7 +21,7 @@ const terms: Record<string, TermDef> = {
     full: 'Representational State Transfer',
     group: 'Web & API',
     def: 'Kiểu thiết kế API xoay quanh **resource** (`/payouts/42`), dùng HTTP method cho hành động và status code cho kết quả.',
-    link: '/aspnet-core/questions#rest-design',
+    link: '/aspnet-core/rest-api',
   },
 
   trace: {

@@ -165,15 +165,25 @@ const groups: Group[] = [
         q: [
           { text: 'JWT bị trộm', link: '/aspnet-core/authentication-jwt#stolen-token-question' },
           { text: 'Access vs refresh', link: '/aspnet-core/authentication-jwt#access-vs-refresh' },
+          { text: 'Login tới [Authorize]', link: '/aspnet-core/authentication-jwt#login-to-authorize' },
+        ],
+      },
+      {
+        text: 'REST API',
+        desc: 'Status code suy ra từ một luật (400, 401, 403, 404, 409, 201, 202), idempotency, Idempotency-Key và UNIQUE constraint.',
+        link: '/aspnet-core/rest-api',
+        q: [
+          { text: 'Status code', link: '/aspnet-core/rest-api#rest-design' },
+          { text: 'POST retry', link: '/aspnet-core/rest-api#idempotent-post-retry' },
         ],
       },
       {
         text: 'Câu hỏi khác',
-        desc: 'Startup, Controller hay Minimal API, REST, HttpClientFactory, caching.',
+        desc: 'Startup, Controller hay Minimal API, background job, HttpClientFactory, caching.',
         link: '/aspnet-core/questions',
         q: [
           { text: 'Controller vs Minimal', link: '/aspnet-core/questions#controllers-vs-minimal' },
-          { text: 'REST', link: '/aspnet-core/questions#rest-design' },
+          { text: 'Background job', link: '/aspnet-core/questions#background-service' },
           { text: 'HttpClientFactory', link: '/aspnet-core/questions#httpclientfactory' },
         ],
       },
