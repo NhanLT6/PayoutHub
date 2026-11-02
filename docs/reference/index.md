@@ -20,6 +20,8 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Kestrel là gì? Có còn cần IIS không?](/dotnet/framework-vs-core#kestrel)
 - [Tại sao không còn HttpContext.Current?](/dotnet/framework-vs-core#httpcontext-current)
 - [Config hoạt động thế nào? Thay Web.config bằng gì?](/dotnet/framework-vs-core#configuration)
+- [Migrate một app .NET Framework lên .NET 8 thế nào?](/dotnet/framework-vs-core#migration-strategy)
+- [Walk me through your migration: verify data, cutover DB đang chạy](/dotnet/framework-vs-core#migration-walkthrough)
 
 ### [OOP & C# cơ bản](/dotnet/oop-fundamentals)
 

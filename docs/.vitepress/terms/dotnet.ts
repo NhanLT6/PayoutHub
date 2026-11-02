@@ -206,6 +206,52 @@ const terms: Record<string, TermDef> = {
     def: 'Bản Entity Framework cũ chạy trên .NET Framework (có EDMX designer, lazy loading mặc định). Khi lên .NET hiện đại thì chuyển sang [[EF Core]], và hành vi khác ở nhiều chỗ.',
     link: '/dotnet/framework-vs-core#migration-strategy',
   },
+  cdc: {
+    title: 'CDC',
+    full: 'Change Data Capture',
+    group: data,
+    def: 'Đọc transaction log của DB để lấy từng insert/update/delete đã commit, theo đúng thứ tự, rồi chép sang nơi khác. Dùng để giữ DB mới bắt kịp DB cũ khi cutover mà không cần dừng app lâu. SQL Server phải bật ở cả DB và từng bảng.',
+    link: '/dotnet/framework-vs-core#cutover',
+  },
+  lsn: {
+    title: 'LSN',
+    full: 'Log Sequence Number',
+    group: data,
+    def: 'Số thứ tự của một bản ghi trong transaction log của SQL Server. [[CDC]] nhớ LSN lúc bulk load bắt đầu để biết phải chép tiếp các thay đổi từ đâu.',
+    link: '/dotnet/framework-vs-core#cutover',
+  },
+  'aws dms': {
+    title: 'AWS DMS',
+    full: 'AWS Database Migration Service',
+    group: data,
+    def: 'Dịch vụ của AWS chuyển data giữa các DB (vd SQL Server → PostgreSQL): một task làm cả full load lẫn [[CDC]] để bắt kịp thay đổi tới lúc switch.',
+    link: '/dotnet/framework-vs-core#cutover',
+  },
+  debezium: {
+    title: 'Debezium',
+    group: data,
+    def: 'Công cụ [[CDC]] mã nguồn mở: đọc log thay đổi của DB (với SQL Server là bảng CDC) và đẩy từng thay đổi thành event vào Kafka; một sink connector ghi chúng sang DB đích.',
+    link: '/dotnet/framework-vs-core#cutover',
+  },
+  pgloader: {
+    title: 'pgloader',
+    group: data,
+    def: 'Công cụ dòng lệnh chuyển data từ DB khác (SQL Server, MySQL, SQLite) hoặc file sang PostgreSQL, tự đổi kiểu dữ liệu. Có thể chỉ chuyển data khi schema đã được tạo sẵn.',
+    link: '/dotnet/framework-vs-core#data-verify',
+  },
+  citext: {
+    title: 'citext',
+    full: 'case-insensitive text',
+    group: data,
+    def: 'Kiểu chuỗi của PostgreSQL (extension) so sánh không phân biệt hoa thường, giống collation mặc định của SQL Server. Cách đổi ít code nhất cho cột kiểu email.',
+    link: '/dotnet/framework-vs-core#postgres-gotchas',
+  },
+  'dual write': {
+    title: 'Dual write',
+    group: data,
+    def: 'App tự ghi cùng một thay đổi vào hai nơi (hai DB, hoặc DB + message bus). Không có transaction chung nên một bên lỗi là hai bên lệch nhau. Thay bằng [[CDC]] hoặc outbox.',
+    link: '/dotnet/framework-vs-core#cutover',
+  },
   // --- Thiết kế & nguyên tắc ---
   lsp: {
     title: 'LSP',
