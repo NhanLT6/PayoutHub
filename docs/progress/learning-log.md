@@ -114,3 +114,17 @@ Mẫu:
 - **Câu phỏng vấn đáng nhớ:** "Finance đổi MinAmount khi generate đang chạy"; "DB sập thì mọi pod cùng not-ready, khác gì app sập?".
 - **Quiz / mock:** `/mock M1`: Q1 validation 7, Q2 Options 8, Q3 luồng exception 6, Q4 DB trong liveness 8, Q5 DbContext trong middleware 3, Q6 tìm log 500 5.
 - **Tiếp theo:** bắt đầu M2 (entity, `Money`, `DbContext` + migration). Đầu phiên: hỏi nhanh "convention middleware cần `PayoutDbContext` thì inject ở đâu, vì sao?".
+
+## 2026-11-02 · Ôn phỏng vấn, buổi 2 (Migration, EF Core/SQL, REST)
+- **Đã làm:** quiz 10 câu, Nhan trả lời bằng tiếng Anh. Viết vào docs: phần migration trong [Framework vs .NET](/dotnet/framework-vs-core#migration-strategy) (strangler, YARP + System.Web adapters, schema qua EF, bẫy Postgres, kiểm tra data, cutover); nhóm mới **Data**: [EF Core](/data/ef-core), [SQL chậm](/data/sql-performance); trang [REST API](/aspnet-core/rest-api) và luồng mỗi request trong [JWT](/aspnet-core/authentication-jwt).
+- **Chỗ yếu:**
+  - Kể chuyện migration DB khi được hỏi Framework → Core mà không nói rõ ranh giới; kiểm tra data chỉ bằng count + lấy mẫu ngẫu nhiên; chưa biết cutover khi DB đang chạy.
+  - Nghĩ eager loading gây N+1 (ngược: lazy loading / query trong vòng lặp gây ra, `Include`/`Select` là cách sửa).
+  - `AsNoTracking` rồi sửa thì `SaveChanges` không lưu gì; `Update()` ghi đè mọi cột.
+  - Concurrency: version phải đi theo client (ETag / If-Match), trả 409/412, không phải 500.
+  - Index: đề xuất `ORDER BY Id` thay vì composite index `(Status, CreatedAt)`.
+  - Idempotency: chưa biết Idempotency-Key + UNIQUE constraint; POST/PATCH không idempotent.
+  - Status code: 401 và 403, 201 + Location, 202 Accepted.
+  - JWT: dừng ở lúc phát token, thiếu luồng Bearer → validate → ClaimsPrincipal → policy.
+- **Quiz:** Q1 câu chuyện migration 6, Q2 chuyển + kiểm tra data 5, Q3 strangler 4, Q4 N+1 3, Q5 tracking 6, Q6 concurrency 6, Q7 index 4, Q8 idempotency 3, Q9 status code 4, Q10 JWT 4.
+- **Tiếp theo:** đọc lại các trang trên, rồi buổi 3 (microservices, Service Bus, resilience). Đầu buổi: hỏi lại Q4 N+1 và Q8 idempotency.
