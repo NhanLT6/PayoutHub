@@ -89,7 +89,7 @@ Hướng an toàn: bắt đầu bằng modular monolith, tách một module ra k
 
 ## 2. Chia ranh giới theo năng lực nghiệp vụ {#service-boundaries}
 
-Vì mục tiêu là một team sửa và deploy một service mà không cần ai khác, nên ranh giới phải bao trọn những thứ **hay thay đổi cùng nhau**. Một tính năng nghiệp vụ thường cắt dọc qua UI, logic và DB, nên chia theo tầng kỹ thuật thì tính năng nào cũng chạm mọi service.
+Ranh giới đúng là ranh giới mà **một thay đổi nghiệp vụ chỉ phải sửa một service**. Vì mục tiêu là một team sửa và deploy mà không chờ ai, nên mọi cách kiểm bên dưới đều quy về câu này.
 
 <div class="fig">
 <svg viewBox="0 0 720 220" role="img" aria-label="Chia theo tầng: tính năng giao hàng nhanh chạm cả ba service. Chia theo nghiệp vụ: chỉ chạm Shipping">
@@ -107,11 +107,11 @@ Vì mục tiêu là một team sửa và deploy một service mà không cần a
 <p class="fig-caption">Cùng một tính năng. Chia theo tầng thì nó cắt ngang mọi service; chia theo nghiệp vụ thì nó nằm gọn trong một service.</p>
 </div>
 
-Nhìn hình theo hướng của nhát cắt: các tầng xếp chồng từ trên xuống (UI, logic, DB), nên chia theo tầng là **cắt ngang**, mỗi lát là một tầng của mọi tính năng (thư mục Controllers, Services, Repositories trong monolith là kiểu này). Chia theo nghiệp vụ là **cắt dọc** (vertical slice), mỗi lát là một cột chứa trọn đường đi của request từ UI xuống DB, nhưng chỉ của một nghiệp vụ. Cách thử: hỏi "một lát chứa gì?". Một tầng cho mọi tính năng là ngang; mọi tầng cho một tính năng là dọc. Người quen monolith ít khi chia theo tầng, nhưng rất hay mắc bẫy kế tiếp: chia theo bảng.
+Chia theo tầng là **cắt ngang**: mỗi lát là một tầng (Controllers, Services, Repositories) của mọi tính năng, nên tính năng nào cũng chạm mọi lát. Chia theo nghiệp vụ là **cắt dọc**: mỗi lát chứa đủ API, logic, DB của một nghiệp vụ.
 
 ### Bẫy của người quen monolith: chia theo bảng {#split-by-table}
 
-Vì monolith dùng chung một DB, nên ta quen nghĩ "mỗi bảng là một thứ", rồi tách mỗi bảng chính thành một service: Product service, Customer service, Order service. Nhưng một bảng trong monolith thường chứa dữ liệu của **nhiều nghiệp vụ dồn lại**, mỗi nhóm cột do một nhóm người khác nhau thay đổi:
+Monolith dùng chung một DB nên ta quen tách mỗi bảng chính thành một service: Product service, Customer service. Nhưng một bảng thường gom dữ liệu của nhiều nghiệp vụ, mỗi nhóm cột đổi vì một lý do khác:
 
 ```mermaid
 flowchart LR
@@ -129,24 +129,32 @@ flowchart LR
   class S1,S2,S3,S4 svc
 ```
 
-Tách nguyên bảng thành "Product service" thì đổi giá, nhập kho, sửa mô tả đều phải qua cùng một service: nó thành chỗ ai cũng phải chờ, đúng cái đau của monolith. Chia theo nghiệp vụ thì **một bảng bị xé ra**: mỗi service giữ phần cột nó cần, cùng một `ProductId`.
+"Product service" sẽ phải sửa mỗi khi đổi giá, nhập kho hay sửa mô tả: lại thành chỗ ai cũng phải chờ. Chia đúng thì **bảng bị xé ra**, mỗi service giữ phần cột của mình, nối bằng cùng `ProductId`.
 
-### Cách vẽ ranh giới trên một monolith thật {#boundaries-howto}
+### Cách tìm ranh giới: liệt kê thay đổi, không liệt kê bảng {#boundaries-howto}
 
-Ba bước, đều suy ra từ "thay đổi cùng nhau thì ở cùng nhau":
+**Bước 1. Viết ra các yêu cầu thay đổi** đã gặp hoặc sắp gặp, và mỗi yêu cầu chạm vào việc gì:
 
-1. **Liệt kê việc, không liệt kê bảng.** Viết ra các động từ nghiệp vụ: duyệt sản phẩm, đổi giá, đặt hàng, thu tiền, giữ hàng, giao hàng, gửi email.
-2. **Gom việc hay thay đổi cùng nhau, dùng cùng bộ từ vựng.** Phí giao hàng, hãng vận chuyển, vận đơn luôn đổi cùng lúc nên về Shipping. Chữ "đơn hàng" ở Shipping là kiện hàng có địa chỉ và cân nặng, ở Payment là số tiền cần thu: cùng chữ mà hai nghĩa là có hai ranh giới, DDD gọi mỗi vùng nghĩa là một [bounded context](/architecture/ddd#bounded-context).
-3. **Kiểm bằng một use case.** Đi thử "khách đặt hàng" qua các nhóm vừa gom. Nếu một nhóm phải hỏi qua lại nhóm khác nhiều lần (chatty), hoặc hai nhóm luôn phải deploy cùng nhau, thì có thể thứ thay đổi cùng nhau đang bị cắt đôi. Mỗi nhóm cũng phải có **một team** sở hữu được.
+| Yêu cầu thay đổi | Chạm vào | Nhóm |
+|---|---|---|
+| Thêm một hãng vận chuyển | phí ship, vận đơn, theo dõi kiện hàng | Shipping |
+| Tính phí ship theo cân nặng | phí ship, cân nặng sản phẩm | Shipping |
+| Thêm một cổng thanh toán | thu tiền, hoàn tiền | Payment |
+| Đổi chính sách hoàn tiền | hoàn tiền, trạng thái thanh toán | Payment |
+| Chạy khuyến mãi theo mùa | giá, mã giảm giá | Pricing |
+| Đổi mẫu email xác nhận | nội dung email | Notification |
 
-**Gộp hay chỉ cần sửa cách nói chuyện?** Gộp theo kiểu "A liên quan B" thì sẽ gộp dây chuyền: A cần B, B cần C, cuối cùng mọi thứ về một khối, vì trong một app mọi thứ đều liên quan nhau qua đơn hàng hay khách hàng. Nên trước khi gộp, phân biệt hai loại phụ thuộc:
+**Bước 2. Gom những việc hay bị chạm cùng nhau** thành nhóm (cột cuối): "phí ship" bị hai yêu cầu cùng chạm nên phí ship, vận đơn, cân nặng về chung Shipping. Kiểm bằng từ vựng: trong một nhóm, mỗi chữ chỉ có một nghĩa. Chữ "đơn" ở Shipping là kiện hàng có địa chỉ, ở Payment là khoản cần thu, nên đó là hai nhóm ([bounded context](/architecture/ddd#bounded-context)).
 
-- **Chỉ cần dữ liệu của bên kia**: Shipping cần địa chỉ của đơn. Đây không phải lý do gộp. Sửa cách lấy dữ liệu: nhận nó trong event, giữ bản sao tại chỗ, hoặc chỉ giữ `OrderId` (xem [Cần dữ liệu của service khác](#cross-service-data)). Hai bên vẫn deploy riêng, miễn hợp đồng giữa chúng ổn định: chỉ thêm field, không đổi nghĩa field cũ.
-- **Cùng một lý do thay đổi**: mỗi lần đổi luật giảm giá đều phải sửa cả Pricing lẫn Promotion, deploy cùng lúc. Đây mới là dấu hiệu nên gộp.
+**Bước 3. Đi thử một use case** ("khách đặt hàng") qua các nhóm. Mỗi chỗ nhóm này cần nhóm kia, xếp vào một trong ba loại:
 
-Chiều ngược lại cũng xảy ra: một service ôm quá nhiều, nhiều team cùng sửa, release phải xếp hàng. Chữa bằng đúng bài kiểm tra này áp vào bên trong nó: tìm các nhóm việc thay đổi vì những lý do khác nhau và tách ra.
+- **Chỉ cần dữ liệu** (Shipping cần địa chỉ giao): không gộp. Nhận dữ liệu qua event hoặc giữ bản sao, xem [Cần dữ liệu của service khác](#cross-service-data). Đừng gộp vì "có liên quan": mọi thứ đều liên quan qua đơn hàng, gộp kiểu đó sẽ dây chuyền tới khi thành monolith.
+- **Một luật phải đúng ngay lập tức** (không bán quá tồn kho): dữ liệu của luật đó phải nằm trong cùng một service, vì giữa hai service không có transaction chung.
+- **Cùng lý do thay đổi** (mỗi lần đổi khuyến mãi đều phải sửa cả Pricing và Promotion): gộp.
 
-Ranh giới hiếm khi đúng ngay lần đầu, nên vẽ nó trong [modular monolith](#evolution) trước: sai thì dời code giữa hai module, rẻ hơn nhiều so với dời giữa hai service đã có DB riêng.
+**Bước 4. Kiểm cỡ**: mỗi nhóm một team sở hữu được. Nhiều team cùng sửa một service, release phải xếp hàng, thì nó quá to: làm lại bước 1 bên trong nó.
+
+Trong thực tế bước 1–2 thường là một buổi workshop với người nghiệp vụ (event storming: dán các sự kiện nghiệp vụ lên tường rồi gom nhóm). Ranh giới hiếm khi đúng lần đầu, nên vẽ trong [modular monolith](#evolution) trước: sai thì dời code giữa hai module, rẻ hơn nhiều so với dời giữa hai service đã có DB riêng.
 
 ## 3. Mỗi service một database {#database-per-service}
 
@@ -363,7 +371,7 @@ Chỉ khi chúng không gọi nhau theo chuỗi sync. Xem [Hãng sập 10 phút]
 ### Chia ranh giới service thế nào? {#define-boundaries}
 
 ::: tip Trả lời nhanh
-Theo năng lực nghiệp vụ, không theo tầng kỹ thuật: những gì thay đổi cùng nhau, dùng cùng bộ từ vựng, một team sở hữu thì ở cùng một service. Xem [mục 2](#service-boundaries) và [Bounded context](/architecture/ddd#bounded-context).
+Ranh giới đúng khi một thay đổi nghiệp vụ chỉ sửa một service. Liệt kê các yêu cầu thay đổi, gom những việc hay bị chạm cùng nhau, kiểm bằng từ vựng và một use case; chỉ cần dữ liệu của nhau thì không gộp. Xem [Cách tìm ranh giới](#boundaries-howto).
 :::
 
 ::: details Câu trả lời mẫu (English)
