@@ -11,25 +11,28 @@ title: "Microservices: khi nào tách, tách thế nào"
 ## Bản đồ chủ đề {#topic-map}
 
 <div class="fig">
-<svg viewBox="0 0 720 392" role="img" aria-label="Bản đồ chủ đề microservices: shop online với gateway, năm service mỗi cái một DB, một lời gọi sync, một message broker, và các bẫy">
-<text x="196" y="22" font-size="12" font-weight="600" class="muted">Shop online · đường đi của một đơn hàng</text>
-<a href="#when-to-use" style="text-decoration:none"><rect class="boxAcc" x="10" y="36" width="166" height="110" rx="8"/><text x="93" y="60" font-size="13" font-weight="600" text-anchor="middle">Khi nào tách</text><text x="93" y="80" font-size="10.5" text-anchor="middle">monolith → modular</text><text x="93" y="96" font-size="10.5" text-anchor="middle">→ microservices</text><text x="93" y="118" font-size="10" text-anchor="middle" class="muted">lý do chính:</text><text x="93" y="134" font-size="11" font-weight="700" text-anchor="middle" class="accT">deploy độc lập</text><circle cx="10" cy="36" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="10" cy="36" r="12"/><text x="10" y="41" font-size="13" font-weight="700" text-anchor="middle" class="accT">1</text></a>
-<a href="#strangler-fig" style="text-decoration:none"><rect class="box" x="10" y="158" width="166" height="140" rx="8"/><text x="93" y="180" font-size="13" font-weight="600" text-anchor="middle">Strangler fig</text><rect class="box" x="60" y="192" width="66" height="20" rx="4"/><text x="93" y="206" font-size="10" text-anchor="middle">proxy</text><line class="ln" x1="80" y1="212" x2="60" y2="232" marker-end="url(#msInk)"/><line class="ln" x1="106" y1="212" x2="128" y2="232" marker-end="url(#msInk)"/><rect class="box dash" x="22" y="236" width="70" height="24" rx="4"/><text x="57" y="252" font-size="10" text-anchor="middle">monolith</text><rect class="boxOk" x="100" y="236" width="66" height="24" rx="4"/><text x="133" y="252" font-size="9.5" text-anchor="middle" class="okT">service mới</text><text x="93" y="284" font-size="10.5" text-anchor="middle">chuyển từng route một</text><circle cx="10" cy="158" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="10" cy="158" r="12"/><text x="10" y="163" font-size="13" font-weight="700" text-anchor="middle" class="accT">8</text></a>
-<a href="#database-per-service" style="text-decoration:none"><rect class="boxBad" x="10" y="310" width="166" height="70" rx="8"/><text x="93" y="334" font-size="12" font-weight="700" text-anchor="middle" class="badT">Distributed monolith</text><text x="93" y="354" font-size="10.5" text-anchor="middle">đọc chung bảng DB</text><text x="93" y="370" font-size="10.5" text-anchor="middle">→ phải deploy chung</text><circle cx="10" cy="310" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="10" cy="310" r="12"/><text x="10" y="315" font-size="13" font-weight="700" text-anchor="middle" class="accT">9</text></a>
-<rect class="box" x="390" y="36" width="110" height="24" rx="4"/><text x="445" y="52" font-size="11" text-anchor="middle">Client</text><line class="ln" x1="445" y1="60" x2="445" y2="82" marker-end="url(#msInk)"/>
-<a href="#api-gateway" style="text-decoration:none"><rect class="boxAcc" x="196" y="86" width="394" height="44" rx="8"/><text x="393" y="104" font-size="12" font-weight="600" text-anchor="middle">API gateway · routing, auth, rate limit</text><text x="393" y="121" font-size="10.5" text-anchor="middle" class="muted">service discovery: gọi service theo tên</text><circle cx="196" cy="86" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="196" cy="86" r="12"/><text x="196" y="91" font-size="13" font-weight="700" text-anchor="middle" class="accT">7</text></a>
-<rect class="boxBad" x="612" y="86" width="94" height="44" rx="8"/><text x="659" y="105" font-size="10" text-anchor="middle">Hãng vận chuyển</text><text x="659" y="120" font-size="9.5" text-anchor="middle" class="muted">bên ngoài</text>
-<line class="ln" x1="230" y1="130" x2="230" y2="164" marker-end="url(#msInk)"/>
-<line class="lnBad" x1="658" y1="168" x2="658" y2="134" marker-end="url(#msBad)"/>
-<a href="#service-boundaries" style="text-decoration:none"><rect class="box" x="196" y="168" width="92" height="64" rx="6"/><text x="242" y="188" font-size="11.5" font-weight="600" text-anchor="middle">Order</text><rect class="box" x="300" y="168" width="92" height="64" rx="6"/><text x="346" y="188" font-size="11.5" font-weight="600" text-anchor="middle">Inventory</text><rect class="box" x="404" y="168" width="92" height="64" rx="6"/><text x="450" y="188" font-size="11.5" font-weight="600" text-anchor="middle">Payment</text><rect class="box" x="508" y="168" width="92" height="64" rx="6"/><text x="554" y="188" font-size="11.5" font-weight="600" text-anchor="middle">Notification</text><rect class="box" x="612" y="168" width="92" height="64" rx="6"/><text x="658" y="188" font-size="11.5" font-weight="600" text-anchor="middle">Shipping</text><circle cx="196" cy="168" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="196" cy="168" r="12"/><text x="196" y="173" font-size="13" font-weight="700" text-anchor="middle" class="accT">2</text></a>
-<a href="#database-per-service" style="text-decoration:none"><path class="boxOk" d="M229 202 L229 218 A13 3 0 0 0 255 218 L255 202 A13 3 0 0 0 229 202 Z"/><ellipse class="boxOk" cx="242" cy="202" rx="13" ry="3"/><path class="boxOk" d="M333 202 L333 218 A13 3 0 0 0 359 218 L359 202 A13 3 0 0 0 333 202 Z"/><ellipse class="boxOk" cx="346" cy="202" rx="13" ry="3"/><path class="boxOk" d="M437 202 L437 218 A13 3 0 0 0 463 218 L463 202 A13 3 0 0 0 437 202 Z"/><ellipse class="boxOk" cx="450" cy="202" rx="13" ry="3"/><path class="boxOk" d="M541 202 L541 218 A13 3 0 0 0 567 218 L567 202 A13 3 0 0 0 541 202 Z"/><ellipse class="boxOk" cx="554" cy="202" rx="13" ry="3"/><path class="boxOk" d="M645 202 L645 218 A13 3 0 0 0 671 218 L671 202 A13 3 0 0 0 645 202 Z"/><ellipse class="boxOk" cx="658" cy="202" rx="13" ry="3"/><circle cx="212" cy="212" r="10" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="212" cy="212" r="10"/><text x="212" y="216" font-size="12" font-weight="700" text-anchor="middle" class="accT">3</text></a>
-<a href="#sync-question" style="text-decoration:none"><path class="lnAcc" d="M262 168 C 262 144, 326 144, 326 164" fill="none" marker-end="url(#msAcc)"/><circle cx="294" cy="150" r="11" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="294" cy="150" r="11"/><text x="294" y="155" font-size="12" font-weight="700" text-anchor="middle" class="accT">4</text><text x="340" y="154" font-size="10.5" class="accT">sync: chờ giá, tồn kho</text></a>
-<a href="#messaging-benefits" style="text-decoration:none"><line class="lnAcc" x1="242" y1="232" x2="242" y2="258" marker-end="url(#msAcc)"/><rect class="boxAcc dash" x="196" y="262" width="510" height="30" rx="6"/><text x="222" y="281" font-size="11">message broker · OrderPlaced: mỗi service tự làm phần mình, Order không chờ</text><line class="lnAcc dash" x1="346" y1="262" x2="346" y2="236" marker-end="url(#msAcc)"/><line class="lnAcc dash" x1="554" y1="262" x2="554" y2="236" marker-end="url(#msAcc)"/><line class="lnAcc dash" x1="658" y1="262" x2="658" y2="236" marker-end="url(#msAcc)"/><circle cx="196" cy="262" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="196" cy="262" r="12"/><text x="196" y="267" font-size="13" font-weight="700" text-anchor="middle" class="accT">5</text></a>
-<a href="#cascading-failure" style="text-decoration:none"><rect class="boxBad" x="196" y="310" width="250" height="70" rx="8"/><text x="216" y="332" font-size="12" font-weight="700" class="badT">Cascading failure</text><text x="216" y="352" font-size="10.5">service chậm (không chết) giữ chân</text><text x="216" y="368" font-size="10.5">người gọi → lan sang endpoint khác</text><circle cx="196" cy="310" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="196" cy="310" r="12"/><text x="196" y="315" font-size="13" font-weight="700" text-anchor="middle" class="accT">6</text></a>
-<a href="#provider-down" style="text-decoration:none"><rect class="boxBad" x="458" y="310" width="248" height="70" rx="8"/><text x="478" y="332" font-size="12" font-weight="700">Hãng sập 10 phút</text><text x="478" y="352" font-size="10.5" class="badT">sync: lỗi chạy ngược về khách</text><text x="478" y="368" font-size="10.5" class="okT">queue: chờ 10 phút rồi xong</text><circle cx="458" cy="310" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="458" cy="310" r="12"/><text x="458" y="315" font-size="13" font-weight="700" text-anchor="middle" class="accT">10</text></a>
+<svg viewBox="0 0 790 396" role="img" aria-label="Đường đi của một đơn hàng: client gửi POST /orders tới API gateway, gateway chuyển tới Order có DB riêng, Order gọi sync Inventory và chờ trả lời, rồi publish OrderPlaced lên message broker và trả lời khách ngay, Shipping và Notification mỗi bên nhận một bản, Shipping gọi hãng vận chuyển bên ngoài với timeout, retry, circuit breaker">
+<text x="16" y="20" font-size="12" font-weight="600" class="muted">Shop online · đường đi của một đơn hàng</text>
+<rect class="box" x="16" y="40" width="80" height="52" rx="6"/><text x="56" y="70" font-size="12" text-anchor="middle">Client</text>
+<line class="ln" x1="96" y1="66" x2="180" y2="66" marker-end="url(#msInk)"/><text x="138" y="84" font-size="10" text-anchor="middle" class="mono muted">POST /orders</text>
+<a href="#api-gateway" style="text-decoration:none"><rect class="boxAcc" x="186" y="40" width="124" height="52" rx="8"/><text x="248" y="62" font-size="12.5" font-weight="600" text-anchor="middle">API gateway</text><text x="248" y="80" font-size="10.5" text-anchor="middle" class="muted">route theo tên service</text><circle cx="186" cy="40" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="186" cy="40" r="12"/><text x="186" y="45" font-size="13" font-weight="700" text-anchor="middle" class="accT">1</text></a>
+<line class="ln" x1="310" y1="66" x2="370" y2="66" marker-end="url(#msInk)"/>
+<a href="#database-per-service" style="text-decoration:none"><rect class="box" x="376" y="40" width="100" height="52" rx="6"/><text x="426" y="70" font-size="12.5" font-weight="600" text-anchor="middle">Order</text><g class="boxOk"><path d="M385 108 L385 128 A16 4 0 0 0 417 128 L417 108 A16 4 0 0 0 385 108 Z"/><ellipse cx="401" cy="108" rx="16" ry="4"/></g><line class="lnMuted" x1="401" y1="92" x2="401" y2="104"/><circle cx="376" cy="40" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="376" cy="40" r="12"/><text x="376" y="45" font-size="13" font-weight="700" text-anchor="middle" class="accT">2</text></a>
+<a href="#sync-vs-async" style="text-decoration:none"><line class="lnAcc" x1="476" y1="54" x2="610" y2="54" marker-end="url(#msAcc)"/><text x="546" y="44" font-size="10.5" text-anchor="middle" class="accT">sync: giá, tồn kho?</text><line class="lnAcc dash" x1="616" y1="80" x2="482" y2="80" marker-end="url(#msAcc)"/><text x="546" y="100" font-size="10.5" text-anchor="middle" class="accT">chờ trả lời</text><circle cx="546" cy="67" r="11" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="546" cy="67" r="11"/><text x="546" y="72" font-size="12" font-weight="700" text-anchor="middle" class="accT">3</text></a>
+<rect class="box" x="616" y="40" width="120" height="52" rx="6"/><text x="676" y="70" font-size="12.5" font-weight="600" text-anchor="middle">Inventory</text><g class="boxOk"><path d="M660 108 L660 128 A16 4 0 0 0 692 128 L692 108 A16 4 0 0 0 660 108 Z"/><ellipse cx="676" cy="108" rx="16" ry="4"/></g><line class="lnMuted" x1="676" y1="92" x2="676" y2="104"/>
+<a href="#sync-question" style="text-decoration:none"><line class="lnAcc" x1="452" y1="92" x2="452" y2="196" marker-end="url(#msAcc)"/><circle cx="452" cy="148" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="452" cy="148" r="12"/><text x="452" y="153" font-size="13" font-weight="700" text-anchor="middle" class="accT">4</text><text x="472" y="144" font-size="10.5">publish <tspan class="mono">OrderPlaced</tspan></text><text x="472" y="160" font-size="10.5" class="muted">trả lời khách ngay, không chờ</text></a>
+<rect class="boxAcc dash" x="160" y="200" width="400" height="40" rx="6"/><text x="340" y="225" font-size="12" font-weight="600" text-anchor="middle">message broker</text>
+<a href="#messaging-benefits" style="text-decoration:none"><line class="lnAcc dash" x1="220" y1="240" x2="220" y2="290" marker-end="url(#msAcc)"/><line class="lnAcc dash" x1="460" y1="240" x2="460" y2="290" marker-end="url(#msAcc)"/><circle cx="300" cy="265" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="300" cy="265" r="12"/><text x="300" y="270" font-size="13" font-weight="700" text-anchor="middle" class="accT">5</text><text x="320" y="269" font-size="10.5" class="muted">mỗi bên một bản</text></a>
+<rect class="box" x="160" y="294" width="120" height="50" rx="6"/><text x="220" y="315" font-size="12.5" font-weight="600" text-anchor="middle">Notification</text><text x="220" y="332" font-size="10.5" text-anchor="middle" class="muted">gửi email</text>
+<rect class="box" x="400" y="294" width="120" height="50" rx="6"/><text x="460" y="315" font-size="12.5" font-weight="600" text-anchor="middle">Shipping</text><text x="460" y="332" font-size="10.5" text-anchor="middle" class="muted">tạo vận đơn</text>
+<g class="boxOk"><path d="M204 360 L204 380 A16 4 0 0 0 236 380 L236 360 A16 4 0 0 0 204 360 Z"/><ellipse cx="220" cy="360" rx="16" ry="4"/><path d="M444 360 L444 380 A16 4 0 0 0 476 380 L476 360 A16 4 0 0 0 444 360 Z"/><ellipse cx="460" cy="360" rx="16" ry="4"/></g><line class="lnMuted" x1="220" y1="344" x2="220" y2="356"/><line class="lnMuted" x1="460" y1="344" x2="460" y2="356"/>
+<a href="#cascading-failure" style="text-decoration:none"><line class="ln" x1="520" y1="319" x2="618" y2="319" marker-end="url(#msInk)"/><circle cx="569" cy="319" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="569" cy="319" r="12"/><text x="569" y="324" font-size="13" font-weight="700" text-anchor="middle" class="accT">6</text><text x="569" y="352" font-size="10.5" text-anchor="middle">timeout · retry</text><text x="569" y="367" font-size="10.5" text-anchor="middle">circuit breaker</text></a>
+<rect class="box dash" x="624" y="294" width="146" height="50" rx="6"/><text x="697" y="315" font-size="12" font-weight="600" text-anchor="middle">Hãng vận chuyển</text><text x="697" y="332" font-size="10.5" text-anchor="middle" class="muted">bên ngoài, có lúc sập</text>
 </svg>
-<p class="fig-caption">Ôn lại: đi từ Client xuống, nói được vì sao mỗi service có DB riêng, vì sao mũi tên 4 là sync còn 5 là message, rồi giải thích ba thẻ đỏ. Chỗ nào không nói được thì bấm vào đọc mục đó.</p>
+<p class="fig-caption">Ôn lại: đọc số 1 đến 6 là đi hết đường của một đơn. Nói được vì sao ở 3 Order phải chờ Inventory còn ở 4 thì trả lời khách mà không chờ ai, vì sao ở 5 thêm một bên nghe nữa không phải sửa Order, và vì sao 6 là chỗ cần timeout, retry, circuit breaker. Chỗ nào chưa nói được thì bấm vào số đó.</p>
 </div>
+
+Các chủ đề không nằm trên đường đi của đơn có hình riêng ở mục của chúng: [khi nào nên tách, và ba nấc monolith, modular monolith, microservices](#when-to-use); [cascading failure](#cascading-failure) (một service chậm kéo sập người gọi); [strangler fig](#strangler-fig) (tách dần một monolith qua proxy).
 
 ## 1. Monolith lớn dần đau ở đâu, và khi nào nên tách {#when-to-use}
 
@@ -42,22 +45,22 @@ Vì mọi phần của monolith nằm chung một process và một lần deploy
 ### Ba nấc: monolith, modular monolith, microservices {#evolution}
 
 <div class="fig">
-<svg viewBox="0 0 720 256" role="img" aria-label="Ba nấc: monolith code gọi chéo, modular monolith có ranh giới module nhưng một deploy, microservices mỗi service deploy và DB riêng">
+<svg viewBox="0 0 760 256" role="img" aria-label="Ba nấc: monolith code gọi chéo, modular monolith có ranh giới module nhưng một deploy, microservices mỗi service deploy và DB riêng">
 <text x="122" y="26" font-size="13" font-weight="600" text-anchor="middle" class="badT">Nấc 0 · Monolith</text>
 <text x="360" y="26" font-size="13" font-weight="600" text-anchor="middle" class="accT">Nấc 1 · Modular monolith</text>
-<text x="598" y="26" font-size="13" font-weight="600" text-anchor="middle" class="okT">Nấc 2 · Microservices</text>
+<text x="625" y="26" font-size="13" font-weight="600" text-anchor="middle" class="okT">Nấc 2 · Microservices</text>
 <rect class="boxBad" x="20" y="44" width="204" height="116" rx="8"/>
 <g class="lnBad"><line x1="65" y1="67" x2="172" y2="115"/><line x1="168" y1="71" x2="78" y2="111"/><line x1="78" y1="111" x2="115" y2="143"/><line x1="65" y1="67" x2="78" y2="111"/><line x1="168" y1="71" x2="172" y2="115"/><line x1="172" y1="115" x2="115" y2="143"/></g>
 <g font-size="10" text-anchor="middle"><rect class="box" x="30" y="56" width="70" height="22" rx="4"/><text x="65" y="71">Order</text><rect class="box" x="130" y="60" width="76" height="22" rx="4"/><text x="168" y="75">Payment</text><rect class="box" x="40" y="100" width="76" height="22" rx="4"/><text x="78" y="115">Inventory</text><rect class="box" x="136" y="104" width="72" height="22" rx="4"/><text x="172" y="119">Shipping</text><rect class="box" x="70" y="132" width="90" height="22" rx="4"/><text x="115" y="147">Notification</text></g>
 <line class="ln" x1="122" y1="160" x2="122" y2="170"/><path class="box" d="M104 172 L104 194 A18 4 0 0 0 140 194 L140 172 A18 4 0 0 0 104 172 Z"/><ellipse class="box" cx="122" cy="172" rx="18" ry="4"/>
-<line class="ln" x1="230" y1="100" x2="244" y2="100" marker-end="url(#msInk)"/>
+<line class="ln" x1="230" y1="100" x2="248" y2="100" marker-end="url(#msInk)"/>
 <rect class="boxAcc" x="258" y="44" width="204" height="116" rx="8"/>
 <g font-size="10" text-anchor="middle"><rect class="box" x="268" y="54" width="88" height="26" rx="4"/><text x="312" y="71">Order</text><rect class="box" x="364" y="54" width="88" height="26" rx="4"/><text x="408" y="71">Payment</text><rect class="box" x="268" y="88" width="88" height="26" rx="4"/><text x="312" y="105">Inventory</text><rect class="box" x="364" y="88" width="88" height="26" rx="4"/><text x="408" y="105">Shipping</text><rect class="box" x="316" y="122" width="88" height="26" rx="4"/><text x="360" y="139">Notification</text></g>
 <line class="ln" x1="360" y1="160" x2="360" y2="170"/><path class="box" d="M342 172 L342 194 A18 4 0 0 0 378 194 L378 172 A18 4 0 0 0 342 172 Z"/><ellipse class="box" cx="360" cy="172" rx="18" ry="4"/>
-<line class="ln" x1="468" y1="100" x2="482" y2="100" marker-end="url(#msInk)"/>
-<g font-size="10" text-anchor="middle"><rect class="boxOk" x="492" y="52" width="66" height="24" rx="4"/><text x="525" y="68">Order</text><rect class="boxOk" x="563" y="52" width="66" height="24" rx="4"/><text x="596" y="68">Payment</text><rect class="boxOk" x="634" y="52" width="66" height="24" rx="4"/><text x="667" y="68">Inventory</text><rect class="boxOk" x="520" y="116" width="70" height="24" rx="4"/><text x="555" y="132">Shipping</text><rect class="boxOk" x="604" y="116" width="84" height="24" rx="4"/><text x="646" y="132">Notification</text></g>
-<g class="box"><path d="M516 82 L516 94 A9 3 0 0 0 534 94 L534 82 A9 3 0 0 0 516 82 Z"/><ellipse cx="525" cy="82" rx="9" ry="3"/><path d="M587 82 L587 94 A9 3 0 0 0 605 94 L605 82 A9 3 0 0 0 587 82 Z"/><ellipse cx="596" cy="82" rx="9" ry="3"/><path d="M658 82 L658 94 A9 3 0 0 0 676 94 L676 82 A9 3 0 0 0 658 82 Z"/><ellipse cx="667" cy="82" rx="9" ry="3"/><path d="M546 146 L546 158 A9 3 0 0 0 564 158 L564 146 A9 3 0 0 0 546 146 Z"/><ellipse cx="555" cy="146" rx="9" ry="3"/><path d="M637 146 L637 158 A9 3 0 0 0 655 158 L655 146 A9 3 0 0 0 637 146 Z"/><ellipse cx="646" cy="146" rx="9" ry="3"/></g>
-<g font-size="10.5" text-anchor="middle"><text x="122" y="222" font-weight="600">1 deploy, 1 DB, code gọi chéo</text><text x="122" y="240" class="badT">đau: team chờ nhau, 1 bug sập cả app</text><text x="360" y="222" font-weight="600">1 deploy, module có ranh giới</text><text x="360" y="240" class="muted">còn: deploy chung, scale chung</text><text x="598" y="222" font-weight="600">deploy riêng, DB riêng</text><text x="598" y="240" class="badT">giá: mạng, dữ liệu phân tán, giám sát</text></g>
+<line class="ln" x1="470" y1="100" x2="490" y2="100" marker-end="url(#msInk)"/>
+<g font-size="10" text-anchor="middle"><rect class="boxOk" x="500" y="52" width="70" height="24" rx="4"/><text x="535" y="68">Order</text><rect class="boxOk" x="590" y="52" width="70" height="24" rx="4"/><text x="625" y="68">Payment</text><rect class="boxOk" x="680" y="52" width="70" height="24" rx="4"/><text x="715" y="68">Inventory</text><rect class="boxOk" x="534" y="118" width="76" height="24" rx="4"/><text x="572" y="134">Shipping</text><rect class="boxOk" x="642" y="118" width="90" height="24" rx="4"/><text x="687" y="134">Notification</text></g>
+<g class="box"><path d="M526 82 L526 94 A9 3 0 0 0 544 94 L544 82 A9 3 0 0 0 526 82 Z"/><ellipse cx="535" cy="82" rx="9" ry="3"/><path d="M616 82 L616 94 A9 3 0 0 0 634 94 L634 82 A9 3 0 0 0 616 82 Z"/><ellipse cx="625" cy="82" rx="9" ry="3"/><path d="M706 82 L706 94 A9 3 0 0 0 724 94 L724 82 A9 3 0 0 0 706 82 Z"/><ellipse cx="715" cy="82" rx="9" ry="3"/><path d="M563 148 L563 160 A9 3 0 0 0 581 160 L581 148 A9 3 0 0 0 563 148 Z"/><ellipse cx="572" cy="148" rx="9" ry="3"/><path d="M678 148 L678 160 A9 3 0 0 0 696 160 L696 148 A9 3 0 0 0 678 148 Z"/><ellipse cx="687" cy="148" rx="9" ry="3"/></g>
+<g font-size="10.5" text-anchor="middle"><text x="122" y="222" font-weight="600">1 deploy, 1 DB, code gọi chéo</text><text x="122" y="240" class="badT">đau: team chờ nhau, 1 bug sập cả app</text><text x="360" y="222" font-weight="600">1 deploy, module có ranh giới</text><text x="360" y="240" class="muted">còn: deploy chung, scale chung</text><text x="625" y="222" font-weight="600">deploy riêng, DB riêng</text><text x="625" y="240" class="badT">giá: mạng, dữ liệu phân tán, giám sát</text></g>
 </svg>
 <p class="fig-caption">Mỗi nấc chữa một cái đau của nấc trước. Nấc 1 chữa code dính nhau mà chưa trả giá mạng; nấc 2 mới tách deploy, process và DB.</p>
 </div>
@@ -152,39 +155,54 @@ Truy vấn xuyên service (danh sách đơn kèm trạng thái giao hàng) cũng
 
 ### Hãng vận chuyển sập 10 phút {#provider-down}
 
-Hai thiết kế chỉ khác nhau thật khi có sự cố. Cho hãng vận chuyển bên ngoài sập 10 phút, rồi xem ai còn giữ lỗi trong tay:
+Hai thiết kế chỉ khác nhau thật khi có sự cố. Cho hãng vận chuyển bên ngoài sập 10 phút, rồi đọc hai sơ đồ dưới từ trên xuống (trục dọc là thời gian), nhìn xem lỗi của hãng dừng lại ở đâu.
 
-<div class="fig">
-<svg viewBox="0 0 720 310" role="img" aria-label="A: Order gọi sync Shipping, hãng sập, lỗi chạy ngược về khách và việc dừng lại. B: Order publish OrderPlaced, khách nhận trả lời ngay, message chờ trong queue và xong khi hãng sống lại">
-<text x="180" y="22" font-size="13" font-weight="600" text-anchor="middle" class="badT">A · Order gọi sync Shipping</text>
-<text x="545" y="22" font-size="13" font-weight="600" text-anchor="middle" class="okT">B · Order publish OrderPlaced</text>
-<line class="lnMuted" x1="360" y1="10" x2="360" y2="300"/>
-<g font-size="11" text-anchor="middle" font-weight="600"><text x="55" y="50">Khách</text><text x="140" y="50">Order</text><text x="230" y="50">Shipping</text><text x="315" y="50">Hãng</text><text x="400" y="50">Khách</text><text x="465" y="50">Order</text><text x="535" y="50">Queue</text><text x="610" y="50">Shipping</text><text x="685" y="50">Hãng</text></g>
-<g class="lnMuted dash"><line x1="55" y1="58" x2="55" y2="280"/><line x1="140" y1="58" x2="140" y2="280"/><line x1="230" y1="58" x2="230" y2="280"/><line x1="315" y1="58" x2="315" y2="280"/><line x1="400" y1="58" x2="400" y2="280"/><line x1="465" y1="58" x2="465" y2="280"/><line x1="535" y1="58" x2="535" y2="280"/><line x1="610" y1="58" x2="610" y2="280"/><line x1="685" y1="58" x2="685" y2="280"/></g>
-<rect class="boxBad" x="307" y="66" width="16" height="164" rx="3"/><rect class="boxBad" x="677" y="66" width="16" height="164" rx="3"/>
-<g font-size="10.5" class="muted"><text x="14" y="88">0'</text><text x="14" y="244">10'</text><text x="370" y="88">0'</text><text x="370" y="244">10'</text></g>
-<line class="ln" x1="55" y1="84" x2="136" y2="84" marker-end="url(#msInk)"/><text x="97" y="79" font-size="10" text-anchor="middle">đặt hàng</text>
-<line class="ln" x1="140" y1="104" x2="226" y2="104" marker-end="url(#msInk)"/><text x="185" y="99" font-size="10" text-anchor="middle">tạo vận đơn</text>
-<line class="lnBad" x1="230" y1="124" x2="303" y2="124" marker-end="url(#msBad)"/><text x="268" y="119" font-size="10" text-anchor="middle" class="badT">✗</text>
-<line class="lnBad dash" x1="230" y1="146" x2="144" y2="146" marker-end="url(#msBad)"/><text x="185" y="141" font-size="10" text-anchor="middle" class="badT">503</text>
-<line class="lnBad dash" x1="140" y1="168" x2="59" y2="168" marker-end="url(#msBad)"/><text x="97" y="163" font-size="10" text-anchor="middle" class="badT">lỗi</text>
-<text x="50" y="196" font-size="10.5" class="badT">khách thấy lỗi, phải tự bấm lại</text><text x="50" y="212" font-size="10.5">Order: huỷ đơn, hoặc tự lưu để thử lại</text>
-<text x="315" y="248" font-size="10" text-anchor="middle" class="okT">sống lại</text>
-<text x="180" y="270" font-size="10.5" text-anchor="middle" class="badT">không ai gọi lại: việc dừng ở lỗi</text>
-<line class="ln" x1="400" y1="84" x2="461" y2="84" marker-end="url(#msInk)"/><text x="432" y="79" font-size="10" text-anchor="middle">đặt hàng</text>
-<line class="lnAcc" x1="465" y1="102" x2="531" y2="102" marker-end="url(#msAcc)"/><text x="500" y="97" font-size="9.5" text-anchor="middle" class="mono">OrderPlaced</text>
-<line class="lnOk dash" x1="465" y1="120" x2="404" y2="120" marker-end="url(#msOk)"/><text x="432" y="115" font-size="10" text-anchor="middle" class="okT">đã nhận</text>
-<line class="lnAcc" x1="535" y1="140" x2="606" y2="140" marker-end="url(#msAcc)"/>
-<line class="lnBad" x1="610" y1="156" x2="673" y2="156" marker-end="url(#msBad)"/><text x="645" y="151" font-size="10" text-anchor="middle" class="badT">✗</text>
-<line class="ln dash" x1="610" y1="172" x2="539" y2="172" marker-end="url(#msInk)"/><text x="572" y="167" font-size="10" text-anchor="middle">trả lại</text>
-<text x="395" y="200" font-size="10.5" class="muted">message chờ; Shipping thử lại sau, có delay</text><text x="395" y="216" font-size="10.5" class="muted">Inventory, Notification vẫn chạy bình thường</text>
-<text x="685" y="248" font-size="10" text-anchor="middle" class="okT">sống lại</text>
-<line class="lnAcc" x1="535" y1="258" x2="606" y2="258" marker-end="url(#msAcc)"/>
-<line class="lnOk" x1="610" y1="272" x2="681" y2="272" marker-end="url(#msOk)"/><text x="645" y="267" font-size="10" text-anchor="middle" class="okT">✓</text>
-<text x="540" y="298" font-size="10.5" text-anchor="middle" class="okT">vận đơn xong sau 10 phút, không ai thấy lỗi</text>
-</svg>
-<p class="fig-caption">Cùng một sự cố. A: lỗi chạy ngược về tới khách, và không có ai tự làm lại khi hãng sống lại. B: khách được trả lời ngay; message nằm chờ, Shipping làm xong khi hãng sống lại.</p>
-</div>
+**A · Order gọi sync Shipping**
+
+```mermaid
+sequenceDiagram
+    participant K as Khách
+    participant O as Order
+    participant S as Shipping
+    participant H as Hãng vận chuyển
+    Note over H: sập từ phút 0
+    K->>O: đặt hàng
+    O->>S: tạo vận đơn (HTTP)
+    S-xH: gọi hãng
+    S-->>O: 503
+    O-->>K: lỗi, vui lòng thử lại
+    Note over K,O: khách phải tự bấm lại<br/>Order huỷ đơn, hoặc tự lưu lại
+    Note over H: phút 10: sống lại
+    Note over K,H: không ai gọi lại, việc dừng ở lỗi
+```
+
+Lỗi chạy ngược về tới khách, và khi hãng sống lại thì không có ai tự làm lại.
+
+**B · Order publish `OrderPlaced`**
+
+```mermaid
+sequenceDiagram
+    participant K as Khách
+    participant O as Order
+    participant Q as Queue
+    participant S as Shipping
+    participant H as Hãng vận chuyển
+    Note over H: sập từ phút 0
+    K->>O: đặt hàng
+    O->>Q: publish OrderPlaced
+    O-->>K: đã nhận đơn
+    Q->>S: giao message
+    S-xH: gọi hãng
+    S-->>Q: không complete, message quay lại queue
+    Note over Q,S: message chờ, Shipping thử lại có delay
+    Note over H: phút 10: sống lại
+    Q->>S: giao lại message
+    S->>H: gọi hãng
+    H-->>S: OK, có vận đơn
+    S->>Q: complete, message bị xoá
+```
+
+Khách được trả lời ngay; message nằm chờ, vận đơn xong sau 10 phút mà không ai thấy lỗi. Inventory và Notification cũng nhận `OrderPlaced` và chạy bình thường suốt 10 phút đó.
 
 Ở A, Order có thể bắt lỗi rồi tự lưu đơn lại để thử sau, nhưng như vậy là đang tự viết lại một cái queue. B làm việc đó có sẵn, với hai điều kiện:
 
@@ -210,16 +228,18 @@ Cả hai đều là gọi sync, tức vẫn là gọi điện; chọn cái nào 
 Vì service **chậm** vẫn nhận request và giữ kết nối, nên người gọi không thấy lỗi ngay mà ngồi chờ. Mỗi request đang chờ giữ một phần tài nguyên của người gọi; traffic vẫn vào đều nên tài nguyên cạn dần, và đến lúc endpoint không liên quan cũng phải xếp hàng. Service **chết hẳn** lại ít hại hơn: kết nối bị từ chối ngay, người gọi nhận lỗi trong vài mili giây.
 
 <div class="fig">
-<svg viewBox="0 0 720 176" role="img" aria-label="Inventory chậm 30 giây, request của Order chờ chồng chất, endpoint xem đơn không gọi Inventory cũng chậm theo">
-<g font-size="10.5" class="mono"><text x="20" y="62">POST /orders</text><text x="20" y="120">GET /orders/42</text></g>
-<text x="20" y="78" font-size="10" class="muted">checkout, gọi Inventory</text><text x="20" y="136" font-size="10" class="badT">không gọi Inventory, vẫn chậm</text>
-<line class="ln" x1="150" y1="58" x2="256" y2="58" marker-end="url(#msInk)"/><line class="lnBad" x1="170" y1="116" x2="256" y2="116" marker-end="url(#msBad)"/>
-<rect class="box" x="260" y="30" width="200" height="112" rx="8"/><text x="360" y="50" font-size="12" font-weight="600" text-anchor="middle">Order</text>
-<g class="boxBad dash"><rect x="278" y="62" width="14" height="40" rx="2"/><rect x="298" y="62" width="14" height="40" rx="2"/><rect x="318" y="62" width="14" height="40" rx="2"/><rect x="338" y="62" width="14" height="40" rx="2"/><rect x="358" y="62" width="14" height="40" rx="2"/><rect x="378" y="62" width="14" height="40" rx="2"/><rect x="398" y="62" width="14" height="40" rx="2"/><rect x="418" y="62" width="14" height="40" rx="2"/></g>
-<text x="360" y="124" font-size="10" text-anchor="middle" class="badT">request đang chờ: tăng dần</text>
-<line class="lnBad" x1="460" y1="76" x2="556" y2="76" marker-end="url(#msBad)"/><text x="508" y="70" font-size="10" text-anchor="middle" class="badT">chờ…</text>
-<rect class="boxBad" x="560" y="50" width="140" height="52" rx="8"/><text x="630" y="72" font-size="12" font-weight="600" text-anchor="middle">Inventory</text><text x="630" y="90" font-size="10.5" text-anchor="middle" class="badT">chậm 30s, chưa chết</text>
-<text x="360" y="166" font-size="10.5" text-anchor="middle" class="muted">client của Order cũng chờ theo → chậm lan ngược lên trên</text>
+<svg viewBox="0 0 720 236" role="img" aria-label="Inventory chậm 30 giây, request của Order chờ chồng chất, endpoint xem đơn không gọi Inventory cũng chậm theo">
+<text x="20" y="70" font-size="10.5" class="mono">POST /orders</text><text x="20" y="88" font-size="10" class="muted">checkout, gọi Inventory</text>
+<text x="20" y="152" font-size="10.5" class="mono">GET /orders/42</text><text x="20" y="170" font-size="10" class="badT">không gọi Inventory, vẫn chậm</text>
+<line class="ln" x1="140" y1="66" x2="270" y2="66" marker-end="url(#msInk)"/><line class="lnBad" x1="140" y1="148" x2="270" y2="148" marker-end="url(#msBad)"/>
+<rect class="box" x="276" y="30" width="210" height="160" rx="8"/><text x="381" y="54" font-size="12.5" font-weight="600" text-anchor="middle">Order</text>
+<g class="boxBad dash"><rect x="298" y="70" width="14" height="54" rx="2"/><rect x="320" y="70" width="14" height="54" rx="2"/><rect x="342" y="70" width="14" height="54" rx="2"/><rect x="364" y="70" width="14" height="54" rx="2"/><rect x="386" y="70" width="14" height="54" rx="2"/><rect x="408" y="70" width="14" height="54" rx="2"/><rect x="430" y="70" width="14" height="54" rx="2"/><rect x="452" y="70" width="14" height="54" rx="2"/></g>
+<text x="381" y="150" font-size="10.5" text-anchor="middle" class="badT">request đang chờ: tăng dần</text>
+<text x="381" y="168" font-size="10" text-anchor="middle" class="muted">mỗi cái giữ tài nguyên của Order</text>
+<line class="lnBad" x1="486" y1="98" x2="560" y2="98" marker-end="url(#msBad)"/><text x="523" y="90" font-size="10" text-anchor="middle" class="badT">chờ…</text>
+<rect class="boxBad" x="566" y="68" width="140" height="62" rx="8"/><text x="636" y="92" font-size="12" font-weight="600" text-anchor="middle">Inventory</text>
+<circle class="boxBad" cx="584" cy="112" r="7"/><path class="lnBad" d="M584 107.5 V112 H587.5" style="stroke-width:1.5"/><text x="596" y="116" font-size="10" class="badT">chậm 30s, chưa chết</text>
+<text x="360" y="220" font-size="10.5" text-anchor="middle" class="muted">client của Order cũng chờ theo → chậm lan ngược lên trên</text>
 </svg>
 <p class="fig-caption">Inventory không trả lỗi nên Order không biết để dừng. Request chờ chồng lên nhau cho tới khi tài nguyên dùng chung của Order cạn.</p>
 </div>
@@ -248,6 +268,19 @@ Vì client không nên biết shop có bao nhiêu service và mỗi cái ở đ�
 ## 7. Strangler fig: tách monolith từng phần {#strangler-fig}
 
 Vì rủi ro của một lần release tỉ lệ với lượng thay đổi chưa từng chạy trên production, nên tách monolith theo <T>strangler fig</T>: đặt một proxy hoặc gateway trước monolith, mỗi lần dựng **một** năng lực thành service mới rồi chuyển route của nó sang; phần còn lại vẫn đi vào monolith. Lát nào lỗi thì trả riêng route đó về monolith. <T>Big-bang</T> (viết lại toàn bộ, một ngày chuyển) dồn mọi rủi ro vào ngày đó, hàng tháng không giao được gì, và trong lúc chờ monolith vẫn phải sửa ở cả hai nơi.
+
+Nhìn vào proxy: nó là chỗ duy nhất quyết định request đi đâu, nên chuyển một route sang service mới (hoặc trả về monolith khi lỗi) chỉ là đổi một dòng cấu hình, khách không biết gì.
+
+```mermaid
+flowchart LR
+  K["Khách"] --> P["Proxy / gateway"]
+  P -- "/notifications: đã tách" --> N["Notification service<br/>DB riêng"]
+  P -- "mọi route khác" --> M["Monolith<br/>phần chưa tách"]
+  classDef done fill:#10b98124,stroke:#10b981
+  classDef old fill:#94a3b824,stroke:#94a3b8,stroke-dasharray:4 3
+  class N done
+  class M old
+```
 
 Với shop: lát đầu nên là thứ **ít phụ thuộc và có lý do tách rõ**, vd Notification (chỉ nghe event, không ai chờ kết quả của nó). Thường phần khó nhất là **dữ liệu**: service mới phải sở hữu bảng của nó, nên các chỗ trong monolith đang đọc thẳng bảng đó phải chuyển sang gọi API hoặc nghe event trước khi tách được.
 

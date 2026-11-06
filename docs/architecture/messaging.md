@@ -11,33 +11,21 @@ Message broker (Azure Service Bus, RabbitMQ) là một hộp thư nằm giữa h
 ## Bản đồ chủ đề {#topic-map}
 
 <div class="fig">
-<svg viewBox="0 0 720 500" role="img" aria-label="Bản đồ chủ đề messaging: cột trái là phía nhận suy ra từ luật PeekLock, cột phải là phía gửi và quy trình nhiều bước">
-<text x="24" y="22" font-size="12.5" font-weight="600" class="muted">Phía nhận · một luật sinh ra mọi thứ</text>
-<text x="365" y="22" font-size="12.5" font-weight="600" class="muted">Phía gửi và quy trình nhiều bước</text>
-<a href="#problem" style="text-decoration:none"><rect class="boxBad" x="24" y="36" width="331" height="52" rx="8"/><circle cx="48" cy="62" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="48" cy="62" r="13"/><text x="48" y="67" font-size="13" text-anchor="middle" font-weight="700" class="accT">1</text><text x="70" y="57" font-size="13" font-weight="600" class="badT">Đọc là mất việc</text><text x="70" y="76" font-size="11.5">MSMQ receive thường: lỗi → người làm lại</text></a>
-<line class="ln" x1="190" y1="88" x2="190" y2="112" marker-end="url(#msInk)"/>
-<a href="#peek-lock" style="text-decoration:none"><rect class="boxAcc" x="24" y="116" width="331" height="52" rx="8"/><circle cx="48" cy="142" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="48" cy="142" r="13"/><text x="48" y="147" font-size="13" text-anchor="middle" font-weight="700" class="accT">2</text><text x="70" y="137" font-size="13" font-weight="600" class="accT">Một luật: chỉ xoá khi Complete()</text><text x="70" y="156" font-size="11.5">PeekLock · lỗi hoặc crash → giao lại</text></a>
-<line class="ln" x1="190" y1="168" x2="190" y2="192" marker-end="url(#msInk)"/>
-<path class="ln" d="M24 150 H12 V302 H20" marker-end="url(#msInk)"/>
-<a href="#dead-letter" style="text-decoration:none"><rect class="boxOk" x="24" y="196" width="331" height="52" rx="8"/><circle cx="48" cy="222" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="48" cy="222" r="13"/><text x="48" y="227" font-size="13" text-anchor="middle" font-weight="700" class="accT">3</text><text x="70" y="217" font-size="13" font-weight="600" class="okT">Không xoá → không mất việc</text><text x="70" y="236" font-size="11.5">hỏng quá 10 lần → dead-letter queue</text></a>
-<a href="#at-least-once" style="text-decoration:none"><rect class="boxBad" x="24" y="276" width="331" height="52" rx="8"/><circle cx="48" cy="302" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="48" cy="302" r="13"/><text x="48" y="307" font-size="13" text-anchor="middle" font-weight="700" class="accT">4</text><text x="70" y="297" font-size="13" font-weight="600" class="badT">Xoá sau Complete → có thể trùng</text><text x="70" y="316" font-size="11.5">at-least-once, không phải exactly-once</text></a>
-<line class="ln" x1="190" y1="328" x2="190" y2="352" marker-end="url(#msInk)"/>
-<a href="#idempotent-consumer" style="text-decoration:none"><rect class="boxOk" x="24" y="356" width="331" height="52" rx="8"/><circle cx="48" cy="382" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="48" cy="382" r="13"/><text x="48" y="387" font-size="13" text-anchor="middle" font-weight="700" class="accT">5</text><text x="70" y="377" font-size="13" font-weight="600" class="okT">Idempotent consumer</text><text x="70" y="396" font-size="11.5">id + việc nghiệp vụ: cùng một transaction</text></a>
-<a href="#queue-vs-topic" style="text-decoration:none"><rect class="box" x="365" y="36" width="345" height="52" rx="8"/><circle cx="389" cy="62" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="389" cy="62" r="13"/><text x="389" y="67" font-size="13" text-anchor="middle" font-weight="700" class="accT">6</text><text x="411" y="57" font-size="13" font-weight="600">Queue hay topic</text><text x="411" y="76" font-size="11.5">queue: 1 người xử lý · topic: mỗi sub 1 bản</text></a>
-<a href="#dual-write" style="text-decoration:none"><rect class="boxBad" x="365" y="116" width="345" height="52" rx="8"/><circle cx="389" cy="142" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="389" cy="142" r="13"/><text x="389" y="147" font-size="13" text-anchor="middle" font-weight="700" class="accT">7</text><text x="411" y="137" font-size="13" font-weight="600" class="badT">Dual write: commit DB rồi publish</text><text x="411" y="156" font-size="11.5">crash giữa hai bước → mất event</text></a>
-<line class="ln" x1="537" y1="168" x2="537" y2="192" marker-end="url(#msInk)"/>
-<a href="#outbox-table" style="text-decoration:none"><rect class="boxOk" x="365" y="196" width="345" height="52" rx="8"/><circle cx="389" cy="222" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="389" cy="222" r="13"/><text x="389" y="227" font-size="13" text-anchor="middle" font-weight="700" class="accT">8</text><text x="411" y="217" font-size="13" font-weight="600" class="okT">Outbox: event là một dòng trong DB</text><text x="411" y="236" font-size="11.5">có thể publish trùng → consumer như ô 5</text></a>
-<a href="#saga" style="text-decoration:none"><rect class="boxBad" x="365" y="276" width="345" height="52" rx="8"/><circle cx="389" cy="302" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="389" cy="302" r="13"/><text x="389" y="307" font-size="13" text-anchor="middle" font-weight="700" class="accT">9</text><text x="411" y="297" font-size="13" font-weight="600" class="badT">Saga: không có transaction chung</text><text x="411" y="316" font-size="11.5">mỗi bước commit riêng · không rollback</text></a>
-<line class="ln" x1="537" y1="328" x2="537" y2="352" marker-end="url(#msInk)"/>
-<a href="#compensation" style="text-decoration:none"><rect class="boxOk" x="365" y="356" width="345" height="52" rx="8"/><circle cx="389" cy="382" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="389" cy="382" r="13"/><text x="389" y="387" font-size="13" text-anchor="middle" font-weight="700" class="accT">10</text><text x="411" y="377" font-size="13" font-weight="600" class="okT">Compensation = hành động mới</text><text x="411" y="396" font-size="11.5">hoàn tiền, nhả kho, Cancelled · không xoá</text></a>
-<line class="ln" x1="537" y1="408" x2="537" y2="432" marker-end="url(#msInk)"/>
-<a href="#choreography-vs-orchestration" style="text-decoration:none"><rect class="box" x="365" y="436" width="345" height="52" rx="8"/><circle cx="389" cy="462" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="389" cy="462" r="13"/><text x="389" y="467" font-size="13" text-anchor="middle" font-weight="700" class="accT">11</text><text x="411" y="457" font-size="13" font-weight="600">Choreography hay orchestration</text><text x="411" y="476" font-size="11.5">ai nắm luồng: từng service hay coordinator</text></a>
-<text x="190" y="440" font-size="11.5" text-anchor="middle" class="muted">Ô 3 và ô 4 cùng suy ra từ ô 2:</text>
-<text x="190" y="457" font-size="11.5" text-anchor="middle" class="muted">không xoá thì không mất,</text>
-<text x="190" y="474" font-size="11.5" text-anchor="middle" class="muted">xoá muộn thì có thể trùng.</text>
+<svg viewBox="0 0 760 530" role="img" aria-label="Bản đồ chủ đề messaging: một message OrderPlaced đi từ Order service qua outbox, worker, topic, tới Inventory consumer bị khoá, ghi Reservation và ProcessedMessages chung transaction, gọi Complete mới bị xoá; lỗi thì quay lại, quá 10 lần vào dead-letter queue">
+<a href="#outbox" style="text-decoration:none"><rect class="box" x="20" y="40" width="250" height="104" rx="10"/><text x="40" y="65" font-size="13" font-weight="600">Order service</text><rect class="box" x="36" y="78" width="100" height="34" rx="6"/><text x="86" y="100" font-size="12" text-anchor="middle">Order</text><rect class="boxAcc" x="152" y="78" width="102" height="34" rx="6"/><text x="203" y="100" font-size="12" font-weight="600" text-anchor="middle" class="accT">Outbox</text><text x="145" y="133" font-size="11.5" text-anchor="middle" class="muted">ghi chung một transaction</text><circle cx="20" cy="40" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="20" cy="40" r="12"/><text x="20" y="44.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">1</text></a>
+<line class="ln" x1="270" y1="95" x2="426" y2="95" marker-end="url(#msInk)"/>
+<a href="#outbox-table" style="text-decoration:none"><circle cx="292" cy="72" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="292" cy="72" r="12"/><text x="292" y="76.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">2</text><text x="310" y="76.5" font-size="11.5">worker publish</text><text x="348" y="116" font-size="11.5" text-anchor="middle" class="muted">rồi ghi SentAt</text></a>
+<a href="#queue-vs-topic" style="text-decoration:none"><rect class="boxAcc" x="430" y="66" width="120" height="58" rx="8"/><text x="490" y="90" font-size="13" font-weight="600" text-anchor="middle" class="accT">topic</text><text x="490" y="110" font-size="11" text-anchor="middle" class="mono">order-placed</text><circle cx="430" cy="66" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="430" cy="66" r="12"/><text x="430" y="70.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">3</text><text x="604" y="30" font-size="11" class="muted">mỗi subscription một bản</text><g style="opacity:.5"><line class="ln dash" x1="550" y1="80" x2="598" y2="58" marker-end="url(#msInk)"/><text x="604" y="62" font-size="11.5" class="mono muted">shipping</text><line class="ln dash" x1="550" y1="98" x2="598" y2="98" marker-end="url(#msInk)"/><text x="604" y="102" font-size="11.5" class="mono muted">notification</text></g><line class="ln" x1="490" y1="124" x2="490" y2="190" marker-end="url(#msInk)"/><text x="500" y="162" font-size="11.5" class="mono">sub inventory</text></a>
+<a href="#peek-lock" style="text-decoration:none"><rect class="boxAcc" x="400" y="194" width="180" height="56" rx="8"/><text x="490" y="217" font-size="13" font-weight="600" text-anchor="middle" class="accT">Inventory consumer</text><text x="490" y="237" font-size="11.5" text-anchor="middle">nhận, message bị khoá</text><circle cx="400" cy="194" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="400" cy="194" r="12"/><text x="400" y="198.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">4</text></a>
+<line class="ln" x1="490" y1="250" x2="490" y2="296" marker-end="url(#msInk)"/><text x="500" y="278" font-size="11.5" class="muted">giữ hàng</text>
+<a href="#idempotent-consumer" style="text-decoration:none"><rect class="box" x="350" y="300" width="280" height="112" rx="10"/><text x="368" y="323" font-size="13" font-weight="600">Inventory DB</text><rect class="box" x="366" y="336" width="108" height="32" rx="6"/><text x="420" y="357" font-size="11.5" text-anchor="middle">Reservation</text><rect class="boxOk" x="486" y="336" width="130" height="32" rx="6"/><text x="551" y="357" font-size="11.5" font-weight="600" text-anchor="middle" class="okT">ProcessedMessages</text><text x="490" y="388" font-size="11.5" text-anchor="middle" class="muted">ghi chung một transaction</text><text x="490" y="404" font-size="11.5" text-anchor="middle" class="okT">MessageId trùng → bỏ qua</text><circle cx="350" cy="300" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="350" cy="300" r="12"/><text x="350" y="304.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">5</text></a>
+<a href="#at-least-once" style="text-decoration:none"><line class="lnOk" x1="490" y1="412" x2="490" y2="458" marker-end="url(#msOk)"/><path class="lnBad" d="M484 429 l12 12 M496 429 l-12 12"/><rect class="boxOk" x="410" y="462" width="160" height="54" rx="8"/><text x="490" y="485" font-size="13" font-weight="600" text-anchor="middle" class="okT">Complete()</text><text x="490" y="504" font-size="11.5" text-anchor="middle">lúc này mới xoá</text><circle cx="410" cy="462" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="410" cy="462" r="12"/><text x="410" y="466.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">6</text><text x="590" y="476" font-size="12" font-weight="600" class="badT">crash trước Complete</text><text x="590" y="493" font-size="11.5">giao lại, làm lần 2 = trùng</text><text x="590" y="510" font-size="11.5" class="okT">nên mới cần bước 5</text></a>
+<a href="#dead-letter" style="text-decoration:none"><path class="lnBad" d="M350 374 H300 V222 H396" marker-end="url(#msBad)"/><circle cx="300" cy="246" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="300" cy="246" r="12"/><text x="300" y="250.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">7</text><text x="284" y="284" font-size="12" font-weight="600" text-anchor="end" class="badT">lỗi: không Complete</text><text x="284" y="302" font-size="11.5" text-anchor="end">message quay lại</text><text x="284" y="319" font-size="11.5" text-anchor="end" class="muted">DeliveryCount + 1</text><path class="lnBad dash" d="M300 374 V470 H244" marker-end="url(#msBad)"/><text x="308" y="446" font-size="11.5" class="muted">quá 10 lần</text><rect class="boxBad" x="40" y="444" width="200" height="54" rx="8"/><text x="140" y="467" font-size="13" font-weight="600" text-anchor="middle" class="badT">Dead-letter queue</text><text x="140" y="486" font-size="11.5" text-anchor="middle">nằm chờ người xem</text></a>
 </svg>
-<p class="fig-caption">Đỏ là cái đau, xanh lá là cách chữa. Cột trái là một chuỗi nhân quả từ luật PeekLock; cột phải áp cùng cách nghĩ cho phía gửi và cho quy trình nhiều bước. Ôn lại: nhìn từng ô và tự giải thích vì sao; ô nào không nói được thì bấm vào.</p>
+<p class="fig-caption">Đi theo một message <code>OrderPlaced</code>, số là thứ tự đọc. Ôn lại: nói được vì sao Outbox ghi chung transaction với Order (1), vì sao message chỉ bị khoá chứ chưa xoá (4), và vì sao crash trước Complete (6) buộc bước 5 phải chống trùng. Số nào không nói được thì bấm vào.</p>
 </div>
+
+Hai chủ đề không nằm trên luồng này có hình riêng ở mục của chúng: [saga và compensation](/architecture/messaging#saga) (quy trình nhiều bước, bù ngược khi một bước hỏng) và [choreography hay orchestration](/architecture/messaging#choreography-vs-orchestration) (ai điều phối các bước).
 
 ## 1. Vấn đề: đọc là mất việc {#problem}
 
@@ -70,23 +58,21 @@ MSMQ có transactional queue: receive trong một `MessageQueueTransaction`, l�
 
 **Ở chế độ PeekLock, Service Bus giao message cho consumer nhưng chỉ khoá nó, không xoá; message chỉ bị xoá khi consumer gọi `Complete`.** PeekLock là receive mode mặc định của SDK .NET (`Azure.Messaging.ServiceBus`). Chế độ còn lại, `ReceiveAndDelete`, xoá ngay khi giao, tức là giống receive thường của MSMQ.
 
-<div class="fig">
-<svg viewBox="0 0 720 320" role="img" aria-label="Vòng đời message ở PeekLock: giao và khoá, thành công thì Complete và xoá, lỗi thì giao lại, quá số lần thì vào dead-letter queue">
-<rect class="box" x="10" y="60" width="140" height="56" rx="8"/><text x="80" y="84" font-size="13" font-weight="600" text-anchor="middle">Queue</text><text x="80" y="103" font-size="11" text-anchor="middle" class="mono muted">order-confirmation</text>
-<line class="ln" x1="150" y1="88" x2="226" y2="88" marker-end="url(#msInk)"/><text x="188" y="80" font-size="11.5" text-anchor="middle" class="muted">giao + khoá</text>
-<rect class="boxAcc" x="230" y="60" width="190" height="56" rx="8"/><text x="325" y="84" font-size="13" font-weight="600" text-anchor="middle" class="accT">Consumer xử lý</text><text x="325" y="103" font-size="11.5" text-anchor="middle">bị khoá, chưa bị xoá</text>
-<line class="lnOk" x1="420" y1="80" x2="496" y2="40" marker-end="url(#msOk)"/>
-<line class="lnBad" x1="420" y1="98" x2="496" y2="136" marker-end="url(#msBad)"/>
-<rect class="boxOk" x="500" y="12" width="210" height="56" rx="8"/><text x="512" y="36" font-size="13" font-weight="600" class="okT">Thành công: Complete()</text><text x="512" y="55" font-size="11.5">message bị xoá, xong</text>
-<rect class="boxBad" x="500" y="100" width="210" height="78" rx="8"/><text x="512" y="122" font-size="13" font-weight="600" class="badT">Không có Complete()</text><text x="512" y="142" font-size="11.5">exception → Abandon ngay</text><text x="512" y="161" font-size="11.5">crash → lock hết hạn (1 phút)</text>
-<path class="lnBad" d="M605 178 V215 H80 V120" marker-end="url(#msBad)"/>
-<text x="250" y="207" font-size="11.5" text-anchor="middle" class="badT">còn lượt: giao lại (retry), DeliveryCount + 1</text>
-<line class="lnBad dash" x1="445" y1="215" x2="445" y2="250" marker-end="url(#msBad)"/>
-<text x="455" y="238" font-size="11.5" class="muted">hết MaxDeliveryCount (mặc định 10)</text>
-<rect class="boxBad" x="320" y="254" width="250" height="56" rx="8"/><text x="332" y="277" font-size="13" font-weight="600" class="badT">Dead-letter queue</text><text x="332" y="296" font-size="11.5">chờ người xem, không tự xử lý lại</text>
-</svg>
-<p class="fig-caption">Message chỉ có một lối ra "bị xoá": consumer gọi Complete. Mọi đường khác đều quay về queue, cho tới khi hết lượt thì sang dead-letter queue.</p>
-</div>
+Nhìn vào chỗ "bị xoá": chỉ có một mũi tên đi tới đó, là `Complete()`. Mọi đường khác đều vòng về queue, cho tới khi hết lượt thì sang dead-letter queue.
+
+```mermaid
+flowchart TB
+    Q["Queue<br/>order-confirmation"] -- "giao + khoá" --> C["Consumer xử lý<br/>bị khoá, chưa bị xoá"]
+    C -- "Complete()" --> D["Message bị xoá"]
+    C -- "exception: Abandon ngay" --> R["DeliveryCount + 1<br/>vượt MaxDeliveryCount (10)?"]
+    C -- "crash: lock hết hạn (1 phút)" --> R
+    R -- "chưa: giao lại" --> Q
+    R -- "rồi" --> DLQ["Dead-letter queue<br/>chờ người xem"]
+    classDef ok fill:#10b98124,stroke:#10b981,stroke-width:2px
+    classDef bad fill:#f43f5e24,stroke:#e5484d,stroke-width:2px
+    class D ok
+    class DLQ bad
+```
 
 Các con số là mặc định, chỉnh được trên queue: lock duration 1 phút (tối đa 5 phút), MaxDeliveryCount 10. Code với `ServiceBusProcessor`:
 
@@ -122,17 +108,24 @@ Consumer biết chắc thử lại vô ích (validation sai) thì đừng đốt
 
 **Vì message chỉ bị xoá *sau* `Complete`, nên consumer có thể làm xong việc rồi chết ngay trước `Complete`; message quay lại và việc chạy lần hai.**
 
-<div class="fig">
-<svg viewBox="0 0 720 150" role="img" aria-label="Dòng thời gian: nhận message, gửi email, crash trước Complete, lock hết hạn, giao lại và gửi email lần hai">
-<line class="lnMuted" x1="30" y1="62" x2="690" y2="62"/>
-<circle cx="70" cy="62" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="70" cy="62" r="13"/><text x="70" y="67" font-size="13" text-anchor="middle" font-weight="700" class="accT">1</text><text x="70" y="102" font-size="12.5" font-weight="600" text-anchor="middle">Nhận message</text><text x="70" y="120" font-size="11.5" text-anchor="middle" class="muted">bị khoá</text>
-<circle cx="210" cy="62" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxOk" cx="210" cy="62" r="13"/><text x="210" y="67" font-size="13" text-anchor="middle" font-weight="700" class="okT">2</text><text x="210" y="102" font-size="12.5" font-weight="600" text-anchor="middle" class="okT">Gửi email</text><text x="210" y="120" font-size="11.5" text-anchor="middle" class="muted">khách đã nhận</text>
-<circle cx="350" cy="62" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxBad" cx="350" cy="62" r="13"/><text x="350" y="67" font-size="13" text-anchor="middle" font-weight="700" class="badT">3</text><text x="350" y="102" font-size="12.5" font-weight="600" text-anchor="middle" class="badT">Crash</text><text x="350" y="120" font-size="11.5" text-anchor="middle" class="muted">chưa gọi Complete()</text>
-<circle cx="490" cy="62" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="490" cy="62" r="13"/><text x="490" y="67" font-size="13" text-anchor="middle" font-weight="700" class="accT">4</text><text x="490" y="102" font-size="12.5" font-weight="600" text-anchor="middle">Lock hết hạn</text><text x="490" y="120" font-size="11.5" text-anchor="middle" class="muted">sau 1 phút</text>
-<circle cx="630" cy="62" r="13" style="fill:var(--vp-c-bg)"/><circle class="boxBad" cx="630" cy="62" r="13"/><text x="630" y="67" font-size="13" text-anchor="middle" font-weight="700" class="badT">5</text><text x="630" y="102" font-size="12.5" font-weight="600" text-anchor="middle" class="badT">Giao lại</text><text x="630" y="120" font-size="11.5" text-anchor="middle" class="muted">gửi email lần 2</text>
-<text x="360" y="24" font-size="11.5" text-anchor="middle" class="muted">không mất việc (mục 3) và có thể trùng (mục này) là hai mặt của cùng một luật</text>
-</svg>
-</div>
+Theo dõi cột Email: cùng một message, khách nhận hai email.
+
+```mermaid
+sequenceDiagram
+    participant Q as Queue
+    participant C as Consumer
+    participant E as Email
+    Q->>C: giao OrderPlaced, message bị khoá
+    C->>E: gửi email xác nhận
+    E-->>C: OK, khách đã nhận
+    Note over C: crash trước khi gọi Complete()
+    Note over Q: 1 phút sau lock hết hạn, message vẫn còn
+    Q->>C: giao lại (consumer đã chạy lại), DeliveryCount = 2
+    C->>E: gửi email xác nhận lần 2
+    C->>Q: Complete(), giờ mới xoá
+```
+
+Không mất việc ([mục 3](#dead-letter)) và có thể trùng (mục này) là hai mặt của cùng một luật.
 
 Nên cam kết của broker là <T>at-least-once</T> (giao ít nhất một lần), không phải exactly-once. Không broker nào giao đúng một lần qua mạng được, vì luôn có khoảnh khắc "đã làm xong nhưng chưa kịp báo". Thứ làm được là **xử lý đúng một lần về mặt kết quả**: at-least-once cộng với consumer idempotent (mục 5).
 
@@ -146,13 +139,11 @@ Service Bus có **duplicate detection** (phải bật lúc tạo queue, theo `Me
 
 Lưu `MessageId` đã xử lý vào bảng có khoá chính là `MessageId`. Câu hỏi quyết định đúng sai là **lưu id lúc nào so với việc nghiệp vụ**:
 
-<div class="fig">
-<svg viewBox="0 0 720 200" role="img" aria-label="Ba thứ tự: lưu id trước thì crash làm mất việc, làm trước thì crash làm trùng, chung transaction thì đủ cả hai hoặc không có gì">
-<rect class="boxBad" x="10" y="10" width="226" height="180" rx="8"/><text x="22" y="34" font-size="13" font-weight="600" class="badT">A. Lưu id trước, làm sau</text><text x="22" y="62" font-size="11.5">1. INSERT MessageId, commit</text><text x="22" y="84" font-size="11.5">2. crash trước khi giữ hàng</text><text x="22" y="106" font-size="11.5">3. giao lại: thấy id → bỏ qua</text><line class="lnMuted" x1="22" y1="124" x2="224" y2="124"/><text x="22" y="148" font-size="12" font-weight="600" class="badT">hàng không bao giờ được giữ</text><text x="22" y="170" font-size="11.5" class="muted">mất việc, không ai biết</text>
-<rect class="boxBad" x="247" y="10" width="226" height="180" rx="8"/><text x="259" y="34" font-size="13" font-weight="600" class="badT">B. Làm trước, lưu id sau</text><text x="259" y="62" font-size="11.5">1. giữ hàng, commit</text><text x="259" y="84" font-size="11.5">2. crash trước khi lưu id</text><text x="259" y="106" font-size="11.5">3. giao lại: chưa có id → làm</text><line class="lnMuted" x1="259" y1="124" x2="461" y2="124"/><text x="259" y="148" font-size="12" font-weight="600" class="badT">giữ hàng hai lần</text><text x="259" y="170" font-size="11.5" class="muted">kho lệch</text>
-<rect class="boxOk" x="484" y="10" width="226" height="180" rx="8"/><text x="496" y="34" font-size="13" font-weight="600" class="okT">C. Cùng một transaction</text><text x="496" y="62" font-size="11.5">1. INSERT id + giữ hàng</text><text x="496" y="84" font-size="11.5">2. commit một lần</text><text x="496" y="106" font-size="11.5">crash trước commit: cả hai mất</text><line class="lnMuted" x1="496" y1="124" x2="698" y2="124"/><text x="496" y="148" font-size="12" font-weight="600" class="okT">đủ cả hai, hoặc không có gì</text><text x="496" y="170" font-size="11.5" class="muted">giao lại thì làm lại sạch</text>
-</svg>
-</div>
+```text
+Lưu id trước:       crash ở giữa → giao lại thấy id → bỏ qua → KHÔNG BAO GIỜ giữ hàng
+Giữ hàng trước:     crash ở giữa → giao lại không thấy id → giữ hàng LẦN HAI
+Chung transaction:  hoặc cả hai cùng có, hoặc cả hai cùng không → giao lại làm sạch
+```
 
 Với EF Core, một lần `SaveChangesAsync` đã là một transaction, nên chỉ cần add cả hai rồi save một lần:
 
@@ -185,31 +176,31 @@ API không hỗ trợ key thì còn hai cách: hỏi trạng thái trước khi 
 **Queue giao mỗi message cho đúng một consumer (người đang giữ lock); topic chép mỗi message vào từng subscription, và mỗi subscription là một queue riêng.**
 
 <div class="fig">
-<svg viewBox="0 0 720 250" role="img" aria-label="Trái: queue send-email với ba instance chia nhau message. Phải: topic order-placed với ba subscription, mỗi subscription nhận một bản">
-<text x="10" y="20" font-size="12.5" font-weight="600" class="muted">Queue · mỗi message một người xử lý</text>
-<rect class="box" x="10" y="100" width="80" height="44" rx="8"/><text x="50" y="127" font-size="12.5" text-anchor="middle">Order</text>
-<line class="ln" x1="90" y1="122" x2="116" y2="122" marker-end="url(#msInk)"/>
-<rect class="boxAcc" x="120" y="92" width="100" height="60" rx="8"/><text x="170" y="117" font-size="13" font-weight="600" text-anchor="middle" class="accT">queue</text><text x="170" y="136" font-size="11" text-anchor="middle" class="mono">send-email</text>
-<text x="300" y="34" font-size="11" text-anchor="middle" class="muted">Notification × 3 instance</text>
-<rect class="box" x="250" y="44" width="100" height="40" rx="8"/><text x="300" y="69" font-size="12" text-anchor="middle">instance 1 · M1</text>
-<rect class="box" x="250" y="102" width="100" height="40" rx="8"/><text x="300" y="127" font-size="12" text-anchor="middle">instance 2 · M2</text>
-<rect class="box" x="250" y="160" width="100" height="40" rx="8"/><text x="300" y="185" font-size="12" text-anchor="middle">instance 3 · M3</text>
-<line class="ln" x1="220" y1="110" x2="246" y2="66" marker-end="url(#msInk)"/>
-<line class="ln" x1="220" y1="122" x2="246" y2="122" marker-end="url(#msInk)"/>
-<line class="ln" x1="220" y1="134" x2="246" y2="178" marker-end="url(#msInk)"/>
-<text x="180" y="232" font-size="11.5" text-anchor="middle" class="muted">competing consumers: thêm instance = chia tải</text>
-<text x="370" y="20" font-size="12.5" font-weight="600" class="muted">Topic · mỗi subscription một bản</text>
-<rect class="box" x="370" y="100" width="70" height="44" rx="8"/><text x="405" y="127" font-size="12.5" text-anchor="middle">Order</text>
-<line class="ln" x1="440" y1="122" x2="461" y2="122" marker-end="url(#msInk)"/>
-<rect class="boxAcc" x="465" y="92" width="100" height="60" rx="8"/><text x="515" y="117" font-size="13" font-weight="600" text-anchor="middle" class="accT">topic</text><text x="515" y="136" font-size="11" text-anchor="middle" class="mono">order-placed</text>
-<text x="710" y="34" font-size="11" text-anchor="end" class="muted">3 subscription, mỗi cái nhận M1</text>
-<rect class="boxOk" x="600" y="44" width="110" height="40" rx="8"/><text x="655" y="69" font-size="11.5" text-anchor="middle" class="mono">inventory</text>
-<rect class="boxOk" x="600" y="102" width="110" height="40" rx="8"/><text x="655" y="127" font-size="11.5" text-anchor="middle" class="mono">shipping</text>
-<rect class="boxOk" x="600" y="160" width="110" height="40" rx="8"/><text x="655" y="185" font-size="11.5" text-anchor="middle" class="mono">notification</text>
-<line class="lnOk" x1="565" y1="110" x2="596" y2="66" marker-end="url(#msOk)"/>
-<line class="lnOk" x1="565" y1="122" x2="596" y2="122" marker-end="url(#msOk)"/>
-<line class="lnOk" x1="565" y1="134" x2="596" y2="178" marker-end="url(#msOk)"/>
-<text x="540" y="232" font-size="11.5" text-anchor="middle" class="muted">thêm nơi nghe = thêm subscription, Order không đổi</text>
+<svg viewBox="0 0 800 256" role="img" aria-label="Trái: queue send-email với ba instance chia nhau message. Phải: topic order-placed với ba subscription, mỗi subscription nhận một bản">
+<text x="10" y="18" font-size="12.5" font-weight="600" class="muted">Queue · mỗi message một người xử lý</text>
+<rect class="box" x="10" y="106" width="70" height="44" rx="8"/><text x="45" y="133" font-size="12.5" text-anchor="middle">Order</text>
+<line class="ln" x1="80" y1="128" x2="122" y2="128" marker-end="url(#msInk)"/>
+<rect class="boxAcc" x="126" y="98" width="100" height="60" rx="8"/><text x="176" y="123" font-size="13" font-weight="600" text-anchor="middle" class="accT">queue</text><text x="176" y="142" font-size="11" text-anchor="middle" class="mono">send-email</text>
+<text x="335" y="38" font-size="11" text-anchor="middle" class="muted">Notification × 3 instance</text>
+<rect class="box" x="280" y="48" width="110" height="40" rx="8"/><text x="335" y="73" font-size="12" text-anchor="middle">instance 1 · M1</text>
+<rect class="box" x="280" y="108" width="110" height="40" rx="8"/><text x="335" y="133" font-size="12" text-anchor="middle">instance 2 · M2</text>
+<rect class="box" x="280" y="168" width="110" height="40" rx="8"/><text x="335" y="193" font-size="12" text-anchor="middle">instance 3 · M3</text>
+<line class="ln" x1="226" y1="116" x2="276" y2="70" marker-end="url(#msInk)"/>
+<line class="ln" x1="226" y1="128" x2="276" y2="128" marker-end="url(#msInk)"/>
+<line class="ln" x1="226" y1="140" x2="276" y2="186" marker-end="url(#msInk)"/>
+<text x="200" y="240" font-size="11.5" text-anchor="middle" class="muted">competing consumers: thêm instance = chia tải</text>
+<text x="420" y="18" font-size="12.5" font-weight="600" class="muted">Topic · mỗi subscription một bản</text>
+<rect class="box" x="420" y="106" width="70" height="44" rx="8"/><text x="455" y="133" font-size="12.5" text-anchor="middle">Order</text>
+<line class="ln" x1="490" y1="128" x2="532" y2="128" marker-end="url(#msInk)"/>
+<rect class="boxAcc" x="536" y="98" width="100" height="60" rx="8"/><text x="586" y="123" font-size="13" font-weight="600" text-anchor="middle" class="accT">topic</text><text x="586" y="142" font-size="11" text-anchor="middle" class="mono">order-placed</text>
+<text x="790" y="38" font-size="11" text-anchor="end" class="muted">3 subscription, mỗi cái nhận M1</text>
+<rect class="boxOk" x="690" y="48" width="100" height="40" rx="8"/><text x="740" y="73" font-size="11.5" text-anchor="middle" class="mono">inventory</text>
+<rect class="boxOk" x="690" y="108" width="100" height="40" rx="8"/><text x="740" y="133" font-size="11.5" text-anchor="middle" class="mono">shipping</text>
+<rect class="boxOk" x="690" y="168" width="100" height="40" rx="8"/><text x="740" y="193" font-size="11.5" text-anchor="middle" class="mono">notification</text>
+<line class="lnOk" x1="636" y1="116" x2="686" y2="70" marker-end="url(#msOk)"/>
+<line class="lnOk" x1="636" y1="128" x2="686" y2="128" marker-end="url(#msOk)"/>
+<line class="lnOk" x1="636" y1="140" x2="686" y2="186" marker-end="url(#msOk)"/>
+<text x="605" y="240" font-size="11.5" text-anchor="middle" class="muted">thêm nơi nghe = thêm subscription, Order không đổi</text>
 </svg>
 </div>
 
@@ -227,34 +218,34 @@ Suy ra từ đó:
 
 **Order phải làm hai việc, lưu đơn vào SQL Server và publish `OrderPlaced`, nhưng hai hệ thống này không có transaction chung, nên crash giữa hai bước để lại một nửa.** Đây là <T>dual write</T>; thứ tự nào cũng hỏng, chỉ hỏng kiểu khác:
 
-<div class="fig">
-<svg viewBox="0 0 720 250" role="img" aria-label="Ba hàng: commit trước thì mất event, publish trước thì có event về đơn không tồn tại, outbox thì có thể publish trùng">
-<rect class="boxBad" x="10" y="10" width="130" height="64" rx="8"/><text x="22" y="37" font-size="12.5" font-weight="600" class="badT">A. Commit DB</text><text x="22" y="56" font-size="12.5" font-weight="600" class="badT">rồi publish</text>
-<rect class="box" x="160" y="10" width="170" height="64" rx="8"/><text x="172" y="37" font-size="11.5">INSERT Order</text><text x="172" y="56" font-size="11.5">commit</text>
-<line class="ln" x1="330" y1="42" x2="346" y2="42" marker-end="url(#msInk)"/>
-<rect class="boxBad" x="350" y="10" width="170" height="64" rx="8"/><text x="362" y="37" font-size="11.5" class="badT">crash</text><text x="362" y="56" font-size="11.5">trước khi publish</text>
-<line class="ln" x1="520" y1="42" x2="536" y2="42" marker-end="url(#msInk)"/>
-<rect class="boxBad" x="540" y="10" width="170" height="64" rx="8"/><text x="552" y="37" font-size="11.5">đơn có trong DB,</text><text x="552" y="56" font-size="11.5">không ai giữ hàng, gửi mail</text>
-<rect class="boxBad" x="10" y="92" width="130" height="64" rx="8"/><text x="22" y="119" font-size="12.5" font-weight="600" class="badT">B. Publish</text><text x="22" y="138" font-size="12.5" font-weight="600" class="badT">rồi commit</text>
-<rect class="box" x="160" y="92" width="170" height="64" rx="8"/><text x="172" y="119" font-size="11.5">publish OrderPlaced</text><text x="172" y="138" font-size="11.5" class="muted">broker nhận rồi</text>
-<line class="ln" x1="330" y1="124" x2="346" y2="124" marker-end="url(#msInk)"/>
-<rect class="boxBad" x="350" y="92" width="170" height="64" rx="8"/><text x="362" y="119" font-size="11.5" class="badT">SaveChanges lỗi</text><text x="362" y="138" font-size="11.5">rollback</text>
-<line class="ln" x1="520" y1="124" x2="536" y2="124" marker-end="url(#msInk)"/>
-<rect class="boxBad" x="540" y="92" width="170" height="64" rx="8"/><text x="552" y="119" font-size="11.5">Shipping chuẩn bị giao</text><text x="552" y="138" font-size="11.5">một đơn không tồn tại</text>
-<rect class="boxOk" x="10" y="174" width="130" height="64" rx="8"/><text x="22" y="201" font-size="12.5" font-weight="600" class="okT">C. Outbox</text><text x="22" y="220" font-size="11.5" class="muted">event là một dòng</text>
-<rect class="boxOk" x="160" y="174" width="170" height="64" rx="8"/><text x="172" y="201" font-size="11.5">INSERT Order + Outbox</text><text x="172" y="220" font-size="11.5">một transaction</text>
-<line class="lnOk" x1="330" y1="206" x2="346" y2="206" marker-end="url(#msOk)"/>
-<rect class="boxOk" x="350" y="174" width="170" height="64" rx="8"/><text x="362" y="201" font-size="11.5">worker đọc Outbox,</text><text x="362" y="220" font-size="11.5">publish, ghi SentAt</text>
-<line class="ln" x1="520" y1="206" x2="536" y2="206" marker-end="url(#msInk)"/>
-<rect class="boxAcc" x="540" y="174" width="170" height="64" rx="8"/><text x="552" y="201" font-size="11.5">crash trước SentAt</text><text x="552" y="220" font-size="11.5" class="accT">→ publish lại: trùng</text>
-</svg>
-</div>
+```text
+Commit rồi publish:  crash ở giữa → đơn có trong DB, không ai giữ hàng, gửi mail
+Publish rồi commit:  commit lỗi, rollback → Shipping chuẩn bị giao đơn không tồn tại
+```
 
-Hàng A là ca nguy hiểm nhất vì im lặng: đơn đã tạo, khách đã thấy "đặt hàng thành công", nhưng Inventory, Shipping, Notification không bao giờ biết.
+Thứ tự đầu (commit rồi publish) là ca nguy hiểm nhất vì im lặng: đơn đã tạo, khách đã thấy "đặt hàng thành công", nhưng Inventory, Shipping, Notification không bao giờ biết.
 
 ### Outbox table: biến "publish" thành một dòng trong DB {#outbox-table}
 
-**Vì một transaction DB thì nguyên tử, nên ghi event thành một dòng trong bảng `OutboxMessages` cùng transaction với đơn hàng: có đơn thì chắc chắn có event.** Việc publish chuyển cho một `BackgroundService` riêng:
+**Vì một transaction DB thì nguyên tử, nên ghi event thành một dòng trong bảng `OutboxMessages` cùng transaction với đơn hàng: có đơn thì chắc chắn có event.** Việc publish chuyển cho một `BackgroundService` riêng. Nhìn vào Note cuối: chỗ hở còn lại nằm giữa "publish" và "ghi `SentAt`".
+
+```mermaid
+sequenceDiagram
+    participant A as OrdersController
+    participant DB as SQL Server
+    participant W as OutboxPublisher
+    participant B as Service Bus
+    A->>DB: INSERT Order + OutboxMessages<br/>trong một transaction
+    Note over A,DB: có đơn thì chắc chắn có dòng outbox
+    loop mỗi vài giây
+        W->>DB: đọc các dòng SentAt = NULL
+        W->>B: publish, MessageId = Id dòng outbox
+        W->>DB: ghi SentAt
+    end
+    Note over W,B: crash sau publish, trước khi ghi SentAt<br/>→ lần sau publish lại → consumer phải idempotent
+```
+
+Code hai phía:
 
 ::: code-group
 
@@ -295,27 +286,30 @@ Chiều ngược lại cũng vậy: webhook "thanh toán thành công" từ cổ
 
 **Đặt hàng đi qua nhiều hệ thống không chung transaction, nên mỗi bước commit riêng; khi bước sau hỏng hẳn, bước trước đã xảy ra rồi và không rollback được.** Saga là cách tổ chức quy trình đó: chuỗi bước local, mỗi bước có một hành động bù (compensation) nếu cần quay đầu.
 
-<div class="fig">
-<svg viewBox="0 0 720 280" role="img" aria-label="Saga đặt hàng: giữ hàng, trừ tiền, đặt giao hàng thất bại; bù bằng hoàn tiền, nhả hàng, đơn Cancelled và email báo huỷ">
-<text x="85" y="22" font-size="11" text-anchor="middle" class="muted">Inventory</text><text x="265" y="22" font-size="11" text-anchor="middle" class="muted">Payment · cổng ngoài</text><text x="445" y="22" font-size="11" text-anchor="middle" class="muted">Shipping · hãng ngoài</text><text x="625" y="22" font-size="11" text-anchor="middle" class="muted">Notification</text>
-<rect class="boxOk" x="10" y="32" width="150" height="56" rx="8"/><text x="22" y="56" font-size="12.5" font-weight="600">1. Giữ hàng</text><text x="22" y="75" font-size="11.5" class="muted">commit local</text>
-<line class="lnOk" x1="160" y1="60" x2="186" y2="60" marker-end="url(#msOk)"/>
-<rect class="boxOk" x="190" y="32" width="150" height="56" rx="8"/><text x="202" y="56" font-size="12.5" font-weight="600">2. Trừ tiền</text><text x="202" y="75" font-size="11.5" class="muted">tiền đã đi</text>
-<line class="lnOk" x1="340" y1="60" x2="366" y2="60" marker-end="url(#msOk)"/>
-<rect class="boxBad" x="370" y="32" width="150" height="56" rx="8"/><text x="382" y="56" font-size="12.5" font-weight="600" class="badT">3. Đặt giao hàng</text><text x="382" y="75" font-size="11.5">hỏng hẳn: không giao</text>
-<line class="lnMuted dash" x1="520" y1="60" x2="546" y2="60"/>
-<rect class="box dash" x="550" y="32" width="150" height="56" rx="8"/><text x="562" y="56" font-size="12.5" font-weight="600" class="muted">4. Báo khách</text><text x="562" y="75" font-size="11.5" class="muted">không tới bước này</text>
-<path class="lnBad dash" d="M445 88 V150 H344" marker-end="url(#msBad)"/>
-<text x="452" y="124" font-size="11.5" class="badT">không rollback được</text>
-<text x="452" y="140" font-size="11.5" class="badT">→ chạy compensation</text>
-<rect class="boxAcc" x="190" y="122" width="150" height="56" rx="8"/><text x="202" y="146" font-size="12.5" font-weight="600" class="accT">a. Hoàn tiền</text><text x="202" y="165" font-size="11.5">giao dịch mới ở cổng</text>
-<line class="lnBad dash" x1="190" y1="150" x2="164" y2="150" marker-end="url(#msBad)"/>
-<rect class="boxAcc" x="10" y="122" width="150" height="56" rx="8"/><text x="22" y="146" font-size="12.5" font-weight="600" class="accT">b. Nhả hàng</text><text x="22" y="165" font-size="11.5">trả lại số lượng</text>
-<path class="lnBad dash" d="M85 178 V206" marker-end="url(#msBad)"/>
-<rect class="boxAcc" x="10" y="210" width="700" height="56" rx="8"/><text x="22" y="234" font-size="12.5" font-weight="600" class="accT">c. Order → Cancelled (giữ lại làm lịch sử) · gửi email mới báo đơn bị huỷ</text><text x="22" y="253" font-size="11.5" class="muted">không DELETE gì: trừ tiền và hoàn tiền đều là sự thật đã xảy ra, kế toán và hỗ trợ khách hàng cần thấy cả hai</text>
-</svg>
-<p class="fig-caption">Hàng trên: các bước tiến, mỗi bước commit ở hệ thống của nó. Hàng dưới: compensation chạy ngược, mỗi cái là một hành động nghiệp vụ mới.</p>
-</div>
+Khung trên là các bước tiến; bước 3 (đỏ) hỏng hẳn. Khung dưới đọc từ phải sang trái: compensation chạy ngược, mỗi cái là một hành động nghiệp vụ mới.
+
+```mermaid
+flowchart TB
+    subgraph fwd ["Bước tiến: mỗi bước commit ở hệ thống của nó"]
+        direction LR
+        S1["1. Giữ hàng<br/>Inventory"] --> S2["2. Trừ tiền<br/>cổng thanh toán"] --> S3["3. Đặt giao hàng<br/>hỏng hẳn"]
+    end
+    subgraph back ["Compensation: chạy ngược, mỗi cái là hành động mới"]
+        direction RL
+        C1["Hoàn tiền<br/>giao dịch mới ở cổng"] -.-> C2["Nhả hàng<br/>trả lại số lượng"] -.-> C3["Order → Cancelled<br/>giữ lại làm lịch sử<br/>+ email báo huỷ"]
+    end
+    fwd -. "bước 3 hỏng, không rollback được" .-> back
+    classDef ok fill:#10b98124,stroke:#10b981,stroke-width:1.5px
+    classDef failed fill:#f43f5e24,stroke:#e5484d,stroke-width:2px
+    classDef comp fill:#646cff24,stroke:#646cff,stroke-width:1.5px
+    class S1,S2 ok
+    class S3 failed
+    class C1,C2,C3 comp
+    style fwd fill:none,stroke:#8888,stroke-dasharray:4 4
+    style back fill:none,stroke:#8888,stroke-dasharray:4 4
+```
+
+Không DELETE gì: trừ tiền và hoàn tiền đều là sự thật đã xảy ra, kế toán và hỗ trợ khách hàng cần thấy cả hai.
 
 **Saga tồn tại vì nhiều hệ thống không chung transaction, không phải vì microservices.** Một monolith gọi cổng thanh toán và hãng vận chuyển bên ngoài cũng phải chia bước kiểu saga, vì không thể `BEGIN TRAN` qua API của người khác. Microservices chỉ làm tình huống này xảy ra nhiều hơn, vì mỗi service có DB riêng ([database per service](/architecture/microservices#database-per-service)).
 
@@ -338,29 +332,29 @@ Thứ tự bước cũng là thiết kế: đặt bước dễ bù (giữ hàng:
 **Saga cần ai đó quyết bước tiếp theo; hai cách khác nhau ở chỗ quyết định đó nằm rải trong từng service, hay nằm ở một coordinator.**
 
 <div class="fig">
-<svg viewBox="0 0 720 260" role="img" aria-label="Trái: choreography, các service nối nhau bằng event. Phải: orchestration, OrderSaga ở giữa gửi lệnh tới bốn service">
-<text x="10" y="20" font-size="12.5" font-weight="600" class="muted">Choreography · service nghe event, tự làm bước mình</text>
-<rect class="box" x="10" y="50" width="110" height="40" rx="8"/><text x="65" y="75" font-size="12" text-anchor="middle">Order</text>
-<rect class="box" x="230" y="50" width="110" height="40" rx="8"/><text x="285" y="75" font-size="12" text-anchor="middle">Inventory</text>
-<rect class="box" x="230" y="160" width="110" height="40" rx="8"/><text x="285" y="185" font-size="12" text-anchor="middle">Payment</text>
-<rect class="box" x="10" y="160" width="110" height="40" rx="8"/><text x="65" y="185" font-size="12" text-anchor="middle">Shipping</text>
-<line class="ln" x1="120" y1="70" x2="226" y2="70" marker-end="url(#msInk)"/><text x="175" y="62" font-size="10.5" text-anchor="middle" class="mono muted">OrderPlaced</text>
-<line class="ln" x1="285" y1="90" x2="285" y2="156" marker-end="url(#msInk)"/><text x="278" y="128" font-size="10.5" text-anchor="end" class="mono muted">StockReserved</text>
-<line class="ln" x1="230" y1="180" x2="124" y2="180" marker-end="url(#msInk)"/><text x="175" y="172" font-size="10.5" text-anchor="middle" class="mono muted">PaymentCharged</text>
-<text x="175" y="232" font-size="11.5" text-anchor="middle" class="badT">luồng nằm rải trong 4 service</text>
-<text x="175" y="250" font-size="11.5" text-anchor="middle" class="muted">"đơn 123 đang kẹt ở đâu?" phải ghép log</text>
-<text x="370" y="20" font-size="12.5" font-weight="600" class="muted">Orchestration · coordinator gửi lệnh, nhận kết quả</text>
-<rect class="box" x="380" y="40" width="110" height="36" rx="8"/><text x="435" y="63" font-size="12" text-anchor="middle">Inventory</text>
-<rect class="box" x="600" y="40" width="110" height="36" rx="8"/><text x="655" y="63" font-size="12" text-anchor="middle">Payment</text>
-<rect class="box" x="600" y="170" width="110" height="36" rx="8"/><text x="655" y="193" font-size="12" text-anchor="middle">Shipping</text>
-<rect class="box" x="380" y="170" width="110" height="36" rx="8"/><text x="435" y="193" font-size="12" text-anchor="middle">Notification</text>
-<rect class="boxAcc" x="470" y="100" width="140" height="50" rx="8"/><text x="540" y="121" font-size="13" font-weight="600" text-anchor="middle" class="accT">OrderSaga</text><text x="540" y="139" font-size="11" text-anchor="middle">trạng thái từng đơn</text>
-<line class="lnAcc" x1="500" y1="100" x2="450" y2="80" marker-start="url(#msAcc)" marker-end="url(#msAcc)"/>
-<line class="lnAcc" x1="580" y1="100" x2="640" y2="80" marker-start="url(#msAcc)" marker-end="url(#msAcc)"/>
-<line class="lnAcc" x1="580" y1="150" x2="640" y2="166" marker-start="url(#msAcc)" marker-end="url(#msAcc)"/>
-<line class="lnAcc" x1="500" y1="150" x2="450" y2="166" marker-start="url(#msAcc)" marker-end="url(#msAcc)"/>
-<text x="545" y="232" font-size="11.5" text-anchor="middle" class="okT">một chỗ trả lời "đơn 123 đang ở bước nào"</text>
-<text x="545" y="250" font-size="11.5" text-anchor="middle" class="muted">thêm một thành phần phải viết và vận hành</text>
+<svg viewBox="0 0 740 280" role="img" aria-label="Trái: choreography, các service nối nhau bằng event. Phải: orchestration, OrderSaga ở giữa gửi lệnh tới bốn service">
+<text x="10" y="18" font-size="12.5" font-weight="600" class="muted">Choreography · service nghe event, tự làm bước mình</text>
+<rect class="box" x="10" y="46" width="110" height="40" rx="8"/><text x="65" y="71" font-size="12" text-anchor="middle">Order</text>
+<rect class="box" x="230" y="46" width="110" height="40" rx="8"/><text x="285" y="71" font-size="12" text-anchor="middle">Inventory</text>
+<rect class="box" x="230" y="170" width="110" height="40" rx="8"/><text x="285" y="195" font-size="12" text-anchor="middle">Payment</text>
+<rect class="box" x="10" y="170" width="110" height="40" rx="8"/><text x="65" y="195" font-size="12" text-anchor="middle">Shipping</text>
+<line class="ln" x1="120" y1="66" x2="226" y2="66" marker-end="url(#msInk)"/><text x="175" y="58" font-size="10.5" text-anchor="middle" class="mono muted">OrderPlaced</text>
+<line class="ln" x1="285" y1="86" x2="285" y2="166" marker-end="url(#msInk)"/><text x="278" y="132" font-size="10.5" text-anchor="end" class="mono muted">StockReserved</text>
+<line class="ln" x1="230" y1="190" x2="124" y2="190" marker-end="url(#msInk)"/><text x="175" y="182" font-size="10.5" text-anchor="middle" class="mono muted">PaymentCharged</text>
+<text x="175" y="248" font-size="11.5" text-anchor="middle" class="badT">luồng nằm rải trong 4 service</text>
+<text x="175" y="266" font-size="11.5" text-anchor="middle" class="muted">"đơn 123 đang kẹt ở đâu?" phải ghép log</text>
+<text x="390" y="18" font-size="12.5" font-weight="600" class="muted">Orchestration · coordinator gửi lệnh, nhận kết quả</text>
+<rect class="box" x="390" y="34" width="110" height="36" rx="8"/><text x="445" y="57" font-size="12" text-anchor="middle">Inventory</text>
+<rect class="box" x="620" y="34" width="110" height="36" rx="8"/><text x="675" y="57" font-size="12" text-anchor="middle">Payment</text>
+<rect class="box" x="620" y="186" width="110" height="36" rx="8"/><text x="675" y="209" font-size="12" text-anchor="middle">Shipping</text>
+<rect class="box" x="390" y="186" width="110" height="36" rx="8"/><text x="445" y="209" font-size="12" text-anchor="middle">Notification</text>
+<rect class="boxAcc" x="490" y="103" width="140" height="50" rx="8"/><text x="560" y="124" font-size="13" font-weight="600" text-anchor="middle" class="accT">OrderSaga</text><text x="560" y="142" font-size="11" text-anchor="middle">trạng thái từng đơn</text>
+<line class="lnAcc" x1="514" y1="103" x2="470" y2="74" marker-start="url(#msAcc)" marker-end="url(#msAcc)"/>
+<line class="lnAcc" x1="606" y1="103" x2="650" y2="74" marker-start="url(#msAcc)" marker-end="url(#msAcc)"/>
+<line class="lnAcc" x1="606" y1="153" x2="650" y2="182" marker-start="url(#msAcc)" marker-end="url(#msAcc)"/>
+<line class="lnAcc" x1="514" y1="153" x2="470" y2="182" marker-start="url(#msAcc)" marker-end="url(#msAcc)"/>
+<text x="560" y="248" font-size="11.5" text-anchor="middle" class="okT">một chỗ trả lời "đơn 123 đang ở bước nào"</text>
+<text x="560" y="266" font-size="11.5" text-anchor="middle" class="muted">thêm một thành phần phải viết và vận hành</text>
 </svg>
 </div>
 

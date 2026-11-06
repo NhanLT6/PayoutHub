@@ -28,7 +28,9 @@ Nhan có thể gõ tiếng Anh (đỡ đổi bộ gõ); vẫn trả lời tiến
 Nhan học bằng **suy luận từ hình**, không học thuộc danh sách. Khung dựa trên Diátaxis (loại "explanation": vì sao, liên hệ), nguyên tắc multimedia của Mayer (bỏ thứ thừa, chia đoạn, có tín hiệu dẫn mắt) và concreteness fading (cụ thể trước, trừu tượng sau). Trang mẫu: `aspnet-core/dependency-injection.md`.
 
 1. **Mở đầu = giới thiệu chủ đề**: nó là gì, giải quyết gì, trang đi qua những gì. Không nhắc lại mục lục bên phải.
-   Ngay dưới là **bản đồ chủ đề**: một hình đủ để ôn lại cả chủ đề mà không đọc chữ (advance organizer / progressive disclosure). Nó chứa **khung xương**, không chứa toàn bộ nội dung: vấn đề, các thành phần và quan hệ giữa chúng, 3–5 luật/bẫy hay bị hỏi, theo cùng một ví dụ. Khoảng 12 nút trở xuống, mỗi nút đánh số và link tới mục chi tiết. Ai đã học một lần thì nhìn nút là nhớ lại được; chưa nhớ thì bấm vào đọc mục đó.
+   Ngay dưới là **bản đồ chủ đề**: một hình **tổng quan** để ôn lại luồng chính của chủ đề mà không đọc chữ (advance organizer / progressive disclosure). Nó không phải chỗ gom mọi thứ của trang. Nó chứa **khung xương**, không chứa toàn bộ nội dung: vấn đề, các thành phần và quan hệ giữa chúng, 3–5 luật/bẫy hay bị hỏi, theo cùng một ví dụ. Khoảng 12 nút trở xuống, nút link tới mục chi tiết. Ai đã học một lần thì nhìn nút là nhớ lại được; chưa nhớ thì bấm vào đọc mục đó.
+   - Bản đồ kể **một luồng duy nhất** (một request, một message, một lệnh đi qua các chặng). Những câu chuyện không gắn chặt với luồng đó (vd tách monolith so với request chạy giữa các service) không gom vào: mỗi câu chuyện một hình riêng ở mục của nó.
+   - **Số trong hình = thứ tự đọc** theo luồng (1 rồi 2 rồi 3...). Nút chỉ để link tới mục thì không đánh số.
 2. **Vấn đề trước**: code thật bị đau ở đâu khi chưa có thứ này.
 3. **Một ví dụ tiến hoá** (một hình): mỗi bước chữa cái đau của bước trước, tên khái niệm chỉ là nhãn dán lên bước đó. Khác biệt giữa các khái niệm phải tự hiện ra từ câu chuyện. **Không làm bảng "Dễ nhầm" A vs B** bắt nhớ từng dòng.
 4. **Cơ chế bên trong**: một **bản đồ tổng quan** cho thấy các thành phần liên quan nhau (ai giữ gì, ai gọi ai), theo một ví dụ đi qua các chặng có đánh số; rồi mỗi chặng một mục con với hình nhỏ riêng.
@@ -46,6 +48,9 @@ Quy tắc câu chữ:
 - **Định nghĩa tại chỗ**: viết tắt và thuật ngữ mới (TLS, WAF...) gắn `<T>` hoặc giải thích ngay lần đầu; không giả định người đọc đã biết.
 - **Không dùng ký tự số tròn (① ② ③...)** ở bất kỳ đâu: font của site render rất nhỏ. Dùng số thường in đậm, "Bước 1", hoặc vòng tròn SVG có số to.
 - **Hình**: kiểm tra chữ không tràn khung (chụp màn hình bản build); một góc nhìn nhất quán cho mỗi khái niệm, không trộn nhiều ẩn dụ.
+  - Hình phải **gợi nhớ được**: nhìn là thấy cơ chế hoặc sự tương phản (dây rối vs gọn, mũi tên bị chặn, một message toả thành nhiều bản). Hình chỉ gồm khối vuông chứa chữ thì không vẽ: viết thành câu, danh sách ngắn hoặc khối text nhỏ. Không gượng ép thêm hình.
+  - Chừa **khoảng trống** giữa các khối để mũi tên và nhãn có chỗ; chữ trong khối ít, tối đa 2 dòng.
+  - Flow, sequence, state: dùng **mermaid** cho dễ sửa (site đã có click để zoom). Vẽ tay SVG chỉ khi cần bố cục mermaid không làm được (bản đồ chủ đề, so sánh hai bên).
 
 Khi trả lời câu hỏi trong chat: kiểm tra cách hiểu của Nhan trước và nói thẳng chỗ sai; dựng lại từ thứ Nhan đã thấy trên trang; code mới tối đa khoảng 8 dòng và đặt ngay trong câu trả lời, không đưa một đoạn lớn rồi bàn như thể Nhan đã có sẵn. Nếu Nhan đã đọc trang mà vẫn hỏi thì trang chưa rõ: sửa đúng mục đó trong thân bài.
 

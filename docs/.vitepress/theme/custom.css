@@ -122,6 +122,12 @@
 .vp-doc .mermaid {
   cursor: zoom-in;
 }
+/* Nhãn mermaid là <p> trong foreignObject: line-height 28px của .vp-doc p làm chữ cao hơn
+   khung mermaid đã đo (1.5), dòng thứ hai bị cắt. Trả về line-height mermaid đặt. */
+.vp-doc .mermaid foreignObject p {
+  line-height: inherit;
+  margin: 0;
+}
 .mermaid-zoom {
   position: fixed;
   inset: 0;
