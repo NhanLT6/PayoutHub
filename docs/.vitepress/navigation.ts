@@ -58,6 +58,15 @@ export const sidebar: DefaultTheme.Sidebar = [
     ],
   },
   {
+    text: '5 · Kiến trúc phân tán',
+    collapsed: false,
+    items: [
+      { text: 'Microservices', link: '/architecture/microservices' },
+      { text: 'Messaging: queue, outbox, saga', link: '/architecture/messaging' },
+      { text: 'DDD', link: '/architecture/ddd' },
+    ],
+  },
+  {
     text: 'Tra cứu',
     items: [
       { text: 'Mục lục câu hỏi', link: '/reference/' },

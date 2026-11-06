@@ -165,6 +165,35 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [`WHERE Status = 'Pending' ORDER BY CreatedAt`: tạo index gì?](/data/sql-performance#index-where-order-by)
 - [Sao không index hết các cột cho nhanh?](/data/sql-performance#too-many-indexes)
 
+## Kiến trúc phân tán
+
+### [Microservices](/architecture/microservices#interview)
+
+- [Khi nào nên và không nên dùng microservices?](/architecture/microservices#when-microservices)
+- [Chia ranh giới service thế nào?](/architecture/microservices#define-boundaries)
+- [Vì sao mỗi service một database? Query xuyên service thế nào?](/architecture/microservices#db-per-service-q)
+- [Giữa các service, gọi sync hay gửi message?](/architecture/microservices#sync-async-q)
+- [Làm sao để một service chậm không kéo sập service khác?](/architecture/microservices#stop-cascading)
+- [Bạn sẽ tách một monolith thế nào?](/architecture/microservices#split-monolith)
+
+### [Messaging](/architecture/messaging#interview)
+
+- [Queue và topic khác nhau thế nào?](/architecture/messaging#queue-topic-difference)
+- [At-least-once nghĩa là gì với code của bạn?](/architecture/messaging#at-least-once-meaning)
+- [Làm sao để consumer idempotent?](/architecture/messaging#make-consumer-idempotent)
+- [Outbox pattern là gì, giải quyết vấn đề gì?](/architecture/messaging#outbox-why)
+- [Saga: choreography hay orchestration, compensation là gì?](/architecture/messaging#saga-orchestration-choreography)
+- [Một message cứ lỗi mãi thì chuyện gì xảy ra?](/architecture/messaging#poison-message)
+
+### [DDD](/architecture/ddd#interview)
+
+- [Entity và value object khác nhau thế nào?](/architecture/ddd#entity-vs-value-object)
+- [Aggregate là gì, vì sao chỉ được sửa qua root?](/architecture/ddd#what-is-aggregate)
+- [Một luật cần dữ liệu của nhiều aggregate thì đặt ở đâu?](/architecture/ddd#cross-aggregate-rule)
+- [Bounded context là gì, liên quan gì tới microservices?](/architecture/ddd#bounded-context-microservices)
+- [Domain event khác integration event thế nào?](/architecture/ddd#domain-vs-integration-event)
+- [Dùng EF Core thì có cần repository không?](/architecture/ddd#repository-with-ef-core)
+
 ## Chưa viết
 
 AuthN/AuthZ · Testing · Migration Framework → .NET · Kiến trúc mức senior · Question bank

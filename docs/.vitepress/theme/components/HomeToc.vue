@@ -216,13 +216,48 @@ const groups: Group[] = [
     ],
   },
   {
+    title: 'Kiến trúc phân tán',
+    hint: 'Microservices, messaging, DDD ở mức khái niệm',
+    pages: [
+      {
+        text: 'Microservices',
+        desc: 'Khi nào tách, chia ranh giới theo nghiệp vụ, DB riêng, sync hay async bằng một câu hỏi, cascading failure.',
+        link: '/architecture/microservices',
+        q: [
+          { text: 'Khi nào dùng', link: '/architecture/microservices#when-microservices' },
+          { text: 'Sync hay async', link: '/architecture/microservices#sync-async-q' },
+          { text: 'Chặn cascading', link: '/architecture/microservices#stop-cascading' },
+        ],
+      },
+      {
+        text: 'Messaging',
+        desc: 'PeekLock, dead-letter, at-least-once, idempotent consumer, queue và topic, outbox, saga.',
+        link: '/architecture/messaging',
+        q: [
+          { text: 'Idempotent consumer', link: '/architecture/messaging#make-consumer-idempotent' },
+          { text: 'Outbox', link: '/architecture/messaging#outbox-why' },
+          { text: 'Saga', link: '/architecture/messaging#saga-orchestration-choreography' },
+        ],
+      },
+      {
+        text: 'DDD',
+        desc: 'Entity, value object, aggregate, domain event, bounded context, repository với EF Core.',
+        link: '/architecture/ddd',
+        q: [
+          { text: 'Aggregate', link: '/architecture/ddd#what-is-aggregate' },
+          { text: 'Rule xuyên aggregate', link: '/architecture/ddd#cross-aggregate-rule' },
+          { text: 'Bounded context', link: '/architecture/ddd#bounded-context-microservices' },
+        ],
+      },
+    ],
+  },
+  {
     title: 'Hệ thống',
-    hint: 'Container, Kubernetes, microservices',
+    hint: 'Container, Kubernetes',
     soon: { text: 'Sắp học ở M8', link: '/progress/plan#m8' },
     pages: [
       { text: 'Container & Docker', desc: 'Dockerfile multi-stage, docker compose, config qua env var.' },
       { text: 'Kubernetes', desc: 'Pod, Deployment, Service, probe chạy thật trên cluster local.' },
-      { text: 'Microservices', desc: 'Sync và async, service discovery, API gateway, distributed tracing.' },
     ],
   },
 ]
