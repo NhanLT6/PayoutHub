@@ -107,7 +107,7 @@ Vì mục tiêu là một team sửa và deploy một service mà không cần a
 <p class="fig-caption">Cùng một tính năng. Chia theo tầng thì nó cắt ngang mọi service; chia theo nghiệp vụ thì nó nằm gọn trong một service.</p>
 </div>
 
-Chia theo nghiệp vụ còn gọi là **cắt dọc** (vertical slice): mỗi service có đủ API, logic, DB của riêng nó. Chia theo tầng là **cắt ngang**. Người quen monolith ít khi chia theo tầng, nhưng rất hay mắc bẫy kế tiếp: chia theo bảng.
+Nhìn hình theo hướng của nhát cắt: các tầng xếp chồng từ trên xuống (UI, logic, DB), nên chia theo tầng là **cắt ngang**, mỗi lát là một tầng của mọi tính năng (thư mục Controllers, Services, Repositories trong monolith là kiểu này). Chia theo nghiệp vụ là **cắt dọc** (vertical slice), mỗi lát là một cột chứa trọn đường đi của request từ UI xuống DB, nhưng chỉ của một nghiệp vụ. Cách thử: hỏi "một lát chứa gì?". Một tầng cho mọi tính năng là ngang; mọi tầng cho một tính năng là dọc. Người quen monolith ít khi chia theo tầng, nhưng rất hay mắc bẫy kế tiếp: chia theo bảng.
 
 ### Bẫy của người quen monolith: chia theo bảng {#split-by-table}
 
@@ -312,6 +312,21 @@ flowchart LR
   class M old
 ```
 
+### Bước trước khi tách: modular hoá ngay trong monolith {#modularize-first}
+
+Vì tách service thực chất là dời một ranh giới đã có ra ngoài mạng, nên ranh giới phải có trước, trong lúc sửa còn rẻ. Làm từng module một, app vẫn chạy và release bình thường:
+
+1. **Gom code theo nghiệp vụ**: mỗi module một folder hoặc project (Catalog, Ordering, Shipping), bỏ kiểu một thư mục Services chung cho mọi thứ.
+2. **Chỉ gọi nhau qua interface công khai** của module; class bên trong để `internal`.
+3. **Mỗi module chỉ đụng bảng của mình**: bỏ các `JOIN` xuyên module, thay bằng gọi interface hoặc nghe event trong process. Đây là bước lâu nhất, và cũng chính là việc khó nhất khi tách service sau này.
+4. **Giữ ranh giới bằng test**: một test kiến trúc (vd NetArchTest) fail khi module này dùng class bên trong của module kia.
+
+Xong bước 3 của một module thì module đó tách ra service gần như chỉ là đổi lời gọi interface thành lời gọi HTTP hoặc message.
+
+**Bỏ qua bước này, tách thẳng cả app thành microservices thì sao?** Ranh giới được vẽ lần đầu ngay trên mạng. Code còn dính nhau nên service phải gọi nhau liên tục, còn chung DB, và phải deploy cùng nhau: đó là [distributed monolith](#database-per-service), trả mọi cái giá của microservices mà không có deploy độc lập. Vẽ sai thì sửa bằng đổi API và chuyển data giữa hai DB, thay vì dời code giữa hai folder. Ngoại lệ: một phần **vốn đã ít dính** (vd Notification chỉ nghe event) thì tách thẳng bằng strangler được, vì chỉ cần ranh giới của đúng lát đó sạch, không cần cả app.
+
+### Chọn lát đầu {#first-slice}
+
 Với shop: lát đầu nên là thứ **ít phụ thuộc và có lý do tách rõ**, vd Notification (chỉ nghe event, không ai chờ kết quả của nó). Thường phần khó nhất là **dữ liệu**: service mới phải sở hữu bảng của nó, nên các chỗ trong monolith đang đọc thẳng bảng đó phải chuyển sang gọi API hoặc nghe event trước khi tách được.
 
 Cơ chế chạy song song, proxy bằng YARP và cutover DB đã có chi tiết ở [Migrate .NET Framework: vì sao strangler fig](/dotnet/framework-vs-core#why-strangler) và [Migrate một app .NET Framework](/dotnet/framework-vs-core#migration-strategy); cùng nguyên lý, chỉ khác đích đến là nhiều service thay vì một app mới.
@@ -413,7 +428,7 @@ Không: retry dồn dập đè thêm tải lên service đang yếu, và retry P
 ### Bạn sẽ tách một monolith thế nào? {#split-monolith}
 
 ::: tip Trả lời nhanh
-Không big-bang. Làm rõ ranh giới module bên trong trước, rồi strangler fig: gateway đứng trước, mỗi lần chuyển một năng lực ít phụ thuộc sang service mới, dữ liệu đi theo service. Xem [mục 7](#strangler-fig).
+Không big-bang. Làm rõ ranh giới module bên trong trước ([modular hoá](#modularize-first)), rồi strangler fig: gateway đứng trước, mỗi lần chuyển một năng lực ít phụ thuộc sang service mới, dữ liệu đi theo service. Xem [mục 7](#strangler-fig).
 :::
 
 ::: details Câu trả lời mẫu (English)
@@ -424,6 +439,10 @@ I haven't split a monolith into microservices, but I have migrated a legacy ASP.
 **"Tách theo thứ tự nào?"**
 
 Bắt đầu từ chỗ ít phụ thuộc và có lý do tách rõ (team riêng, tải riêng), không bắt đầu từ lõi rối nhất.
+
+**"Bỏ qua modular monolith, tách thẳng cho nhanh được không?"**
+
+Cho cả app thì không: ranh giới vẽ lần đầu trên mạng, code còn dính nên ra distributed monolith. Một lát vốn đã ít dính thì được. Xem [Bước trước khi tách](#modularize-first).
 :::
 
 ## Tự kiểm tra {#self-check}
