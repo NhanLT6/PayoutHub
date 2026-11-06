@@ -137,7 +137,14 @@ Ba bước, đều suy ra từ "thay đổi cùng nhau thì ở cùng nhau":
 
 1. **Liệt kê việc, không liệt kê bảng.** Viết ra các động từ nghiệp vụ: duyệt sản phẩm, đổi giá, đặt hàng, thu tiền, giữ hàng, giao hàng, gửi email.
 2. **Gom việc hay thay đổi cùng nhau, dùng cùng bộ từ vựng.** Phí giao hàng, hãng vận chuyển, vận đơn luôn đổi cùng lúc nên về Shipping. Chữ "đơn hàng" ở Shipping là kiện hàng có địa chỉ và cân nặng, ở Payment là số tiền cần thu: cùng chữ mà hai nghĩa là có hai ranh giới, DDD gọi mỗi vùng nghĩa là một [bounded context](/architecture/ddd#bounded-context).
-3. **Kiểm bằng một use case.** Đi thử "khách đặt hàng" qua các nhóm vừa gom. Nếu một nhóm phải hỏi qua lại nhóm khác nhiều lần (chatty), hoặc hai nhóm luôn phải deploy cùng nhau, thì thứ thay đổi cùng nhau đang bị cắt đôi: gộp lại. Mỗi nhóm cũng phải có **một team** sở hữu được.
+3. **Kiểm bằng một use case.** Đi thử "khách đặt hàng" qua các nhóm vừa gom. Nếu một nhóm phải hỏi qua lại nhóm khác nhiều lần (chatty), hoặc hai nhóm luôn phải deploy cùng nhau, thì có thể thứ thay đổi cùng nhau đang bị cắt đôi. Mỗi nhóm cũng phải có **một team** sở hữu được.
+
+**Gộp hay chỉ cần sửa cách nói chuyện?** Gộp theo kiểu "A liên quan B" thì sẽ gộp dây chuyền: A cần B, B cần C, cuối cùng mọi thứ về một khối, vì trong một app mọi thứ đều liên quan nhau qua đơn hàng hay khách hàng. Nên trước khi gộp, phân biệt hai loại phụ thuộc:
+
+- **Chỉ cần dữ liệu của bên kia**: Shipping cần địa chỉ của đơn. Đây không phải lý do gộp. Sửa cách lấy dữ liệu: nhận nó trong event, giữ bản sao tại chỗ, hoặc chỉ giữ `OrderId` (xem [Cần dữ liệu của service khác](#cross-service-data)). Hai bên vẫn deploy riêng, miễn hợp đồng giữa chúng ổn định: chỉ thêm field, không đổi nghĩa field cũ.
+- **Cùng một lý do thay đổi**: mỗi lần đổi luật giảm giá đều phải sửa cả Pricing lẫn Promotion, deploy cùng lúc. Đây mới là dấu hiệu nên gộp.
+
+Chiều ngược lại cũng xảy ra: một service ôm quá nhiều, nhiều team cùng sửa, release phải xếp hàng. Chữa bằng đúng bài kiểm tra này áp vào bên trong nó: tìm các nhóm việc thay đổi vì những lý do khác nhau và tách ra.
 
 Ranh giới hiếm khi đúng ngay lần đầu, nên vẽ nó trong [modular monolith](#evolution) trước: sai thì dời code giữa hai module, rẻ hơn nhiều so với dời giữa hai service đã có DB riêng.
 
