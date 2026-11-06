@@ -128,3 +128,12 @@ Mẫu:
   - JWT: dừng ở lúc phát token, thiếu luồng Bearer → validate → ClaimsPrincipal → policy.
 - **Quiz:** Q1 câu chuyện migration 6, Q2 chuyển + kiểm tra data 5, Q3 strangler 4, Q4 N+1 3, Q5 tracking 6, Q6 concurrency 6, Q7 index 4, Q8 idempotency 3, Q9 status code 4, Q10 JWT 4.
 - **Tiếp theo:** đọc lại các trang trên, rồi buổi 3 (microservices, Service Bus, resilience). Đầu buổi: hỏi lại Q4 N+1 và Q8 idempotency.
+
+## 2026-11-06 · Ôn phỏng vấn HRS, ngày 1 (microservices, messaging, DDD, live coding)
+- **Đã làm:** khảo sát rồi dạy microservices (khi nào tách, ranh giới, sync hay async, cascading failure), messaging (peek-lock, retry, DLQ, at-least-once, idempotent consumer, queue/topic, outbox, saga), DDD từ đầu (entity, value object, aggregate, domain event, bounded context). Nhóm docs mới **Kiến trúc phân tán**: [Microservices](/architecture/microservices), [Messaging](/architecture/messaging), [DDD](/architecture/ddd), mỗi trang một bản đồ kể một luồng. Live coding bài 1: tìm các cặp booking trùng đêm của cùng crew.
+- **Chỗ yếu:**
+  - Microservices: lý do tách chỉ nêu scale và lỗi cô lập (thiếu deploy độc lập, khi nào không nên tách); chưa biết bounded context để chia ranh giới; nghĩ message là gửi rồi nhận true/false.
+  - Messaging: dùng MSMQ nhưng lỗi chỉ try/catch + email (mất message), chưa xử lý trùng, chưa gặp dual write.
+  - DDD: đặt luật "một crew không trùng đêm" vào Allotment; aggregate chỉ giữ được luật trên dữ liệu bên trong nó.
+  - Live coding: chỉ so hai booking kề nhau, điều kiện trùng một chiều, không sort; chưa biết cách nêu Big-O và chọn test case.
+- **Tiếp theo:** live coding bài 2 (nói to Big-O và test case bằng tiếng Anh), rồi C#/.NET, thiết kế bài toán HRS, SOLID, SQL, testing, Azure/K8s, chuẩn bị nói, mock cuối.
