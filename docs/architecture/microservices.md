@@ -107,13 +107,39 @@ Vì mục tiêu là một team sửa và deploy một service mà không cần a
 <p class="fig-caption">Cùng một tính năng. Chia theo tầng thì nó cắt ngang mọi service; chia theo nghiệp vụ thì nó nằm gọn trong một service.</p>
 </div>
 
-Ba dấu hiệu để vẽ ranh giới, đều suy ra từ "thay đổi cùng nhau thì ở cùng nhau":
+Chia theo nghiệp vụ còn gọi là **cắt dọc** (vertical slice): mỗi service có đủ API, logic, DB của riêng nó. Chia theo tầng là **cắt ngang**. Người quen monolith ít khi chia theo tầng, nhưng rất hay mắc bẫy kế tiếp: chia theo bảng.
 
-- **Thay đổi cùng nhau**: phí giao hàng, hãng vận chuyển, vận đơn luôn đổi cùng lúc, nên cùng một service.
-- **Cùng bộ từ vựng**: chữ "đơn hàng" ở Shipping là kiện hàng có địa chỉ và cân nặng, ở Payment là số tiền cần thu. Cùng một chữ mà hai nghĩa là dấu hiệu có hai ranh giới; DDD gọi mỗi vùng nghĩa là một [bounded context](/architecture/ddd#bounded-context).
-- **Một team sở hữu**: service có hai team cùng sửa thì lại quay về cảnh chờ nhau.
+### Bẫy của người quen monolith: chia theo bảng {#split-by-table}
 
-Dấu hiệu chia sai: hai service luôn phải deploy cùng nhau, hoặc một request phải gọi qua lại giữa hai service nhiều lần (chatty). Cả hai nghĩa là thứ thay đổi cùng nhau đang bị cắt đôi.
+Vì monolith dùng chung một DB, nên ta quen nghĩ "mỗi bảng là một thứ", rồi tách mỗi bảng chính thành một service: Product service, Customer service, Order service. Nhưng một bảng trong monolith thường chứa dữ liệu của **nhiều nghiệp vụ dồn lại**, mỗi nhóm cột do một nhóm người khác nhau thay đổi:
+
+```mermaid
+flowchart LR
+  subgraph T["Bảng Products trong monolith"]
+    C1["Name, Description, Images"]
+    C2["Price, Discount"]
+    C3["StockQty"]
+    C4["Weight, Size"]
+  end
+  C1 --> S1["Catalog<br/>team nội dung sửa"]
+  C2 --> S2["Pricing<br/>team kinh doanh sửa"]
+  C3 --> S3["Inventory<br/>kho cập nhật"]
+  C4 --> S4["Shipping<br/>tính phí ship"]
+  classDef svc fill:#10b98124,stroke:#10b981
+  class S1,S2,S3,S4 svc
+```
+
+Tách nguyên bảng thành "Product service" thì đổi giá, nhập kho, sửa mô tả đều phải qua cùng một service: nó thành chỗ ai cũng phải chờ, đúng cái đau của monolith. Chia theo nghiệp vụ thì **một bảng bị xé ra**: mỗi service giữ phần cột nó cần, cùng một `ProductId`.
+
+### Cách vẽ ranh giới trên một monolith thật {#boundaries-howto}
+
+Ba bước, đều suy ra từ "thay đổi cùng nhau thì ở cùng nhau":
+
+1. **Liệt kê việc, không liệt kê bảng.** Viết ra các động từ nghiệp vụ: duyệt sản phẩm, đổi giá, đặt hàng, thu tiền, giữ hàng, giao hàng, gửi email.
+2. **Gom việc hay thay đổi cùng nhau, dùng cùng bộ từ vựng.** Phí giao hàng, hãng vận chuyển, vận đơn luôn đổi cùng lúc nên về Shipping. Chữ "đơn hàng" ở Shipping là kiện hàng có địa chỉ và cân nặng, ở Payment là số tiền cần thu: cùng chữ mà hai nghĩa là có hai ranh giới, DDD gọi mỗi vùng nghĩa là một [bounded context](/architecture/ddd#bounded-context).
+3. **Kiểm bằng một use case.** Đi thử "khách đặt hàng" qua các nhóm vừa gom. Nếu một nhóm phải hỏi qua lại nhóm khác nhiều lần (chatty), hoặc hai nhóm luôn phải deploy cùng nhau, thì thứ thay đổi cùng nhau đang bị cắt đôi: gộp lại. Mỗi nhóm cũng phải có **một team** sở hữu được.
+
+Ranh giới hiếm khi đúng ngay lần đầu, nên vẽ nó trong [modular monolith](#evolution) trước: sai thì dời code giữa hai module, rẻ hơn nhiều so với dời giữa hai service đã có DB riêng.
 
 ## 3. Mỗi service một database {#database-per-service}
 
@@ -319,13 +345,13 @@ Theo năng lực nghiệp vụ, không theo tầng kỹ thuật: những gì tha
 :::
 
 ::: details Câu trả lời mẫu (English)
-I split by business capability, not by technical layer. A feature usually cuts through UI, logic and data, so a "UI service, logic service, data service" split means every feature touches every service. I look for things that change together, that use the same vocabulary, and that one team can own; in DDD terms that is a bounded context. A sign of a wrong boundary is two services that always have to be deployed together, or one request that bounces between two services many times.
+I split by business capability, not by technical layer. A feature usually cuts through UI, logic and data, so a "UI service, logic service, data service" split means every feature touches every service. I look for things that change together, that use the same vocabulary, and that one team can own; in DDD terms that is a bounded context. A sign of a wrong boundary is two services that always have to be deployed together, or one request that bounces between two services many times. Coming from a monolith, the usual trap is splitting by table: one Products table really holds catalog, pricing, stock and shipping data, owned by different people.
 :::
 
 ::: warning Bẫy & follow-up
 **"Mỗi entity (Customer, Product, Order) một service?"**
 
-Thường là sai: một use case cần nhiều entity nên service phải gọi nhau liên tục. Ranh giới là năng lực nghiệp vụ, không phải bảng.
+Thường là sai: một bảng chứa dữ liệu của nhiều nghiệp vụ, và một use case cần nhiều entity nên service phải gọi nhau liên tục. Xem [bẫy chia theo bảng](#split-by-table).
 :::
 
 ### Vì sao mỗi service một database? Query xuyên service thế nào? <Badge type="warning" text="hay bị hỏi" /> {#db-per-service-q}
