@@ -475,14 +475,51 @@ public class PayoutProcessor(IEnumerable<IPayoutGateway> gateways, IPayoutReposi
 ```
 
 ```csharp [Program.cs]
-builder.Services.AddHttpClient<BankTransferGateway>();
+// Typed client: factory tạo gateway kèm HttpClient đã cấu hình (BaseAddress, handler, resilience)
+builder.Services.AddHttpClient<BankTransferGateway>(c => c.BaseAddress = new Uri("https://bank.example/"));
 builder.Services.AddHttpClient<PayPalGateway>();
+
+// "Ai xin IPayoutGateway thì đưa typed client ở trên", không tự new gateway
 builder.Services.AddTransient<IPayoutGateway>(sp => sp.GetRequiredService<BankTransferGateway>());
 builder.Services.AddTransient<IPayoutGateway>(sp => sp.GetRequiredService<PayPalGateway>());
+
 builder.Services.AddScoped<PayoutProcessor>();
 ```
 
 :::
+
+**Vì sao đăng ký `IPayoutGateway` bằng delegate:** `AddHttpClient<BankTransferGateway>()` đăng ký gateway là một **typed client**: khi được xin, `IHttpClientFactory` tạo gateway và đưa vào đúng `HttpClient` đã cấu hình cho nó. Dòng delegate chỉ nói "xin `IPayoutGateway` thì lấy typed client đó". Nếu viết thường `AddTransient<IPayoutGateway, BankTransferGateway>()`, container tự `new` gateway, và `HttpClient` nó nhận là client mặc định không có `BaseAddress` hay handler nào: build vẫn chạy, gọi ngân hàng thì lỗi.
+
+Cách viết gọn hơn là `AddHttpClient<IPayoutGateway, BankTransferGateway>("bank", ...)`, **phải đặt tên**: tên mặc định của typed client là tên của kiểu đầu (`IPayoutGateway`), nên hai gateway không đặt tên sẽ dùng chung một cấu hình.
+
+Luồng gọi khi finance bấm trả payout 42 (bấm vào hình để phóng to):
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Client
+    participant C as PayoutsController
+    participant DI as DI container
+    participant P as PayoutProcessor
+    participant R as Repository
+    participant G as BankTransferGateway
+    participant B as API ngân hàng
+    U->>C: POST /payouts/42/pay
+    DI->>P: new PayoutProcessor(gateways, repo)
+    Note over DI,P: gateways = [Bank, PayPal]
+    C->>P: PayAsync(42)
+    P->>R: GetAsync(42)
+    R-->>P: BankPayout (biến kiểu Payout)
+    P->>P: gateways.First(CanHandle) chọn Bank
+    P->>G: SendAsync(payout) · polymorphism
+    G->>B: POST /transfers (HttpClient đã cấu hình)
+    B-->>G: TransactionId
+    G-->>P: TransferResult
+    P->>P: payout.MarkPaid(ref) · encapsulation
+    P->>R: SaveAsync(payout)
+    P-->>C: xong
+    C-->>U: 204 No Content
+```
 
 ## 3. Bên trong một lời gọi: compiler chọn hay runtime chọn {#mechanism}
 
