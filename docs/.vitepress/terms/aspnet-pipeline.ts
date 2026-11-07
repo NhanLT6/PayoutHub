@@ -85,8 +85,8 @@ const terms: Record<string, TermDef> = {
     title: 'OCP',
     full: 'Open/Closed Principle',
     group: design,
-    def: 'Một trong 5 nguyên tắc [SOLID](/dotnet/oop-fundamentals#solid): thêm hành vi mới bằng **code mới** (class mới), không sửa code cũ đang chạy tốt.',
-    link: '/dotnet/oop-fundamentals#solid',
+    def: 'Một trong 5 nguyên tắc [SOLID](/dotnet/solid-patterns#solid): thêm hành vi mới bằng **code mới** (class mới), không sửa code cũ đang chạy tốt.',
+    link: '/dotnet/solid-patterns#solid',
   },
   mvc: {
     title: 'MVC',

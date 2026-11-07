@@ -25,13 +25,33 @@ const groups: Group[] = [
         ],
       },
       {
-        text: 'OOP & C# cơ bản',
-        desc: '4 tính chất OOP, abstract và interface, SOLID, các câu trả bài kinh điển.',
+        text: 'OOP',
+        desc: '4 tính chất qua một luồng trả payout, compiler hay runtime chọn method, abstract và interface.',
         link: '/dotnet/oop-fundamentals',
         q: [
           { text: 'OOP', link: '/dotnet/oop-fundamentals#oop' },
           { text: 'Abstract vs interface', link: '/dotnet/oop-fundamentals#abstract-vs-interface' },
-          { text: 'SOLID', link: '/dotnet/oop-fundamentals#solid' },
+          { text: 'Override vs new', link: '/dotnet/oop-fundamentals#override-overload-new' },
+        ],
+      },
+      {
+        text: 'Kiểu dữ liệu C#',
+        desc: 'Gán là copy biến: struct, class, record, string, ref/out/in, const và readonly.',
+        link: '/dotnet/csharp-types',
+        q: [
+          { text: 'struct vs class vs record', link: '/dotnet/csharp-types#struct-class-record' },
+          { text: 'String ==', link: '/dotnet/csharp-types#string-equality' },
+          { text: 'ref vs out', link: '/dotnet/csharp-types#ref-out-in' },
+        ],
+      },
+      {
+        text: 'SOLID & pattern',
+        desc: 'Năm câu hỏi khi requirement đổi, bài tập nút Approve, pattern có sẵn trong .NET.',
+        link: '/dotnet/solid-patterns',
+        q: [
+          { text: 'SOLID', link: '/dotnet/solid-patterns#solid' },
+          { text: 'Design pattern', link: '/dotnet/solid-patterns#design-patterns' },
+          { text: 'DRY, KISS, YAGNI', link: '/dotnet/solid-patterns#dry-kiss-yagni' },
         ],
       },
       {
@@ -80,6 +100,16 @@ const groups: Group[] = [
           { text: 'ConfigureAwait', link: '/runtime/async#configureawait' },
         ],
       },
+      {
+        text: 'Async: từ nút bấm tới DB',
+        desc: 'Một request Approve đi qua Kestrel, await, SqlClient và quay về; mỗi keyword giải thích tại chỗ.',
+        link: '/runtime/async-flow',
+        q: [
+          { text: 'Luồng đầy đủ', link: '/runtime/async-flow#flow' },
+          { text: 'I/O hay CPU-bound', link: '/runtime/async-flow#io-vs-cpu' },
+          { text: 'Thread bị chặn', link: '/runtime/async-flow#sync-vs-async' },
+        ],
+      },
     ],
   },
   {
@@ -93,6 +123,7 @@ const groups: Group[] = [
         q: [
           { text: 'Lifetimes', link: '/aspnet-core/dependency-injection#lifetimes' },
           { text: 'Captive dependency', link: '/aspnet-core/dependency-injection#captive-dependency' },
+          { text: 'Container chạy thế nào', link: '/aspnet-core/dependency-injection#container-internals' },
         ],
       },
       {
@@ -255,6 +286,7 @@ const groups: Group[] = [
         link: '/architecture/tooling',
         q: [
           { text: 'Kafka vs RabbitMQ', link: '/architecture/tooling#kafka-vs-rabbitmq-q' },
+          { text: 'Service Bus ở local', link: '/architecture/tooling#service-bus-local' },
         ],
       },
     ],
@@ -382,6 +414,7 @@ h2 {
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--vp-c-bg-soft);
@@ -408,8 +441,17 @@ h2 {
   color: var(--vp-c-text-1);
   text-decoration: none;
 }
-a.title:hover {
+a.title:hover,
+.card:hover a.title {
   color: var(--vp-c-brand-1);
+}
+/* Cả card bấm được: link tiêu đề phủ lên toàn card; chip nằm trên lớp phủ nên vẫn dẫn tới mục riêng */
+a.title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 12px;
 }
 .card.soon .title {
   color: var(--vp-c-text-2);
@@ -430,6 +472,8 @@ a.title:hover {
   margin-top: 12px;
 }
 .q {
+  position: relative;
+  z-index: 2;
   font-size: 12px;
   line-height: 20px;
   padding: 0 8px;

@@ -66,7 +66,7 @@ Bước 1–4 là tactical (trong một service), bước 5 là strategic (chia 
 - **Entity**: `Order #123` đổi địa chỉ giao, thêm dòng, chuyển sang Paid, vẫn là đơn #123. Hai đơn có cùng nội dung vẫn là hai đơn. Vì danh tính là thứ duy nhất không đổi nên entity **so sánh bằng Id**, và trạng thái của nó thay đổi qua method có kiểm tra (Bước 2).
 - **Value object**: hai tờ 100 EUR là như nhau; `Money(100, "EUR")` không có Id. Vì không có danh tính để theo dõi nên **không sửa tại chỗ** mà tạo giá trị mới (bất biến), và **so sánh bằng giá trị**. Vì bất biến, chỉ cần kiểm tra **một lần trong constructor**: object sai không bao giờ tồn tại, mọi chỗ nhận `Money` khỏi phải kiểm tra lại.
 
-`record` của C# hợp với value object vì nó tự sinh so sánh theo giá trị (`Equals`, `==`, `GetHashCode` trên mọi field), xem [struct, class, record](/dotnet/oop-fundamentals#struct-class-record).
+`record` của C# hợp với value object vì nó tự sinh so sánh theo giá trị (`Equals`, `==`, `GetHashCode` trên mọi field), xem [struct, class, record](/dotnet/csharp-types#struct-class-record).
 
 ::: code-group
 

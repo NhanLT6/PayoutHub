@@ -23,18 +23,24 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Migrate một app .NET Framework lên .NET 8 thế nào?](/dotnet/framework-vs-core#migration-strategy)
 - [Walk me through your migration: verify data, cutover DB đang chạy](/dotnet/framework-vs-core#migration-walkthrough)
 
-### [OOP & C# cơ bản](/dotnet/oop-fundamentals)
+### [OOP](/dotnet/oop-fundamentals)
 
 - [4 tính chất của OOP](/dotnet/oop-fundamentals#oop)
 - [Abstract class vs interface](/dotnet/oop-fundamentals#abstract-vs-interface)
 - [Overriding vs overloading vs new (method hiding)](/dotnet/oop-fundamentals#override-overload-new)
-- [const vs readonly vs static readonly](/dotnet/oop-fundamentals#const-readonly)
-- [struct vs class vs record](/dotnet/oop-fundamentals#struct-class-record)
-- [String immutable nghĩa là gì? == vs Equals vs ReferenceEquals](/dotnet/oop-fundamentals#string-equality)
-- [ref vs out vs in](/dotnet/oop-fundamentals#ref-out-in)
-- [SOLID](/dotnet/oop-fundamentals#solid)
-- [Design pattern hay bị hỏi (và chỗ chúng có sẵn trong .NET)](/dotnet/oop-fundamentals#design-patterns)
-- [DRY, KISS, YAGNI](/dotnet/oop-fundamentals#dry-kiss-yagni)
+
+### [Kiểu dữ liệu C#](/dotnet/csharp-types)
+
+- [const vs readonly vs static readonly](/dotnet/csharp-types#const-readonly)
+- [struct vs class vs record](/dotnet/csharp-types#struct-class-record)
+- [String immutable nghĩa là gì? == vs Equals vs ReferenceEquals](/dotnet/csharp-types#string-equality)
+- [ref vs out vs in](/dotnet/csharp-types#ref-out-in)
+
+### [SOLID & pattern](/dotnet/solid-patterns)
+
+- [SOLID](/dotnet/solid-patterns#solid)
+- [Design pattern hay bị hỏi (và chỗ chúng có sẵn trong .NET)](/dotnet/solid-patterns#design-patterns)
+- [DRY, KISS, YAGNI](/dotnet/solid-patterns#dry-kiss-yagni)
 
 ### [C# hiện đại](/dotnet/modern-csharp)
 

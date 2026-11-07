@@ -107,7 +107,7 @@ Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần ch�
 - [ ] Entity với `private set` và method nghiệp vụ (`Approve`, `Decline`...), không để public setter
   → Rule nằm trong entity (vd `Approve()` chỉ hợp lệ khi đang `Pending`, sai thì ném exception), không rải trong controller. Đây là ví dụ thật cho Encapsulation ([OOP](/dotnet/oop-fundamentals#oop)).
 - [ ] Value object `Money` (amount + currency) dạng `record`
-  → Không cộng nhầm USD với EUR; so sánh theo giá trị nhờ record ([struct / class / record](/dotnet/oop-fundamentals#struct-class-record)). Map vào EF bằng owned type / complex type.
+  → Không cộng nhầm USD với EUR; so sánh theo giá trị nhờ record ([struct / class / record](/dotnet/csharp-types#struct-class-record)). Map vào EF bằng owned type / complex type.
 - [ ] `DbContext` cấu hình bằng Fluent API, migration
   → Cấu hình (độ dài cột, precision của `decimal`, index, quan hệ) đặt ở Infrastructure, không gắn attribute vào entity của Core. Migration thay cho việc chạy script SQL bằng tay.
 - [ ] *(sau phỏng vấn)* `DatabaseHealthCheck` (gọi `db.Database.CanConnectAsync(ct)`), gắn tag `ready`; tách `/health/live` và `/health/ready`
@@ -126,7 +126,7 @@ Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần ch�
 2. Gọi `AsEnumerable()` quá sớm rồi đo thời gian và bộ nhớ: phần `Where` sau đó chạy trong RAM thay vì trong SQL ([IEnumerable vs IQueryable](/dotnet/collections-linq#ienumerable-vs-iqueryable)).
 3. So sánh tracking với `AsNoTracking`: query chỉ đọc không cần change tracker.
 
-**Ôn:** [OOP](/dotnet/oop-fundamentals#oop), [struct / class / record](/dotnet/oop-fundamentals#struct-class-record), [String và so sánh](/dotnet/oop-fundamentals#string-equality), [IEnumerable vs IQueryable](/dotnet/collections-linq#ienumerable-vs-iqueryable), [Deferred execution](/dotnet/collections-linq#deferred-execution), [Bẫy O(n²)](/dotnet/collections-linq#hidden-on2)
+**Ôn:** [OOP](/dotnet/oop-fundamentals#oop), [struct / class / record](/dotnet/csharp-types#struct-class-record), [String và so sánh](/dotnet/csharp-types#string-equality), [IEnumerable vs IQueryable](/dotnet/collections-linq#ienumerable-vs-iqueryable), [Deferred execution](/dotnet/collections-linq#deferred-execution), [Bẫy O(n²)](/dotnet/collections-linq#hidden-on2)
 
 ## M3: Tạo và duyệt payout (khoảng 3–4 ngày)
 
@@ -152,7 +152,7 @@ Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần ch�
 1. Bắn 2 request duyệt cùng lúc để thấy payout bị duyệt 2 lần, rồi sửa bằng `rowversion` (optimistic concurrency) và trả 409.
 2. Đăng ký một singleton giữ `DbContext` (captive dependency). Ở môi trường Development, `ValidateScopes`/`ValidateOnBuild` đã bật sẵn nên app báo lỗi ngay; chạy thử với Production để thấy lỗi lọt qua.
 
-**Ôn:** [SOLID](/dotnet/oop-fundamentals#solid), [Design patterns](/dotnet/oop-fundamentals#design-patterns), [Thread safety](/runtime/async#thread-safety), [Filter](/aspnet-core/filters), [Thiết kế REST](/aspnet-core/rest-api#rest-design), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Container dispose](/aspnet-core/dependency-injection#disposal), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations)
+**Ôn:** [SOLID](/dotnet/solid-patterns#solid), [Design patterns](/dotnet/solid-patterns#design-patterns), [Thread safety](/runtime/async#thread-safety), [Filter](/aspnet-core/filters), [Thiết kế REST](/aspnet-core/rest-api#rest-design), [Service lifetime](/aspnet-core/dependency-injection#lifetimes), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency), [Container dispose](/aspnet-core/dependency-injection#disposal), [Nhiều implementation](/aspnet-core/dependency-injection#multiple-implementations)
 
 ## M4: Thực thi payout (khoảng 4 ngày)
 
@@ -218,7 +218,7 @@ Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần ch�
   → Thay implementation gateway qua DI trong test, nhờ Core chỉ phụ thuộc interface (DIP giúp test được).
 
 **Lab:** tạm revert phần sửa ở M3, viết test bắt được lỗi duyệt 2 lần, rồi khôi phục lại phần sửa.
-**Ôn:** [SOLID](/dotnet/oop-fundamentals#solid) (DIP và testability)
+**Ôn:** [SOLID](/dotnet/solid-patterns#solid) (DIP và testability)
 
 ## M7: Báo cáo và hiệu năng (khoảng 2–3 ngày)
 

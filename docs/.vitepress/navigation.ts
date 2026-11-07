@@ -17,7 +17,9 @@ export const sidebar: DefaultTheme.Sidebar = [
     collapsed: false,
     items: [
       { text: '.NET Framework vs .NET', link: '/dotnet/framework-vs-core' },
-      { text: 'OOP & C# cơ bản', link: '/dotnet/oop-fundamentals' },
+      { text: 'OOP', link: '/dotnet/oop-fundamentals' },
+      { text: 'Kiểu dữ liệu C#', link: '/dotnet/csharp-types' },
+      { text: 'SOLID & pattern', link: '/dotnet/solid-patterns' },
       { text: 'C# hiện đại', link: '/dotnet/modern-csharp' },
       { text: 'Collections & LINQ', link: '/dotnet/collections-linq' },
     ],

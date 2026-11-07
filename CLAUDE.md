@@ -28,9 +28,11 @@ Nhan có thể gõ tiếng Anh (đỡ đổi bộ gõ); vẫn trả lời tiến
 Nhan học bằng **suy luận từ hình**, không học thuộc danh sách. Khung dựa trên Diátaxis (loại "explanation": vì sao, liên hệ), nguyên tắc multimedia của Mayer (bỏ thứ thừa, chia đoạn, có tín hiệu dẫn mắt) và concreteness fading (cụ thể trước, trừu tượng sau). Trang mẫu: `aspnet-core/dependency-injection.md`.
 
 1. **Mở đầu = giới thiệu chủ đề**: nó là gì, giải quyết gì, trang đi qua những gì. Không nhắc lại mục lục bên phải.
-   Ngay dưới là **bản đồ chủ đề**: một hình **tổng quan** để ôn lại luồng chính của chủ đề mà không đọc chữ (advance organizer / progressive disclosure). Nó không phải chỗ gom mọi thứ của trang. Nó chứa **khung xương**, không chứa toàn bộ nội dung: vấn đề, các thành phần và quan hệ giữa chúng, 3–5 luật/bẫy hay bị hỏi, theo cùng một ví dụ. Khoảng 12 nút trở xuống, nút link tới mục chi tiết. Ai đã học một lần thì nhìn nút là nhớ lại được; chưa nhớ thì bấm vào đọc mục đó.
-   - Bản đồ kể **một luồng duy nhất** (một request, một message, một lệnh đi qua các chặng). Những câu chuyện không gắn chặt với luồng đó (vd tách monolith so với request chạy giữa các service) không gom vào: mỗi câu chuyện một hình riêng ở mục của nó.
-   - **Số trong hình = thứ tự đọc** theo luồng (1 rồi 2 rồi 3...). Nút chỉ để link tới mục thì không đánh số.
+   Ngay dưới là **bản đồ chủ đề**: một hình tổng quan **hơi hướng infographic** (advance organizer, dual coding): nhìn khoảng 30 giây là nhớ lại gần hết chủ đề, chỗ nào quên thì bấm xuống mục đó. Chỉ là tổng quan, không gom chữ và chi tiết vào đây; hình chi tiết nằm ở từng mục.
+   - **Bố cục theo hình dạng thật của chủ đề, không ép thành luồng**: nhiều ý ngang hàng thì lưới ô (vd 4 tính chất OOP), hai bên đối lập thì đặt cạnh nhau, chỉ khi chủ đề thật sự là một đường đi (một request, một message) mới vẽ luồng.
+   - **Mỗi ô = một mục lớn của trang**: một hình nhỏ cho thấy cơ chế (hộp khoá, mũi tên bị chặn, một lời gọi toả ra), nhãn tối đa khoảng 6 chữ, bấm vào tới mục đó. Không câu giải thích, không ô chỉ toàn chữ.
+   - **3–5 bẫy hay bị hỏi** đánh dấu đỏ ngay trên ô liên quan, không gom thành danh sách riêng.
+   - **Chỉ đánh số khi có thứ tự đọc thật** (1 rồi 2 rồi 3...).
 2. **Vấn đề trước**: code thật bị đau ở đâu khi chưa có thứ này.
 3. **Một ví dụ tiến hoá** (một hình): mỗi bước chữa cái đau của bước trước, tên khái niệm chỉ là nhãn dán lên bước đó. Khác biệt giữa các khái niệm phải tự hiện ra từ câu chuyện. **Không làm bảng "Dễ nhầm" A vs B** bắt nhớ từng dòng.
 4. **Cơ chế bên trong**: một **bản đồ tổng quan** cho thấy các thành phần liên quan nhau (ai giữ gì, ai gọi ai), theo một ví dụ đi qua các chặng có đánh số; rồi mỗi chặng một mục con với hình nhỏ riêng.
@@ -41,7 +43,8 @@ Nhan học bằng **suy luận từ hình**, không học thuộc danh sách. Kh
 Quy tắc câu chữ:
 
 - **Nguyên lý trước**: mỗi mục mở bằng một câu nói cơ chế gây ra hành vi; các ý sau suy ra từ đó ("vì... nên..."). Ý không suy ra được thì cắt, hoặc nó là một nguyên lý mới. Không liệt kê sự thật rời rạc.
-- **Cắt chữ thừa**: câu không thêm thông tin thì bỏ.
+- **Cắt chữ thừa**: câu không thêm thông tin thì bỏ. Mỗi mục: 1 câu nguyên lý, 1 hình, tối đa 3 ý ngắn. Nhan nhớ bằng hình, chữ nhiều là sai hướng.
+- **Một trang = một khái niệm.** Nhiều câu hỏi độc lập (vd OOP, kiểu dữ liệu, SOLID) thì tách trang, không ép chung một ví dụ.
 - **Chủ đề phụ** (vd Autofac trong trang DI) = một mục ngắn riêng: nguyên lý + khi nào cần + link ngoài. Không đi sâu.
 - **Không nhắc chung chung**: không viết "nhớ lại bài X", "như đã nói". Có chỗ để dẫn thì link đúng heading; không thì giải thích lại tại chỗ như người đọc chưa từng thấy.
 - **Code mẫu**: đặt ngay cạnh ý nó minh hoạ, ngắn. Nhiều biến thể thì `::: code-group`.
@@ -90,7 +93,7 @@ docs/
     <chủ đề>.md             mỗi chủ đề một trang (vd aspnet-core/middleware.md)
     questions.md            câu hỏi của nhóm chưa có bài học riêng
                             hiện có:
-                              dotnet/       framework-vs-core, oop-fundamentals, modern-csharp, collections-linq
+                              dotnet/       framework-vs-core, oop-fundamentals, csharp-types, solid-patterns, modern-csharp, collections-linq
                               runtime/      memory, async
                               aspnet-core/  dependency-injection, options-pattern, logging, middleware,
                                             exception-handling, result-pattern, health-checks, questions

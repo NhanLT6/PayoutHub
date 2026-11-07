@@ -16,7 +16,7 @@ Mẫu:
 
 ## Bối cảnh trước khi bắt đầu
 
-- Đã đọc sổ tay tới khoảng mục [SOLID](/dotnet/oop-fundamentals#solid). Đã thảo luận kỹ các phần:
+- Đã đọc sổ tay tới khoảng mục [SOLID](/dotnet/solid-patterns#solid). Đã thảo luận kỹ các phần:
   - `new` (method hiding)
   - static được khởi tạo lúc nào
   - `readonly` chỉ khóa tham chiếu
@@ -45,7 +45,7 @@ Mẫu:
 
 ## 2026-10-18 · M1
 - **Đã làm:** bước 4 structured logging: so sánh template vs interpolation qua `AddJsonConsole` (thấy `State.MinAmount`), cấu hình `Logging:LogLevel` theo namespace, lấy `IOptions<PayoutOptions>` từ `app.Services` để log config lúc start. Bước 5 mới có khung: `AddProblemDetails` + `AddExceptionHandler<GlobalExceptionHandler>` trong `Program.cs`, `GlobalExceptionHandler.cs` còn rỗng (chỉ có comment TODO). Sửa `handbook.html` thiếu `<meta charset="utf-8">`.
-- **Khái niệm đã chạm:** [SOLID](/dotnet/oop-fundamentals#solid) (DIP, composition root), [Logging](/aspnet-core/logging#logging), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency) (root provider vs scope), [Quá nhiều dependency](/aspnet-core/dependency-injection#too-many-dependencies) (service locator).
+- **Khái niệm đã chạm:** [SOLID](/dotnet/solid-patterns#solid) (DIP, composition root), [Logging](/aspnet-core/logging#logging), [Captive dependency](/aspnet-core/dependency-injection#captive-dependency) (root provider vs scope), [Quá nhiều dependency](/aspnet-core/dependency-injection#too-many-dependencies) (service locator).
 - **Chỗ yếu:**
   - Câu "Core lưu DB thế nào": đúng ý interface + DI, nhưng không biết **Api** là nơi nối interface với implement (composition root); không nêu được lợi ích chính là unit test Core bằng fake repository; coi circular reference là lý do thay vì hệ quả.
   - Nghĩ placeholder trong template bind **theo tên**; thực tế bind theo **vị trí**, tên chỉ là tên field.
