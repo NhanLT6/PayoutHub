@@ -185,7 +185,6 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Outbox pattern là gì, giải quyết vấn đề gì?](/architecture/messaging#outbox-why)
 - [Saga: choreography hay orchestration, compensation là gì?](/architecture/messaging#saga-orchestration-choreography)
 - [Một message cứ lỗi mãi thì chuyện gì xảy ra?](/architecture/messaging#poison-message)
-- [Kafka và RabbitMQ khác nhau thế nào?](/architecture/messaging#kafka-vs-rabbitmq-q)
 
 ### [DDD](/architecture/ddd#interview)
 
@@ -195,6 +194,10 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Bounded context là gì, liên quan gì tới microservices?](/architecture/ddd#bounded-context-microservices)
 - [Domain event khác integration event thế nào?](/architecture/ddd#domain-vs-integration-event)
 - [Dùng EF Core thì có cần repository không?](/architecture/ddd#repository-with-ef-core)
+
+### [Công cụ](/architecture/tooling#interview)
+
+- [Kafka và RabbitMQ khác nhau thế nào? Khi nào chọn cái nào?](/architecture/tooling#kafka-vs-rabbitmq-q)
 
 ## Chưa viết
 

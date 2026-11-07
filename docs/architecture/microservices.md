@@ -310,6 +310,8 @@ Vì client không nên biết shop có bao nhiêu service và mỗi cái ở đ�
 
 **Service discovery**: vì instance của service sinh ra, chết đi và đổi IP liên tục (scale, deploy lại), nên không gọi bằng IP mà gọi **bằng tên**, và một thành phần khác tra tên ra địa chỉ hiện tại. Trên <T>Kubernetes</T> việc này có sẵn: tạo một <T k="k8s service">Service</T> tên `inventory` thì DNS trong cluster phân giải `http://inventory` (cùng namespace) hoặc `inventory.<namespace>.svc.cluster.local` ra một IP ổn định, chia request cho các pod đang sống phía sau. Đó là lý do đoạn code ở mục 5 chỉ cần `http://inventory`.
 
+Công cụ cho gateway, resilience, tracing, chạy cả hệ thống ở máy dev: [Công cụ](/architecture/tooling#dotnet-tooling).
+
 ## 7. Strangler fig: tách monolith từng phần {#strangler-fig}
 
 Vì rủi ro của một lần release tỉ lệ với lượng thay đổi chưa từng chạy trên production, nên tách monolith theo <T>strangler fig</T>: đặt một proxy hoặc gateway trước monolith, mỗi lần dựng **một** năng lực thành service mới rồi chuyển route của nó sang; phần còn lại vẫn đi vào monolith. Lát nào lỗi thì trả riêng route đó về monolith. <T>Big-bang</T> (viết lại toàn bộ, một ngày chuyển) dồn mọi rủi ro vào ngày đó, hàng tháng không giao được gì, và trong lúc chờ monolith vẫn phải sửa ở cả hai nơi.
@@ -345,21 +347,6 @@ Xong bước 3 của một module thì module đó tách ra service gần như c
 Với shop: lát đầu nên là thứ **ít phụ thuộc và có lý do tách rõ**, vd Notification (chỉ nghe event, không ai chờ kết quả của nó). Thường phần khó nhất là **dữ liệu**: service mới phải sở hữu bảng của nó, nên các chỗ trong monolith đang đọc thẳng bảng đó phải chuyển sang gọi API hoặc nghe event trước khi tách được.
 
 Cơ chế chạy song song, proxy bằng YARP và cutover DB đã có chi tiết ở [Migrate .NET Framework: vì sao strangler fig](/dotnet/framework-vs-core#why-strangler) và [Migrate một app .NET Framework](/dotnet/framework-vs-core#migration-strategy); cùng nguyên lý, chỉ khác đích đến là nhiều service thay vì một app mới.
-
-## 8. Thư viện và công cụ trong .NET {#dotnet-tooling}
-
-Mỗi công cụ dưới đây che đi một cái giá ở mục [Khi nào không nên tách](#when-not), không xoá khái niệm: dùng MassTransit vẫn phải hiểu at-least-once, dùng Polly vẫn phải chọn timeout. Phỏng vấn thường hỏi "dùng gì cho X, vì sao", nên nhớ theo vấn đề:
-
-| Vấn đề | Công cụ hay gặp | Mục liên quan |
-|---|---|---|
-| Một cửa vào, routing | YARP, Ocelot; trên Azure: API Management | [API gateway](#api-gateway) |
-| Gọi service chậm, lỗi | `Microsoft.Extensions.Http.Resilience` (Polly bên dưới) | [Cascading failure](#cascading-failure) |
-| Gửi, nhận message | MassTransit, NServiceBus, Wolverine | [Thư viện messaging](/architecture/messaging#dotnet-libraries) |
-| Theo một request qua nhiều service | OpenTelemetry; xem trên Jaeger, Grafana, Application Insights | [Trace một request](/aspnet-core/logging#trace-a-500) |
-| Chạy cả hệ thống ở máy dev | .NET Aspire (AppHost chạy mọi service và container, gọi nhau bằng tên, có dashboard), Docker Compose | [Service discovery](#api-gateway) |
-| Chạy production | Kubernetes, Azure Container Apps | [Service discovery](#api-gateway) |
-
-**Dapr** đáng biết tên: một sidecar chạy cạnh mỗi service, cho một API chung cho pub/sub, state, gọi service khác; đổi broker bên dưới không phải sửa code. Đổi lại là thêm một thành phần phải vận hành.
 
 ## Câu hỏi phỏng vấn {#interview}
 

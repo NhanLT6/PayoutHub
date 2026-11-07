@@ -34,7 +34,7 @@ Message broker (Azure Service Bus, RabbitMQ) là hộp thư nằm giữa các se
 <p class="fig-caption">Đọc 1 đến 7. Tự hỏi: vì sao 4 chỉ khoá mà chưa xoá? Chết ngay trước 6 thì sao, và 5 cứu thế nào? Vì sao Outbox phải chung transaction với Order (1)?</p>
 </div>
 
-Các chủ đề khác ở mục riêng: [saga và compensation](#saga), [choreography hay orchestration](#choreography-vs-orchestration), [Kafka hay RabbitMQ, thư viện .NET, chạy Service Bus ở local](#tools).
+Các chủ đề khác ở mục riêng: [saga và compensation](#saga), [choreography hay orchestration](#choreography-vs-orchestration), [Kafka hay RabbitMQ, thư viện .NET, chạy Service Bus ở local](/architecture/tooling).
 
 ## 1. Vấn đề: đọc là mất việc {#problem}
 
@@ -221,6 +221,8 @@ Suy ra từ đó:
 
 **RabbitMQ** dựng cùng ý bằng mảnh khác: bên gửi publish vào **exchange**, exchange chép message sang các **queue** theo **binding**, consumer chỉ đọc queue. Fanout exchange (mỗi queue được bind nhận một bản) tương đương topic; direct/topic exchange lọc theo routing key, tương đương subscription filter. Nhiều consumer trên một queue là competing consumers; `ack` tương đương `Complete`, message chưa ack được giao lại khi channel của consumer đóng.
 
+Kafka không phải hộp thư mà là một cuộn log, nên các luật trên thay đổi: xem [Kafka hay RabbitMQ](/architecture/tooling#kafka-vs-rabbitmq).
+
 ## 7. Outbox: phía gửi cũng có thể mất {#outbox}
 
 ### Dual write: DB và broker không chung transaction {#dual-write}
@@ -379,60 +381,7 @@ Thứ tự bước cũng là thiết kế: đặt bước dễ bù (giữ hàng:
 
 **Khuyến nghị**: quy trình nhiều bước, nhiều ngoại lệ và cần compensation (đặt hàng ở trên) thì dùng orchestration; thông báo kiểu fan-out đơn giản ("đơn đã giao, ai quan tâm thì nghe") thì choreography là đủ. Trong .NET, MassTransit và NServiceBus có saga state machine dựng sẵn; tự viết thì là một bảng trạng thái cộng một consumer, và consumer đó cũng phải idempotent.
 
-## 9. Broker và thư viện trong .NET {#tools}
-
-### Kafka, RabbitMQ, Service Bus: hộp thư hay cuộn băng {#kafka-vs-rabbitmq}
-
-**RabbitMQ và Azure Service Bus là broker kiểu hộp thư: consumer báo Complete thì message bị xoá. Kafka là một cuộn log chỉ ghi nối: message nằm lại tới hết hạn lưu (vd 7 ngày) dù đã đọc hay chưa, mỗi nhóm consumer tự giữ một dấu trang (offset) "đã đọc tới đâu".** Mọi khác biệt suy ra từ đó:
-
-<div class="fig">
-<svg viewBox="0 0 740 250" role="img" aria-label="Bên trái hộp thư: consumer lấy message ra và Complete thì message biến mất. Bên phải cuộn log: message nằm lại, mỗi nhóm consumer có một dấu trang offset riêng, có thể tua lại">
-<text x="170" y="22" font-size="13" font-weight="600" text-anchor="middle">Hộp thư: RabbitMQ, Service Bus</text>
-<text x="550" y="22" font-size="13" font-weight="600" text-anchor="middle">Cuộn log: Kafka</text>
-<rect class="boxAcc" x="30" y="50" width="200" height="44" rx="8"/>
-<g font-size="11" text-anchor="middle" class="mono"><rect class="box" x="44" y="60" width="40" height="24" rx="4"/><text x="64" y="76">m3</text><rect class="box" x="94" y="60" width="40" height="24" rx="4"/><text x="114" y="76">m4</text><rect class="box" x="144" y="60" width="40" height="24" rx="4"/><text x="164" y="76">m5</text></g>
-<line class="ln" x1="230" y1="72" x2="276" y2="72" marker-end="url(#msInk)"/>
-<rect class="box" x="280" y="52" width="70" height="40" rx="6"/><text x="315" y="76" font-size="11.5" text-anchor="middle">consumer</text>
-<rect class="box dash" x="60" y="128" width="40" height="24" rx="4"/><text x="80" y="144" font-size="11" text-anchor="middle" class="mono muted">m1</text>
-<rect class="box dash" x="110" y="128" width="40" height="24" rx="4"/><text x="130" y="144" font-size="11" text-anchor="middle" class="mono muted">m2</text>
-<text x="170" y="145" font-size="11" class="muted">Complete rồi: đã xoá</text>
-<text x="30" y="190" font-size="11">Mỗi message một người xử lý, retry và DLQ từng message.</text>
-<text x="30" y="208" font-size="11">Đọc lại việc cũ: không được.</text>
-<line class="lnMuted" x1="372" y1="14" x2="372" y2="236"/>
-<g font-size="11" text-anchor="middle" class="mono"><rect class="box" x="400" y="60" width="40" height="24" rx="4"/><text x="420" y="76">m1</text><rect class="box" x="446" y="60" width="40" height="24" rx="4"/><text x="466" y="76">m2</text><rect class="box" x="492" y="60" width="40" height="24" rx="4"/><text x="512" y="76">m3</text><rect class="box" x="538" y="60" width="40" height="24" rx="4"/><text x="558" y="76">m4</text><rect class="box" x="584" y="60" width="40" height="24" rx="4"/><text x="604" y="76">m5</text></g>
-<line class="ln" x1="630" y1="72" x2="700" y2="72" marker-end="url(#msInk)"/><text x="666" y="62" font-size="10.5" text-anchor="middle" class="muted">ghi nối</text>
-<path class="lnOk" d="M512 120 V90" marker-end="url(#msOk)"/><text x="512" y="136" font-size="10.5" text-anchor="middle" class="okT">Shipping ở m3</text>
-<path class="lnAcc" d="M604 160 V90" marker-end="url(#msAcc)"/><text x="604" y="176" font-size="10.5" text-anchor="middle" class="accT">Analytics ở m5</text>
-<path class="lnAcc dash" d="M420 160 V90" marker-end="url(#msAcc)"/><text x="420" y="176" font-size="10.5" text-anchor="middle" class="accT">nhóm mới: đọc từ đầu</text>
-<text x="400" y="208" font-size="11">Message nằm lại, mỗi nhóm một dấu trang, tua lại được.</text>
-</svg>
-<p class="fig-caption">Hộp thư: lấy ra là hết. Cuộn log: không ai lấy đi, chỉ có dấu trang của từng người đọc.</p>
-</div>
-
-- **Đọc lại (replay)**: vì Kafka không xoá khi đọc, một service mới hoặc một bug fix có thể đọc lại event của tuần trước. Hộp thư không làm được, message đã Complete là mất.
-- **Thứ tự và song song**: một topic Kafka chia thành nhiều partition; thứ tự chỉ đảm bảo trong một partition, và số consumer chạy song song trong một nhóm tối đa bằng số partition. Hộp thư thì thêm consumer là chia việc ngay (competing consumers); cần thứ tự thì Service Bus có session.
-- **Lỗi từng message**: hộp thư có sẵn retry, khoá, DLQ cho từng message ([mục 2](#peek-lock), [mục 3](#dead-letter)). Kafka chỉ có offset: một message lỗi chặn cả partition phía sau nếu không tự dựng retry topic và DLQ topic.
-- **Lưu lượng**: Kafka ghi tuần tự xuống đĩa nên chịu được lượng event rất lớn (click, log, telemetry). Với lượng việc nghiệp vụ thông thường thì cả ba đều đủ.
-
-Chọn theo việc, không theo "cái nào nhanh hơn": **giao việc** cho một nơi xử lý (gửi email, tạo vận đơn, cần retry từng message) thì hộp thư; **dòng sự kiện** nhiều bên đọc, cần đọc lại, lượng lớn thì Kafka. Trên Azure: Service Bus là hộp thư; **Event Hubs** là kiểu log, nói được giao thức Kafka.
-
-### Thư viện messaging cho .NET {#dotnet-libraries}
-
-Broker và thư viện là hai thứ tính phí riêng: RabbitMQ và Kafka là mã nguồn mở, tự chạy thì miễn phí (chỉ tốn máy); Service Bus là dịch vụ Azure trả theo tier và số thao tác; SDK gốc của cả ba đều miễn phí. Các SDK gốc (`Azure.Messaging.ServiceBus`, `RabbitMQ.Client`, `Confluent.Kafka`) chỉ gửi và nhận. Những thứ trang này dạy viết tay (retry, DLQ, outbox, chống trùng, saga) là phần thư viện bọc thêm:
-
-- **MassTransit**: phổ biến nhất, một API cho RabbitMQ, Service Bus, Amazon SQS; có retry, outbox, saga state machine. Từ v9 là bản trả phí; v8 vẫn miễn phí (Apache 2.0), hỗ trợ tới hết 2026.
-- **NServiceBus**: thương mại, lâu đời, mạnh về saga và vận hành.
-- **Wolverine**: mã nguồn mở, mới hơn, gộp messaging và xử lý command.
-
-Viết code qua abstraction của thư viện thì dev local chạy RabbitMQ, production chạy Service Bus mà không sửa handler. Nhưng hai broker không giống hệt nhau (session, giới hạn kích thước, filter), nên vẫn phải test trên đúng broker trước khi lên production.
-
-### Chạy Service Bus ở máy dev {#service-bus-local}
-
-"Service Bus không chạy local được" là thông tin cũ. Microsoft có **Service Bus emulator** chạy bằng Docker: hai container, emulator và SQL Server Linux làm nơi lưu. Khai báo queue, topic, subscription trong một file `config.json`, rồi app trỏ vào bằng connection string có `UseDevelopmentEmulator=true`; code dùng `ServiceBusClient` y như với Azure. Dùng .NET Aspire thì một dòng `AddAzureServiceBus(...).RunAsEmulator()` trong AppHost tự dựng nó.
-
-Emulator chỉ để dev và test: không có portal, dữ liệu mất khi restart container, không có partition, message tối đa 256 KB, tối đa 50 queue/topic. Thứ không giả lập được (quyền truy cập bằng Microsoft Entra ID, network) thì test trên một namespace Azure riêng cho dev.
-
-## 10. Biến thể và trade-off {#trade-offs}
+## 9. Biến thể và trade-off {#trade-offs}
 
 - **Vì Abandon và lock hết hạn giao lại message ngay, không có <T>backoff</T>**, hệ thống phía sau sập 30 giây có thể đốt hết 10 lượt và đẩy message lành vào DLQ. Retry có backoff ngay trong handler cho lỗi tạm thời (vd `Microsoft.Extensions.Http.Resilience` cho lời gọi HTTP), hoặc tăng MaxDeliveryCount.
 - **Vì `ReceiveAndDelete` xoá lúc giao**, chỉ dùng khi mất một message không sao (telemetry, cập nhật vị trí liên tục).
@@ -564,26 +513,6 @@ Có thể không: giao lại là ngay lập tức, không có backoff, nên 10 l
 **"Replay từ DLQ có an toàn không?"**
 
 Chỉ khi consumer idempotent: message có thể đã làm được một phần trước khi lỗi. Xem [idempotent consumer](#idempotent-consumer).
-:::
-
-### Kafka và RabbitMQ khác nhau thế nào? Khi nào chọn cái nào? <Badge type="warning" text="hay bị hỏi" /> {#kafka-vs-rabbitmq-q}
-
-::: tip Trả lời nhanh
-RabbitMQ (và Service Bus) là hộp thư: Complete thì xoá, retry và DLQ từng message. Kafka là log chỉ ghi nối: message nằm lại theo thời hạn lưu, mỗi nhóm consumer giữ offset riêng, đọc lại được, thứ tự theo partition. Giao việc chọn hộp thư; dòng sự kiện nhiều bên đọc, cần replay, lượng lớn chọn Kafka. Xem [Hộp thư hay cuộn băng](#kafka-vs-rabbitmq).
-:::
-
-::: details Câu trả lời mẫu (English)
-They have different models. RabbitMQ and Azure Service Bus are queue brokers: a consumer takes a message, and when it acknowledges, the message is gone. They give you per-message retries, locks and dead-lettering, and adding consumers simply spreads the work. Kafka is a distributed append-only log: messages stay for the retention period whether anyone read them or not, and each consumer group keeps its own offset. That gives replay and many independent readers, with ordering per partition, and parallelism limited by the number of partitions. But a failing message has no built-in dead-letter; you build retry topics yourself. So for commands and background jobs, like sending emails or creating shipments, I'd use a queue broker; for a high-volume event stream that several teams read and may need to replay, Kafka. On Azure that maps to Service Bus versus Event Hubs.
-:::
-
-::: warning Bẫy & follow-up
-**"Kafka nhanh hơn nên dùng Kafka cho mọi thứ?"**
-
-Nhanh hơn ở lưu lượng, nhưng mất retry và DLQ từng message, và một message lỗi có thể chặn cả partition. Chọn theo kiểu việc, không theo tốc độ.
-
-**"Kafka có đảm bảo thứ tự không?"**
-
-Chỉ trong một partition. Muốn mọi event của một đơn đi đúng thứ tự thì dùng OrderId làm key để chúng vào cùng partition.
 :::
 
 ## Tự kiểm tra {#self-check}

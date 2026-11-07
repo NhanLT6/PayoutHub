@@ -64,6 +64,7 @@ export const sidebar: DefaultTheme.Sidebar = [
       { text: 'Microservices', link: '/architecture/microservices' },
       { text: 'Messaging: queue, outbox, saga', link: '/architecture/messaging' },
       { text: 'DDD', link: '/architecture/ddd' },
+      { text: 'Công cụ: broker, thư viện', link: '/architecture/tooling' },
     ],
   },
   {

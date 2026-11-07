@@ -249,6 +249,14 @@ const groups: Group[] = [
           { text: 'Bounded context', link: '/architecture/ddd#bounded-context-microservices' },
         ],
       },
+      {
+        text: 'Công cụ',
+        desc: 'Kafka hay RabbitMQ, MassTransit và thư viện .NET, chạy Service Bus ở local, YARP, Polly, OpenTelemetry, Aspire.',
+        link: '/architecture/tooling',
+        q: [
+          { text: 'Kafka vs RabbitMQ', link: '/architecture/tooling#kafka-vs-rabbitmq-q' },
+        ],
+      },
     ],
   },
   {
