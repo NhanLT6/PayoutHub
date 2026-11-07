@@ -418,7 +418,7 @@ Chọn theo việc, không theo "cái nào nhanh hơn": **giao việc** cho mộ
 
 ### Thư viện messaging cho .NET {#dotnet-libraries}
 
-Các SDK gốc (`Azure.Messaging.ServiceBus`, `RabbitMQ.Client`, `Confluent.Kafka`) chỉ gửi và nhận. Những thứ trang này dạy viết tay (retry, DLQ, outbox, chống trùng, saga) là phần thư viện bọc thêm:
+Broker và thư viện là hai thứ tính phí riêng: RabbitMQ và Kafka là mã nguồn mở, tự chạy thì miễn phí (chỉ tốn máy); Service Bus là dịch vụ Azure trả theo tier và số thao tác; SDK gốc của cả ba đều miễn phí. Các SDK gốc (`Azure.Messaging.ServiceBus`, `RabbitMQ.Client`, `Confluent.Kafka`) chỉ gửi và nhận. Những thứ trang này dạy viết tay (retry, DLQ, outbox, chống trùng, saga) là phần thư viện bọc thêm:
 
 - **MassTransit**: phổ biến nhất, một API cho RabbitMQ, Service Bus, Amazon SQS; có retry, outbox, saga state machine. Từ v9 là bản trả phí; v8 vẫn miễn phí (Apache 2.0), hỗ trợ tới hết 2026.
 - **NServiceBus**: thương mại, lâu đời, mạnh về saga và vận hành.
