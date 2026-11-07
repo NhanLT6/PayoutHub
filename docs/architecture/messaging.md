@@ -4,28 +4,37 @@ title: "Messaging: queue, at-least-once, outbox, saga"
 
 # Messaging: queue, at-least-once, outbox, saga
 
-Message broker (Azure Service Bus, RabbitMQ) là một hộp thư nằm giữa hai phần của hệ thống: bên gửi bỏ message vào rồi đi tiếp, bên nhận lấy ra xử lý khi rảnh. Cả trang suy ra từ **một luật** của broker: message chỉ bị xoá khi consumer báo xong. Từ luật đó ra dead-letter queue, at-least-once, idempotent consumer; phía gửi thì ra outbox; quy trình nhiều bước qua nhiều hệ thống thì ra saga. Ví dụ xuyên suốt: shop online với Order, Payment (gọi cổng thanh toán bên ngoài), Inventory (giữ hàng), Shipping (gọi hãng vận chuyển bên ngoài), Notification (email/SMS). Đọc trước: [gọi đồng bộ hay gửi message](/architecture/microservices#sync-vs-async). Liên quan: [Idempotency-Key ở REST API](/aspnet-core/rest-api#idempotency-key).
+Message broker (Azure Service Bus, RabbitMQ) là hộp thư nằm giữa các service. Hình dưới theo một message `OrderPlaced`: Order ghi đơn cùng một dòng **outbox** trong một transaction, worker publish vào **topic**, topic chép một bản vào mỗi **subscription**, consumer nhận thì message bị **khoá** chứ chưa bị xoá. Luật trung tâm: **message chỉ bị xoá khi consumer gọi `Complete()`**. Lỗi thì message quay lại subscription để retry, quá 10 lần thì sang **dead-letter queue**; chết ngay trước `Complete()` thì message bị giao lại, nên broker chỉ hứa **at-least-once** và consumer phải **idempotent**. Quy trình nhiều bước qua nhiều service (saga) ở mục riêng. Đọc trước: [gọi đồng bộ hay gửi message](/architecture/microservices#sync-vs-async). Liên quan: [Idempotency-Key ở REST API](/aspnet-core/rest-api#idempotency-key).
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="msInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="msOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="msBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker><marker id="msAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
 ## Bản đồ chủ đề {#topic-map}
 
 <div class="fig">
-<svg viewBox="0 0 760 530" role="img" aria-label="Bản đồ chủ đề messaging: một message OrderPlaced đi từ Order service qua outbox, worker, topic, tới Inventory consumer bị khoá, ghi Reservation và ProcessedMessages chung transaction, gọi Complete mới bị xoá; lỗi thì quay lại, quá 10 lần vào dead-letter queue">
-<a href="#outbox" style="text-decoration:none"><rect class="box" x="20" y="40" width="250" height="104" rx="10"/><text x="40" y="65" font-size="13" font-weight="600">Order service</text><rect class="box" x="36" y="78" width="100" height="34" rx="6"/><text x="86" y="100" font-size="12" text-anchor="middle">Order</text><rect class="boxAcc" x="152" y="78" width="102" height="34" rx="6"/><text x="203" y="100" font-size="12" font-weight="600" text-anchor="middle" class="accT">Outbox</text><text x="145" y="133" font-size="11.5" text-anchor="middle" class="muted">một transaction</text><circle cx="20" cy="40" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="20" cy="40" r="12"/><text x="20" y="44.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">1</text></a>
-<line class="ln" x1="270" y1="95" x2="426" y2="95" marker-end="url(#msInk)"/>
-<a href="#outbox-table" style="text-decoration:none"><circle cx="292" cy="72" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="292" cy="72" r="12"/><text x="292" y="76.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">2</text><text x="310" y="76.5" font-size="11.5">worker publish</text></a>
-<a href="#queue-vs-topic" style="text-decoration:none"><rect class="boxAcc" x="430" y="66" width="120" height="58" rx="8"/><text x="490" y="90" font-size="13" font-weight="600" text-anchor="middle" class="accT">topic</text><text x="490" y="110" font-size="11" text-anchor="middle" class="mono">order-placed</text><circle cx="430" cy="66" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="430" cy="66" r="12"/><text x="430" y="70.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">3</text><text x="604" y="30" font-size="11" class="muted">mỗi subscription một bản</text><g style="opacity:.5"><line class="ln dash" x1="550" y1="80" x2="598" y2="58" marker-end="url(#msInk)"/><text x="604" y="62" font-size="11.5" class="mono muted">shipping</text><line class="ln dash" x1="550" y1="98" x2="598" y2="98" marker-end="url(#msInk)"/><text x="604" y="102" font-size="11.5" class="mono muted">notification</text></g><line class="ln" x1="490" y1="124" x2="490" y2="190" marker-end="url(#msInk)"/><text x="500" y="162" font-size="11.5" class="mono">sub inventory</text></a>
-<a href="#peek-lock" style="text-decoration:none"><rect class="boxAcc" x="400" y="194" width="180" height="56" rx="8"/><text x="490" y="217" font-size="13" font-weight="600" text-anchor="middle" class="accT">Inventory consumer</text><text x="490" y="237" font-size="11.5" text-anchor="middle">khoá, chưa xoá</text><circle cx="400" cy="194" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="400" cy="194" r="12"/><text x="400" y="198.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">4</text></a>
-<line class="ln" x1="490" y1="250" x2="490" y2="296" marker-end="url(#msInk)"/><text x="500" y="278" font-size="11.5" class="muted">giữ hàng</text>
-<a href="#idempotent-consumer" style="text-decoration:none"><rect class="box" x="350" y="300" width="280" height="112" rx="10"/><text x="368" y="323" font-size="13" font-weight="600">Inventory DB</text><rect class="box" x="366" y="336" width="108" height="32" rx="6"/><text x="420" y="357" font-size="11.5" text-anchor="middle">Reservation</text><rect class="boxOk" x="486" y="336" width="130" height="32" rx="6"/><text x="551" y="357" font-size="11.5" font-weight="600" text-anchor="middle" class="okT">ProcessedMessages</text><text x="490" y="396" font-size="11.5" text-anchor="middle" class="muted">một transaction, trùng Id thì bỏ qua</text><circle cx="350" cy="300" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="350" cy="300" r="12"/><text x="350" y="304.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">5</text></a>
-<a href="#at-least-once" style="text-decoration:none"><line class="lnOk" x1="490" y1="412" x2="490" y2="458" marker-end="url(#msOk)"/><rect class="boxOk" x="410" y="462" width="160" height="54" rx="8"/><text x="490" y="485" font-size="13" font-weight="600" text-anchor="middle" class="okT">Complete()</text><text x="490" y="504" font-size="11.5" text-anchor="middle">giờ mới xoá</text><circle cx="410" cy="462" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="410" cy="462" r="12"/><text x="410" y="466.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">6</text></a>
-<a href="#dead-letter" style="text-decoration:none"><path class="lnBad" d="M350 374 H300 V222 H396" marker-end="url(#msBad)"/><circle cx="300" cy="246" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="300" cy="246" r="12"/><text x="300" y="250.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">7</text><text x="284" y="292" font-size="12" font-weight="600" text-anchor="end" class="badT">lỗi: giao lại</text><path class="lnBad dash" d="M300 374 V470 H244" marker-end="url(#msBad)"/><text x="308" y="446" font-size="11.5" class="muted">quá 10 lần</text><rect class="boxBad" x="40" y="444" width="200" height="54" rx="8"/><text x="140" y="467" font-size="13" font-weight="600" text-anchor="middle" class="badT">Dead-letter queue</text><text x="140" y="486" font-size="11.5" text-anchor="middle">chờ người xem</text></a>
+<svg viewBox="0 0 800 610" role="img" aria-label="Bản đồ chủ đề messaging: Order service ghi Order và Outbox chung một transaction, worker publish OrderPlaced vào topic order-placed trong message broker; topic chép một bản vào mỗi subscription; Inventory consumer nhận message bị khoá, ghi Reservation và ProcessedMessages chung transaction, gọi Complete thì message bị xoá; lỗi thì message quay lại subscription, DeliveryCount tăng, quá 10 lần thì sang dead-letter queue trong broker">
+<text x="18" y="20" font-size="12" font-weight="600" class="muted">BÊN GỬI</text>
+<rect class="box" x="16" y="30" width="504" height="104" rx="12"/><text x="32" y="54" font-size="13" font-weight="600">Order service</text>
+<a href="#outbox" style="text-decoration:none"><rect class="box" x="36" y="70" width="88" height="36" rx="6"/><text x="80" y="93" font-size="12.5" text-anchor="middle">Order</text><rect class="boxAcc" x="134" y="70" width="96" height="36" rx="6"/><text x="182" y="93" font-size="12.5" font-weight="600" text-anchor="middle" class="accT">Outbox</text><path class="lnMuted" d="M36 114 V118 H230 V114"/><text x="133" y="128" font-size="11.5" text-anchor="middle" class="muted">một transaction</text><circle cx="36" cy="70" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="36" cy="70" r="12"/><text x="36" y="74.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">1</text></a>
+<line class="ln" x1="230" y1="88" x2="321" y2="88" marker-end="url(#msInk)"/><text x="276" y="80" font-size="11" text-anchor="middle" class="muted">dòng chưa gửi</text>
+<a href="#outbox-table" style="text-decoration:none"><rect class="box" x="325" y="64" width="180" height="48" rx="8"/><text x="415" y="85" font-size="12.5" font-weight="600" text-anchor="middle">Outbox worker</text><text x="415" y="102" font-size="11" text-anchor="middle" class="muted">BackgroundService</text><line class="ln" x1="415" y1="112" x2="415" y2="208" marker-end="url(#msInk)"/><circle cx="415" cy="146" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="415" cy="146" r="12"/><text x="415" y="150.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">2</text><text x="434" y="150" font-size="12">publish</text><text x="434" y="166" font-size="11" class="mono muted">MessageId = Outbox.Id</text></a>
+<rect x="16" y="186" width="768" height="226" rx="14" style="fill:var(--vp-c-bg);stroke:var(--vp-c-brand-1);stroke-width:2.2"/>
+<text x="34" y="214" font-size="15" font-weight="700" class="accT">MESSAGE BROKER</text><text x="34" y="232" font-size="11.5" class="muted">Azure Service Bus, RabbitMQ</text>
+<text x="34" y="276" font-size="12" font-weight="600">Luật của cả trang:</text><text x="34" y="296" font-size="12.5">message chỉ bị xoá</text><text x="34" y="314" font-size="12.5">khi consumer gọi <tspan class="mono okT" font-weight="600">Complete()</tspan></text>
+<a href="#queue-vs-topic" style="text-decoration:none"><rect class="boxAcc" x="360" y="212" width="110" height="60" rx="8"/><text x="415" y="237" font-size="13" font-weight="600" text-anchor="middle" class="accT">topic</text><text x="415" y="257" font-size="11.5" text-anchor="middle" class="mono">order-placed</text><g style="opacity:.5"><line class="ln" x1="470" y1="226" x2="536" y2="214" marker-end="url(#msInk)"/><rect class="box" x="540" y="198" width="220" height="28" rx="6"/><text x="556" y="216" font-size="11.5" class="mono">sub shipping</text><line class="ln" x1="470" y1="240" x2="536" y2="248" marker-end="url(#msInk)"/><rect class="box" x="540" y="234" width="220" height="28" rx="6"/><text x="556" y="252" font-size="11.5" class="mono">sub notification</text></g><line class="ln" x1="470" y1="256" x2="536" y2="290" marker-end="url(#msInk)"/><text x="415" y="292" font-size="11.5" text-anchor="middle" class="muted">mỗi subscription một bản</text><circle cx="360" cy="212" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="360" cy="212" r="12"/><text x="360" y="216.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">3</text></a>
+<rect class="box" x="540" y="276" width="220" height="96" rx="8" style="stroke:var(--vp-c-brand-1)"/><text x="556" y="296" font-size="12" font-weight="600" class="mono">sub inventory</text>
+<rect class="boxAcc" x="556" y="306" width="160" height="34" rx="6"/><text x="636" y="328" font-size="12" text-anchor="middle" class="mono">OrderPlaced</text><path d="M729 316 v-4 a5 5 0 0 1 10 0 v4" style="fill:none;stroke:var(--vp-c-text-1);stroke-width:1.8"/><rect x="726" y="316" width="16" height="13" rx="2" style="fill:var(--vp-c-text-1)"/><text x="556" y="360" font-size="11.5" class="accT">đang giao: bị khoá, chưa xoá</text>
+<a href="#dead-letter" style="text-decoration:none"><rect class="boxBad" x="316" y="326" width="150" height="54" rx="8"/><text x="391" y="349" font-size="13" font-weight="600" text-anchor="middle" class="badT">Dead-letter queue</text><text x="391" y="368" font-size="11.5" text-anchor="middle">chờ người xem</text><line class="lnBad dash" x1="540" y1="354" x2="470" y2="354" marker-end="url(#msBad)"/><text x="504" y="346" font-size="11" text-anchor="middle" class="badT">quá 10 lần</text></a>
+<rect class="box" x="184" y="436" width="600" height="166" rx="12"/><text x="200" y="458" font-size="13" font-weight="600">Inventory service</text><text x="320" y="458" font-size="12" font-weight="600" class="muted">BÊN NHẬN</text>
+<a href="#peek-lock" style="text-decoration:none"><line class="ln" x1="566" y1="372" x2="566" y2="474" marker-end="url(#msInk)"/><text x="556" y="426" font-size="12" text-anchor="end">giao + khoá</text><circle cx="566" cy="402" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="566" cy="402" r="12"/><text x="566" y="406.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">4</text></a>
+<rect class="boxAcc" x="430" y="478" width="170" height="54" rx="8"/><text x="515" y="501" font-size="13" font-weight="600" text-anchor="middle" class="accT">Inventory consumer</text><text x="515" y="520" font-size="11.5" text-anchor="middle">giữ hàng</text>
+<a href="#idempotent-consumer" style="text-decoration:none"><line class="ln" x1="430" y1="505" x2="398" y2="505" marker-end="url(#msInk)"/><rect class="box" x="200" y="476" width="194" height="116" rx="8"/><text x="214" y="496" font-size="12" font-weight="600">Inventory DB</text><rect class="box" x="214" y="504" width="166" height="26" rx="5"/><text x="297" y="521" font-size="11.5" text-anchor="middle">Reservation</text><rect class="boxOk" x="214" y="534" width="166" height="26" rx="5"/><text x="297" y="551" font-size="11.5" font-weight="600" text-anchor="middle" class="okT">ProcessedMessages</text><text x="297" y="579" font-size="11" text-anchor="middle" class="muted">một transaction, trùng Id: bỏ qua</text><circle cx="200" cy="476" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="200" cy="476" r="12"/><text x="200" y="480.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">5</text></a>
+<a href="#at-least-once" style="text-decoration:none"><path class="lnOk" d="M600 492 H650 V376" marker-end="url(#msOk)"/><text x="658" y="400" font-size="12" font-weight="600" class="okT mono">Complete()</text><text x="658" y="424" font-size="11.5" class="okT">→ xoá message</text><text x="515" y="554" font-size="11.5" font-weight="600" text-anchor="middle">at-least-once</text><text x="515" y="571" font-size="11" text-anchor="middle" class="muted">chết trước 6: tới lần 2</text><circle cx="650" cy="460" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="650" cy="460" r="12"/><text x="650" y="464.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">6</text></a>
+<a href="#dead-letter" style="text-decoration:none"><path class="lnBad" d="M600 518 H760 V376" marker-end="url(#msBad)"/><text x="680" y="540" font-size="12" font-weight="600" text-anchor="middle" class="badT">lỗi: quay lại, retry</text><text x="680" y="557" font-size="11" text-anchor="middle" class="mono muted">DeliveryCount + 1</text><circle cx="760" cy="480" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="760" cy="480" r="12"/><text x="760" y="484.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">7</text></a>
 </svg>
-<p class="fig-caption">Đọc 1 đến 7. Tự trả lời: vì sao Outbox ghi chung transaction với Order (1)? Vì sao 4 chỉ khoá mà chưa xoá? Crash ngay trước 6 thì sao, và 5 cứu thế nào?</p>
+<p class="fig-caption">Đọc 1 đến 7. Tự hỏi: vì sao 4 chỉ khoá mà chưa xoá? Chết ngay trước 6 thì sao, và 5 cứu thế nào? Vì sao Outbox phải chung transaction với Order (1)?</p>
 </div>
 
-Các chủ đề khác ở mục riêng: [saga và compensation](#saga), [choreography hay orchestration](#choreography-vs-orchestration).
+Các chủ đề khác ở mục riêng: [saga và compensation](#saga), [choreography hay orchestration](#choreography-vs-orchestration), [Kafka hay RabbitMQ, thư viện .NET, chạy Service Bus ở local](#tools).
 
 ## 1. Vấn đề: đọc là mất việc {#problem}
 
@@ -370,7 +379,60 @@ Thứ tự bước cũng là thiết kế: đặt bước dễ bù (giữ hàng:
 
 **Khuyến nghị**: quy trình nhiều bước, nhiều ngoại lệ và cần compensation (đặt hàng ở trên) thì dùng orchestration; thông báo kiểu fan-out đơn giản ("đơn đã giao, ai quan tâm thì nghe") thì choreography là đủ. Trong .NET, MassTransit và NServiceBus có saga state machine dựng sẵn; tự viết thì là một bảng trạng thái cộng một consumer, và consumer đó cũng phải idempotent.
 
-## 9. Biến thể và trade-off {#trade-offs}
+## 9. Broker và thư viện trong .NET {#tools}
+
+### Kafka, RabbitMQ, Service Bus: hộp thư hay cuộn băng {#kafka-vs-rabbitmq}
+
+**RabbitMQ và Azure Service Bus là broker kiểu hộp thư: consumer báo Complete thì message bị xoá. Kafka là một cuộn log chỉ ghi nối: message nằm lại tới hết hạn lưu (vd 7 ngày) dù đã đọc hay chưa, mỗi nhóm consumer tự giữ một dấu trang (offset) "đã đọc tới đâu".** Mọi khác biệt suy ra từ đó:
+
+<div class="fig">
+<svg viewBox="0 0 740 250" role="img" aria-label="Bên trái hộp thư: consumer lấy message ra và Complete thì message biến mất. Bên phải cuộn log: message nằm lại, mỗi nhóm consumer có một dấu trang offset riêng, có thể tua lại">
+<text x="170" y="22" font-size="13" font-weight="600" text-anchor="middle">Hộp thư: RabbitMQ, Service Bus</text>
+<text x="550" y="22" font-size="13" font-weight="600" text-anchor="middle">Cuộn log: Kafka</text>
+<rect class="boxAcc" x="30" y="50" width="200" height="44" rx="8"/>
+<g font-size="11" text-anchor="middle" class="mono"><rect class="box" x="44" y="60" width="40" height="24" rx="4"/><text x="64" y="76">m3</text><rect class="box" x="94" y="60" width="40" height="24" rx="4"/><text x="114" y="76">m4</text><rect class="box" x="144" y="60" width="40" height="24" rx="4"/><text x="164" y="76">m5</text></g>
+<line class="ln" x1="230" y1="72" x2="276" y2="72" marker-end="url(#msInk)"/>
+<rect class="box" x="280" y="52" width="70" height="40" rx="6"/><text x="315" y="76" font-size="11.5" text-anchor="middle">consumer</text>
+<rect class="box dash" x="60" y="128" width="40" height="24" rx="4"/><text x="80" y="144" font-size="11" text-anchor="middle" class="mono muted">m1</text>
+<rect class="box dash" x="110" y="128" width="40" height="24" rx="4"/><text x="130" y="144" font-size="11" text-anchor="middle" class="mono muted">m2</text>
+<text x="170" y="145" font-size="11" class="muted">Complete rồi: đã xoá</text>
+<text x="30" y="190" font-size="11">Mỗi message một người xử lý, retry và DLQ từng message.</text>
+<text x="30" y="208" font-size="11">Đọc lại việc cũ: không được.</text>
+<line class="lnMuted" x1="372" y1="14" x2="372" y2="236"/>
+<g font-size="11" text-anchor="middle" class="mono"><rect class="box" x="400" y="60" width="40" height="24" rx="4"/><text x="420" y="76">m1</text><rect class="box" x="446" y="60" width="40" height="24" rx="4"/><text x="466" y="76">m2</text><rect class="box" x="492" y="60" width="40" height="24" rx="4"/><text x="512" y="76">m3</text><rect class="box" x="538" y="60" width="40" height="24" rx="4"/><text x="558" y="76">m4</text><rect class="box" x="584" y="60" width="40" height="24" rx="4"/><text x="604" y="76">m5</text></g>
+<line class="ln" x1="630" y1="72" x2="700" y2="72" marker-end="url(#msInk)"/><text x="666" y="62" font-size="10.5" text-anchor="middle" class="muted">ghi nối</text>
+<path class="lnOk" d="M512 120 V90" marker-end="url(#msOk)"/><text x="512" y="136" font-size="10.5" text-anchor="middle" class="okT">Shipping ở m3</text>
+<path class="lnAcc" d="M604 160 V90" marker-end="url(#msAcc)"/><text x="604" y="176" font-size="10.5" text-anchor="middle" class="accT">Analytics ở m5</text>
+<path class="lnAcc dash" d="M420 160 V90" marker-end="url(#msAcc)"/><text x="420" y="176" font-size="10.5" text-anchor="middle" class="accT">nhóm mới: đọc từ đầu</text>
+<text x="400" y="208" font-size="11">Message nằm lại, mỗi nhóm một dấu trang, tua lại được.</text>
+</svg>
+<p class="fig-caption">Hộp thư: lấy ra là hết. Cuộn log: không ai lấy đi, chỉ có dấu trang của từng người đọc.</p>
+</div>
+
+- **Đọc lại (replay)**: vì Kafka không xoá khi đọc, một service mới hoặc một bug fix có thể đọc lại event của tuần trước. Hộp thư không làm được, message đã Complete là mất.
+- **Thứ tự và song song**: một topic Kafka chia thành nhiều partition; thứ tự chỉ đảm bảo trong một partition, và số consumer chạy song song trong một nhóm tối đa bằng số partition. Hộp thư thì thêm consumer là chia việc ngay (competing consumers); cần thứ tự thì Service Bus có session.
+- **Lỗi từng message**: hộp thư có sẵn retry, khoá, DLQ cho từng message ([mục 2](#peek-lock), [mục 3](#dead-letter)). Kafka chỉ có offset: một message lỗi chặn cả partition phía sau nếu không tự dựng retry topic và DLQ topic.
+- **Lưu lượng**: Kafka ghi tuần tự xuống đĩa nên chịu được lượng event rất lớn (click, log, telemetry). Với lượng việc nghiệp vụ thông thường thì cả ba đều đủ.
+
+Chọn theo việc, không theo "cái nào nhanh hơn": **giao việc** cho một nơi xử lý (gửi email, tạo vận đơn, cần retry từng message) thì hộp thư; **dòng sự kiện** nhiều bên đọc, cần đọc lại, lượng lớn thì Kafka. Trên Azure: Service Bus là hộp thư; **Event Hubs** là kiểu log, nói được giao thức Kafka.
+
+### Thư viện messaging cho .NET {#dotnet-libraries}
+
+Các SDK gốc (`Azure.Messaging.ServiceBus`, `RabbitMQ.Client`, `Confluent.Kafka`) chỉ gửi và nhận. Những thứ trang này dạy viết tay (retry, DLQ, outbox, chống trùng, saga) là phần thư viện bọc thêm:
+
+- **MassTransit**: phổ biến nhất, một API cho RabbitMQ, Service Bus, Amazon SQS; có retry, outbox, saga state machine. Từ v9 là bản trả phí; v8 vẫn miễn phí (Apache 2.0), hỗ trợ tới hết 2026.
+- **NServiceBus**: thương mại, lâu đời, mạnh về saga và vận hành.
+- **Wolverine**: mã nguồn mở, mới hơn, gộp messaging và xử lý command.
+
+Viết code qua abstraction của thư viện thì dev local chạy RabbitMQ, production chạy Service Bus mà không sửa handler. Nhưng hai broker không giống hệt nhau (session, giới hạn kích thước, filter), nên vẫn phải test trên đúng broker trước khi lên production.
+
+### Chạy Service Bus ở máy dev {#service-bus-local}
+
+"Service Bus không chạy local được" là thông tin cũ. Microsoft có **Service Bus emulator** chạy bằng Docker: hai container, emulator và SQL Server Linux làm nơi lưu. Khai báo queue, topic, subscription trong một file `config.json`, rồi app trỏ vào bằng connection string có `UseDevelopmentEmulator=true`; code dùng `ServiceBusClient` y như với Azure. Dùng .NET Aspire thì một dòng `AddAzureServiceBus(...).RunAsEmulator()` trong AppHost tự dựng nó.
+
+Emulator chỉ để dev và test: không có portal, dữ liệu mất khi restart container, không có partition, message tối đa 256 KB, tối đa 50 queue/topic. Thứ không giả lập được (quyền truy cập bằng Microsoft Entra ID, network) thì test trên một namespace Azure riêng cho dev.
+
+## 10. Biến thể và trade-off {#trade-offs}
 
 - **Vì Abandon và lock hết hạn giao lại message ngay, không có <T>backoff</T>**, hệ thống phía sau sập 30 giây có thể đốt hết 10 lượt và đẩy message lành vào DLQ. Retry có backoff ngay trong handler cho lỗi tạm thời (vd `Microsoft.Extensions.Http.Resilience` cho lời gọi HTTP), hoặc tăng MaxDeliveryCount.
 - **Vì `ReceiveAndDelete` xoá lúc giao**, chỉ dùng khi mất một message không sao (telemetry, cập nhật vị trí liên tục).
@@ -502,6 +564,26 @@ Có thể không: giao lại là ngay lập tức, không có backoff, nên 10 l
 **"Replay từ DLQ có an toàn không?"**
 
 Chỉ khi consumer idempotent: message có thể đã làm được một phần trước khi lỗi. Xem [idempotent consumer](#idempotent-consumer).
+:::
+
+### Kafka và RabbitMQ khác nhau thế nào? Khi nào chọn cái nào? <Badge type="warning" text="hay bị hỏi" /> {#kafka-vs-rabbitmq-q}
+
+::: tip Trả lời nhanh
+RabbitMQ (và Service Bus) là hộp thư: Complete thì xoá, retry và DLQ từng message. Kafka là log chỉ ghi nối: message nằm lại theo thời hạn lưu, mỗi nhóm consumer giữ offset riêng, đọc lại được, thứ tự theo partition. Giao việc chọn hộp thư; dòng sự kiện nhiều bên đọc, cần replay, lượng lớn chọn Kafka. Xem [Hộp thư hay cuộn băng](#kafka-vs-rabbitmq).
+:::
+
+::: details Câu trả lời mẫu (English)
+They have different models. RabbitMQ and Azure Service Bus are queue brokers: a consumer takes a message, and when it acknowledges, the message is gone. They give you per-message retries, locks and dead-lettering, and adding consumers simply spreads the work. Kafka is a distributed append-only log: messages stay for the retention period whether anyone read them or not, and each consumer group keeps its own offset. That gives replay and many independent readers, with ordering per partition, and parallelism limited by the number of partitions. But a failing message has no built-in dead-letter; you build retry topics yourself. So for commands and background jobs, like sending emails or creating shipments, I'd use a queue broker; for a high-volume event stream that several teams read and may need to replay, Kafka. On Azure that maps to Service Bus versus Event Hubs.
+:::
+
+::: warning Bẫy & follow-up
+**"Kafka nhanh hơn nên dùng Kafka cho mọi thứ?"**
+
+Nhanh hơn ở lưu lượng, nhưng mất retry và DLQ từng message, và một message lỗi có thể chặn cả partition. Chọn theo kiểu việc, không theo tốc độ.
+
+**"Kafka có đảm bảo thứ tự không?"**
+
+Chỉ trong một partition. Muốn mọi event của một đơn đi đúng thứ tự thì dùng OrderId làm key để chúng vào cùng partition.
 :::
 
 ## Tự kiểm tra {#self-check}

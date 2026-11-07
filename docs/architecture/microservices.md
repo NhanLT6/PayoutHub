@@ -346,6 +346,21 @@ Với shop: lát đầu nên là thứ **ít phụ thuộc và có lý do tách 
 
 Cơ chế chạy song song, proxy bằng YARP và cutover DB đã có chi tiết ở [Migrate .NET Framework: vì sao strangler fig](/dotnet/framework-vs-core#why-strangler) và [Migrate một app .NET Framework](/dotnet/framework-vs-core#migration-strategy); cùng nguyên lý, chỉ khác đích đến là nhiều service thay vì một app mới.
 
+## 8. Thư viện và công cụ trong .NET {#dotnet-tooling}
+
+Mỗi công cụ dưới đây che đi một cái giá ở mục [Khi nào không nên tách](#when-not), không xoá khái niệm: dùng MassTransit vẫn phải hiểu at-least-once, dùng Polly vẫn phải chọn timeout. Phỏng vấn thường hỏi "dùng gì cho X, vì sao", nên nhớ theo vấn đề:
+
+| Vấn đề | Công cụ hay gặp | Mục liên quan |
+|---|---|---|
+| Một cửa vào, routing | YARP, Ocelot; trên Azure: API Management | [API gateway](#api-gateway) |
+| Gọi service chậm, lỗi | `Microsoft.Extensions.Http.Resilience` (Polly bên dưới) | [Cascading failure](#cascading-failure) |
+| Gửi, nhận message | MassTransit, NServiceBus, Wolverine | [Thư viện messaging](/architecture/messaging#dotnet-libraries) |
+| Theo một request qua nhiều service | OpenTelemetry; xem trên Jaeger, Grafana, Application Insights | [Trace một request](/aspnet-core/logging#trace-a-500) |
+| Chạy cả hệ thống ở máy dev | .NET Aspire (AppHost chạy mọi service và container, gọi nhau bằng tên, có dashboard), Docker Compose | [Service discovery](#api-gateway) |
+| Chạy production | Kubernetes, Azure Container Apps | [Service discovery](#api-gateway) |
+
+**Dapr** đáng biết tên: một sidecar chạy cạnh mỗi service, cho một API chung cho pub/sub, state, gọi service khác; đổi broker bên dưới không phải sửa code. Đổi lại là thêm một thành phần phải vận hành.
+
 ## Câu hỏi phỏng vấn {#interview}
 
 ### Khi nào nên và không nên dùng microservices? <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#when-microservices}

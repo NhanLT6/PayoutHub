@@ -158,6 +158,7 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Trang list có 50 dòng mà chạy 51 query. Vì sao, sửa thế nào?](/data/ef-core#n-plus-one-51-queries)
 - [Tracking và AsNoTracking khác nhau thế nào? Dùng sai chỗ thì hỏng gì?](/data/ef-core#tracking-vs-no-tracking)
 - [Hai user cùng sửa một payout qua API. Chặn lost update thế nào?](/data/ef-core#lost-update-api)
+- [Dùng EF Core thì entity có giữ được encapsulation không?](/data/ef-core#ef-core-encapsulation)
 
 ### [SQL chậm và index](/data/sql-performance#interview)
 
@@ -184,6 +185,7 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Outbox pattern là gì, giải quyết vấn đề gì?](/architecture/messaging#outbox-why)
 - [Saga: choreography hay orchestration, compensation là gì?](/architecture/messaging#saga-orchestration-choreography)
 - [Một message cứ lỗi mãi thì chuyện gì xảy ra?](/architecture/messaging#poison-message)
+- [Kafka và RabbitMQ khác nhau thế nào?](/architecture/messaging#kafka-vs-rabbitmq-q)
 
 ### [DDD](/architecture/ddd#interview)
 

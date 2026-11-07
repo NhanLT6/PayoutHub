@@ -15,6 +15,128 @@ Loại câu "X là gì, khác Y thế nào". Đáp ngắn, đúng, rồi chuyể
 - **Polymorphism**: cùng một lời gọi, hành vi khác nhau tùy kiểu thật của object.
 :::
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="oA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="oBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker><marker id="oMut" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path style="fill:var(--vp-c-text-3)" d="M0 0L10 5L0 10z"/></marker></defs></svg>
+
+<div class="fig">
+<svg viewBox="0 0 720 592" role="img" aria-label="Bốn tính chất OOP trên ví dụ Payout: hộp kín có nút bấm, một mặt interface che máy phía sau, khuôn cha truyền xuống con, một lời gọi rẽ theo object thật">
+<!-- 1. Encapsulation -->
+<rect class="box" x="6" y="6" width="348" height="284" rx="10"/>
+<text x="20" y="30" font-size="14" font-weight="700">Encapsulation</text>
+<rect class="boxOk" x="150" y="48" width="190" height="176" rx="18" style="stroke-width:4"/>
+<text x="268" y="70" font-size="12" font-weight="600" text-anchor="middle" class="okT">Payout</text>
+<line class="lnAcc" x1="186" y1="100" x2="230" y2="113"/>
+<line class="lnAcc" x1="186" y1="136" x2="230" y2="119"/>
+<rect class="boxAcc" x="104" y="88" width="82" height="24" rx="12"/>
+<text x="145" y="104" font-size="10.5" text-anchor="middle" class="mono">Approve()</text>
+<rect class="boxAcc" x="104" y="124" width="82" height="24" rx="12"/>
+<text x="145" y="140" font-size="10.5" text-anchor="middle" class="mono">MarkPaid()</text>
+<path class="boxAcc" d="M246 100 L262 116 L246 132 L230 116 Z"/>
+<text x="246" y="120" font-size="10" text-anchor="middle" font-weight="700" class="accT">?</text>
+<text x="270" y="120" font-size="10" class="muted">kiểm luật</text>
+<line class="lnAcc" x1="246" y1="132" x2="246" y2="162" marker-end="url(#oA)"/>
+<rect class="box" x="160" y="166" width="50" height="20" rx="10"/>
+<text x="185" y="180" font-size="9.5" text-anchor="middle">Pending</text>
+<rect class="boxAcc" x="218" y="166" width="56" height="20" rx="10"/>
+<text x="246" y="180" font-size="9.5" text-anchor="middle" font-weight="600" class="accT">Approved</text>
+<rect class="box" x="282" y="166" width="46" height="20" rx="10"/>
+<text x="305" y="180" font-size="9.5" text-anchor="middle">Paid</text>
+<text x="245" y="208" font-size="9.5" text-anchor="middle" class="muted">trạng thái bên trong</text>
+<text x="22" y="182" font-size="10.5" class="mono badT">p.Status = Paid</text>
+<line class="lnBad" x1="22" y1="194" x2="138" y2="194" marker-end="url(#oBad)"/>
+<line class="lnBad" x1="140" y1="186" x2="156" y2="202" style="stroke-width:3"/>
+<line class="lnBad" x1="156" y1="186" x2="140" y2="202" style="stroke-width:3"/>
+<text x="22" y="214" font-size="9.5" class="muted">lỗi compile: private set</text>
+<line class="lnMuted" x1="20" y1="242" x2="340" y2="242"/>
+<text x="180" y="266" font-size="11.5" text-anchor="middle">Chỉ đổi Status qua method; method kiểm luật trước.</text>
+
+<!-- 2. Abstraction -->
+<rect class="box" x="366" y="6" width="348" height="284" rx="10"/>
+<text x="380" y="30" font-size="14" font-weight="700">Abstraction</text>
+<rect class="box" x="380" y="110" width="100" height="36" rx="6"/>
+<text x="430" y="132" font-size="10.5" text-anchor="middle">PayoutProcessor</text>
+<text x="430" y="164" font-size="9.5" text-anchor="middle" class="muted">chỉ thấy một mặt</text>
+<line class="lnAcc" x1="480" y1="128" x2="566" y2="128" marker-end="url(#oA)"/>
+<text x="523" y="119" font-size="10" text-anchor="middle" class="mono accT">SendAsync()</text>
+<text x="577" y="46" font-size="10" text-anchor="middle" class="mono accT">IPayoutGateway</text>
+<g opacity="0.6">
+<rect class="box dash" x="592" y="56" width="110" height="168" rx="6"/>
+<text x="647" y="76" font-size="9.5" text-anchor="middle" class="muted">phía sau, bị che</text>
+<circle cx="610" cy="100" r="6" fill="none" style="stroke:var(--vp-c-text-2);stroke-width:4;stroke-dasharray:2.4 2"/>
+<text x="624" y="104" font-size="10" class="muted">HTTP</text>
+<circle cx="610" cy="128" r="6" fill="none" style="stroke:var(--vp-c-text-2);stroke-width:4;stroke-dasharray:2.4 2"/>
+<text x="624" y="132" font-size="10" class="muted">ký HMAC</text>
+<circle cx="610" cy="156" r="6" fill="none" style="stroke:var(--vp-c-text-2);stroke-width:4;stroke-dasharray:2.4 2"/>
+<text x="624" y="160" font-size="10" class="muted">retry</text>
+<circle cx="610" cy="184" r="6" fill="none" style="stroke:var(--vp-c-text-2);stroke-width:4;stroke-dasharray:2.4 2"/>
+<text x="624" y="188" font-size="10" class="muted">mã lỗi bank</text>
+</g>
+<rect class="boxAcc" x="570" y="52" width="14" height="176" rx="3"/>
+<circle class="boxAcc" cx="577" cy="128" r="5" style="fill:var(--vp-c-brand-1)"/>
+<line class="lnMuted" x1="380" y1="242" x2="700" y2="242"/>
+<text x="540" y="266" font-size="11.5" text-anchor="middle">Chỉ lộ một mặt interface; cách làm phía sau bị che.</text>
+
+<!-- 3. Inheritance -->
+<rect class="box" x="6" y="302" width="348" height="284" rx="10"/>
+<text x="20" y="326" font-size="14" font-weight="700">Inheritance</text>
+<rect class="box" x="100" y="338" width="160" height="54" rx="6" style="stroke:var(--vp-c-text-2)"/>
+<text x="180" y="355" font-size="11" text-anchor="middle" font-weight="600">Payout</text>
+<rect class="box" x="108" y="364" width="40" height="18" rx="3"/>
+<text x="128" y="377" font-size="9" text-anchor="middle">Amount</text>
+<rect class="box" x="152" y="364" width="38" height="18" rx="3"/>
+<text x="171" y="377" font-size="9" text-anchor="middle">Status</text>
+<rect class="box" x="194" y="364" width="60" height="18" rx="3"/>
+<text x="224" y="377" font-size="9" text-anchor="middle" class="mono">Approve()</text>
+<path class="box" d="M180 393 L188 405 L172 405 Z" style="stroke:var(--vp-c-text-1)"/>
+<polyline class="ln" points="180,405 180,424"/>
+<polyline class="ln" points="100,446 100,424 260,424 260,446"/>
+<text x="188" y="418" font-size="9.5" class="muted">is-a</text>
+<rect class="box" x="30" y="446" width="140" height="54" rx="6"/>
+<text x="100" y="463" font-size="11" text-anchor="middle" font-weight="600">BankPayout</text>
+<rect class="box" x="40" y="472" width="14" height="18" rx="3"/>
+<rect class="box" x="58" y="472" width="14" height="18" rx="3"/>
+<rect class="box" x="76" y="472" width="14" height="18" rx="3"/>
+<rect class="boxAcc" x="96" y="472" width="64" height="18" rx="3"/>
+<text x="128" y="485" font-size="9" text-anchor="middle" class="accT">AccountNo</text>
+<rect class="box" x="190" y="446" width="140" height="54" rx="6"/>
+<text x="260" y="463" font-size="11" text-anchor="middle" font-weight="600">PayPalPayout</text>
+<rect class="box" x="200" y="472" width="14" height="18" rx="3"/>
+<rect class="box" x="218" y="472" width="14" height="18" rx="3"/>
+<rect class="box" x="236" y="472" width="14" height="18" rx="3"/>
+<rect class="boxAcc" x="256" y="472" width="64" height="18" rx="3"/>
+<text x="288" y="485" font-size="9" text-anchor="middle" class="accT">Email</text>
+<rect class="box" x="74" y="512" width="12" height="12" rx="2"/>
+<text x="90" y="522" font-size="9.5" class="muted">có sẵn từ cha</text>
+<rect class="boxAcc" x="186" y="512" width="12" height="12" rx="2"/>
+<text x="202" y="522" font-size="9.5" class="muted">con tự thêm</text>
+<line class="lnMuted" x1="20" y1="538" x2="340" y2="538"/>
+<text x="180" y="562" font-size="11.5" text-anchor="middle">Con có sẵn phần chung của cha, chỉ thêm phần riêng.</text>
+
+<!-- 4. Polymorphism -->
+<rect class="box" x="366" y="302" width="348" height="284" rx="10"/>
+<text x="380" y="326" font-size="14" font-weight="700">Polymorphism</text>
+<rect class="boxAcc" x="470" y="346" width="140" height="28" rx="6"/>
+<text x="540" y="364" font-size="10.5" text-anchor="middle" class="mono">gateway.SendAsync(p)</text>
+<line class="lnAcc" x1="540" y1="374" x2="540" y2="406"/>
+<text x="550" y="400" font-size="9.5" class="muted">object thật là gì?</text>
+<line class="lnAcc" x1="540" y1="406" x2="432" y2="462" marker-end="url(#oA)"/>
+<line class="lnMuted dash" x1="540" y1="406" x2="540" y2="462" marker-end="url(#oMut)"/>
+<line class="lnMuted dash" x1="540" y1="406" x2="648" y2="462" marker-end="url(#oMut)"/>
+<rect class="boxAcc" x="378" y="466" width="100" height="48" rx="6"/>
+<text x="428" y="486" font-size="11" text-anchor="middle" font-weight="600" class="accT">BankTransfer</text>
+<text x="428" y="503" font-size="9.5" text-anchor="middle">ký HMAC, gọi bank</text>
+<rect class="box" x="490" y="466" width="100" height="48" rx="6"/>
+<text x="540" y="486" font-size="11" text-anchor="middle" font-weight="600">PayPal</text>
+<text x="540" y="503" font-size="9.5" text-anchor="middle" class="muted">gọi PayPal API</text>
+<rect class="box" x="602" y="466" width="100" height="48" rx="6"/>
+<text x="652" y="486" font-size="11" text-anchor="middle" font-weight="600">Fake (test)</text>
+<text x="652" y="503" font-size="9.5" text-anchor="middle" class="muted">trả kết quả giả</text>
+<line class="lnMuted" x1="380" y1="538" x2="700" y2="538"/>
+<text x="540" y="562" font-size="11.5" text-anchor="middle">Một lời gọi; code chạy theo object thật lúc runtime.</text>
+</svg>
+<p class="fig-caption">Bốn ô, cùng ví dụ Payout. Nhìn từng ô, tự nói lại cơ chế trước khi đọc chữ bên dưới.</p>
+</div>
+
+
 ::: info Bản chất
 Encapsulation và abstraction hay bị nói lẫn. Encapsulation là _bảo vệ dữ liệu và <T>invariant</T>_; abstraction là _giấu độ phức tạp_. Polymorphism có 2 loại: compile-time (overloading) và runtime (`virtual`/`override`, gọi qua <T k="vtable">bảng virtual method</T>).
 :::
@@ -36,6 +158,8 @@ public class Payout
 ```
 
 Không ai set thẳng `Status = Approved` được, nên không có chuyện duyệt một payout đã bị reject. Đây là encapsulation giữ đúng luồng business.
+
+Dùng EF Core vẫn giữ được encapsulation: private setter, private constructor, backing field. Xem [Entity giàu hành vi với EF Core](/data/ef-core#rich-entity).
 :::
 
 ::: details Ví dụ có cả encapsulation và abstraction

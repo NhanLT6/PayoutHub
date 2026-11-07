@@ -584,7 +584,103 @@ return rows == 1 ? NoContent() : Conflict();   // 0 dòng: không tồn tại, h
 
 **Pessimistic locking khoá dòng ngay lúc đọc, người khác phải chờ tới khi transaction kết thúc.** SQL Server: `SELECT ... WITH (UPDLOCK, ROWLOCK)` trong một transaction (viết bằng `FromSql`); PostgreSQL: `SELECT ... FOR UPDATE`. Vì khoá chỉ sống trong một transaction, nó **không trải qua được hai HTTP request** (lúc A đang nhìn màn hình thì không có transaction nào mở), và giữ khoá lâu thì sinh blocking, deadlock. Dùng khi xung đột thường xuyên và làm lại rất đắt, vd nhiều worker cùng nhận việc từ một bảng hàng đợi (`READPAST` / `FOR UPDATE SKIP LOCKED`). Với màn hình duyệt payout, optimistic là đủ.
 
-## 5. Biến thể và trade-off {#trade-offs}
+## 5. Entity giàu hành vi với EF Core {#rich-entity}
+
+**EF Core gán giá trị vào entity bằng constructor hoặc ghi thẳng vào property có `private set` và field private, không cần setter public.** Nên class POCO toàn `{ get; set; }` là thói quen (code scaffold, tutorial), không phải điều EF bắt buộc. Entity vẫn tự giữ luật của nó được: code của bạn chỉ đi cửa trước (constructor, method như `Approve()`), còn EF đi cửa sau, và chỉ khi nạp dữ liệu từ DB lên.
+
+<div class="fig">
+<svg viewBox="0 0 720 270" role="img" aria-label="Entity Payout: code ngoài gán thẳng Status bị chặn ở vỏ; handler gọi Approve() là cửa duy nhất, Approve kiểm luật rồi đổi Status; EF Core ghi vào private set qua cửa sau khi load từ DB">
+<rect class="boxAcc" x="270" y="40" width="250" height="150" rx="40"/>
+<text x="395" y="66" font-size="13" font-weight="600" text-anchor="middle">Payout</text>
+<rect class="box" x="300" y="100" width="190" height="34" rx="6"/><text x="395" y="122" font-size="11.5" text-anchor="middle" class="mono">Status { private set; }</text>
+<text x="395" y="164" font-size="10.5" text-anchor="middle" class="muted">chỉ Pending mới Approve được</text>
+<line class="lnBad" x1="70" y1="70" x2="262" y2="70" marker-end="url(#eBad)"/><path class="lnBad" d="M250 62 l12 12 M262 62 l-12 12"/>
+<text x="20" y="60" font-size="11" class="mono badT">payout.Status = Paid</text>
+<text x="20" y="90" font-size="10.5" class="muted">controller, job, import...</text>
+<text x="20" y="104" font-size="10.5" class="badT">không compile được</text>
+<line class="lnOk" x1="70" y1="150" x2="290" y2="150"/>
+<line class="lnOk" x1="296" y1="150" x2="318" y2="138" marker-end="url(#eOk)"/>
+<text x="20" y="140" font-size="11" class="mono okT">payout.Approve()</text>
+<text x="20" y="168" font-size="10.5" class="muted">cửa trước: kiểm luật rồi đổi</text>
+<path class="box" d="M600 120 L600 180 A50 10 0 0 0 700 180 L700 120 A50 10 0 0 0 600 120 Z"/><ellipse class="box" cx="650" cy="120" rx="50" ry="10"/>
+<text x="650" y="155" font-size="12" text-anchor="middle">DB</text>
+<path class="lnAcc dash" d="M650 196 V236 H395 V198" marker-end="url(#eAcc)"/>
+<text x="525" y="256" font-size="10.5" text-anchor="middle" class="accT">EF Core: cửa sau, chỉ khi load từ DB</text>
+</svg>
+<p class="fig-caption">Code ngoài chỉ còn một đường đổi trạng thái: gọi method. EF vẫn đọc ghi được vì nó dùng reflection vào private set và field.</p>
+</div>
+
+::: code-group
+
+```csharp [Payout.cs]
+namespace PayoutHub.Core.Domain;
+
+public class Payout
+{
+    private readonly List<PayoutLine> _lines = [];
+
+    public Guid Id { get; private set; }
+    public PayoutStatus Status { get; private set; }
+    public IReadOnlyCollection<PayoutLine> Lines => _lines;
+
+    private Payout() { } // EF Core dùng khi load từ DB
+
+    public Payout(Guid id) // code của bạn dùng: tạo ra là hợp lệ ngay
+    {
+        Id = id;
+        Status = PayoutStatus.Pending;
+    }
+
+    public void AddLine(string affiliate, decimal amount)
+    {
+        if (Status != PayoutStatus.Pending)
+            throw new InvalidOperationException("Only a pending payout can change.");
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount));
+        _lines.Add(new PayoutLine(affiliate, amount));
+    }
+
+    public void Approve()
+    {
+        if (Status != PayoutStatus.Pending)
+            throw new InvalidOperationException($"Cannot approve a {Status} payout.");
+        if (_lines.Count == 0)
+            throw new InvalidOperationException("Cannot approve an empty payout.");
+        Status = PayoutStatus.Approved;
+    }
+}
+```
+
+```csharp [ApprovePayoutHandler.cs]
+using Microsoft.EntityFrameworkCore;
+using PayoutHub.Infrastructure.Persistence;
+
+namespace PayoutHub.Api.Payouts;
+
+public class ApprovePayoutHandler(PayoutDbContext db)
+{
+    public async Task HandleAsync(Guid id, CancellationToken ct)
+    {
+        var payout = await db.Payouts.Include(p => p.Lines)
+            .SingleAsync(p => p.Id == id, ct);
+
+        payout.Approve();            // luật nằm trong entity
+        await db.SaveChangesAsync(ct); // change tracking thấy Status đổi
+    }
+}
+```
+
+:::
+
+Ba điểm suy ra từ cơ chế trên:
+
+- **Collection**: để `List` trong field private và chỉ lộ `IReadOnlyCollection`. EF tự nhận field `_lines` làm backing field của navigation `Lines` theo quy ước tên, nên `Include` và `SaveChanges` vẫn chạy, còn code ngoài không `Add` thẳng được.
+- **Value object** (như `Money`, `Address`): map bằng `OwnsOne` hoặc complex type (`ComplexProperty`, từ EF Core 8), cột vẫn nằm trong bảng của entity.
+- **Đừng đổ DTO thẳng vào entity** (gán từng property, `Update(dto)`, AutoMapper): làm vậy là đi vòng qua `Approve()`, luật lại nằm rải rác. Request vào thì load entity, gọi method.
+
+Khi nào không cần: màn hình CRUD thuần, không có luật nào ngoài "không được trống" thì entity setter public cộng validation ở request vẫn ổn; thêm method chỉ là nghi lễ. Luật bắt đầu có trạng thái (chỉ Pending mới được duyệt) là lúc nên chuyển. Khái niệm này ở mức một nhóm entity là [aggregate](/architecture/ddd#aggregate).
+
+## 6. Biến thể và trade-off {#trade-offs}
 
 - **Vì `Include` lấy cả entity và track nó**, dùng `Include` khi load để sửa; trang chỉ hiển thị thì `Select` sang DTO.
 - **Vì lazy loading chạy query ở chỗ không nhìn thấy** (một dòng đọc property), không bật nó trong web API. Trong app desktop nhỏ, ít dữ liệu, nó tiện và chấp nhận được.
@@ -669,6 +765,22 @@ Không có tác dụng: `WHERE` dùng **giá trị gốc** trong snapshot. Phả
 **"Nhận exception rồi tự retry với version mới?"**
 
 Đó là bỏ qua check. Retry tự động chỉ đúng khi thao tác không phụ thuộc vào dữ liệu người dùng đã thấy (vd cộng một bộ đếm). Với duyệt tiền thì trả về cho người dùng quyết định.
+:::
+
+### Dùng EF Core thì entity có giữ được encapsulation không, hay phải là POCO setter public? {#ef-core-encapsulation}
+
+::: tip Trả lời nhanh
+Giữ được. EF Core gán giá trị qua constructor hoặc reflection vào `private set` và field private, nên entity có private constructor cho EF, constructor public hợp lệ, và method như `Approve()` kiểm luật. Xem [Entity giàu hành vi với EF Core](#rich-entity).
+:::
+
+::: details Câu trả lời mẫu (English)
+EF Core doesn't need public setters. It can bind constructor parameters, and it writes private setters and backing fields through reflection when it materializes an entity. So I give the entity a private parameterless constructor for EF, a public constructor that only creates valid objects, and methods like Approve() that check the rules before changing state. Collections are private lists exposed as IReadOnlyCollection, and value objects are owned or complex types. The handler loads the entity, calls the method and saves; change tracking still sees the change.
+:::
+
+::: warning Bẫy & follow-up
+**"Vậy map request vào entity bằng AutoMapper được không?"**
+
+Làm vậy là đi vòng qua method, luật lại rải ra ngoài. Request vào thì load entity rồi gọi method; chỉ map entity ra DTO khi đọc.
 :::
 
 ## Hỏi đáp
