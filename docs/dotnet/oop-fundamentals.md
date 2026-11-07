@@ -4,18 +4,154 @@ title: "OOP & C# cơ bản"
 
 # OOP & C# cơ bản
 
-Loại câu "X là gì, khác Y thế nào". Đáp ngắn, đúng, rồi chuyển sang ví dụ. Ở đây ưu tiên những chỗ người ta hay trả lời sai.
-
-## 4 tính chất của OOP {#oop}
-
-::: tip Trả lời nhanh
-- **Encapsulation**: giấu trạng thái bên trong, chỉ cho thay đổi qua method có kiểm soát, để object luôn ở trạng thái hợp lệ.
-- **Abstraction**: chỉ lộ ra cái người dùng cần biết, giấu cách làm.
-- **Inheritance**: class con kế thừa hành vi và dữ liệu của class cha (quan hệ "is-a").
-- **Polymorphism**: cùng một lời gọi, hành vi khác nhau tùy kiểu thật của object.
-:::
+**OOP** là cách gom dữ liệu và luật thay đổi dữ liệu đó vào cùng một object, để mỗi thay đổi nghiệp vụ chỉ chạm một chỗ. Trang này theo **một lần trả payout 42**: bắt đầu từ nút Pay trong Web Forms viết dồn mọi thứ một chỗ, tách dần thành bốn chặng ứng với bốn tính chất **encapsulation, abstraction, inheritance, polymorphism**; rồi mở lời gọi method ra xem compiler hay runtime chọn code, xem dữ liệu được copy thế nào khi gán (struct, class, record, string), và cuối cùng là **SOLID**, design pattern, khi nào không nên áp dụng.
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="oA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="oBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker><marker id="oMut" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path style="fill:var(--vp-c-text-3)" d="M0 0L10 5L0 10z"/></marker></defs></svg>
+
+## Bản đồ chủ đề {#topic-map}
+
+<div class="fig">
+<svg viewBox="0 0 720 384" role="img" aria-label="Bản đồ chủ đề: payout 42 đi qua bốn chặng. 1 lấy object thật BankPayout qua biến kiểu Payout, 2 chọn gateway theo object thật, 3 gọi SendAsync qua interface, 4 đổi Status chỉ qua MarkPaid. Hàng dưới là các mục đọc thêm.">
+<a href="#problem" style="text-decoration:none">
+<rect class="boxBad" x="10" y="8" width="700" height="38" rx="8"/>
+<text x="360" y="32" font-size="11.5" text-anchor="middle" class="badT">Trước: nút Pay trong Web Forms tự if theo loại, gọi thẳng bank, tự UPDATE Status</text>
+</a>
+<text x="360" y="68" font-size="11" text-anchor="middle" class="muted">Sau: PayoutProcessor.PayAsync(42) đi qua bốn chặng</text>
+
+<!-- 1 -->
+<a href="#inheritance" style="text-decoration:none">
+<rect class="box" x="10" y="80" width="164" height="218" rx="10"/>
+<circle class="boxAcc" cx="30" cy="100" r="12"/><text x="30" y="105" font-size="12" text-anchor="middle" font-weight="700" class="accT">1</text>
+<text x="48" y="105" font-size="12.5" font-weight="700">Inheritance</text>
+</a>
+<text x="92" y="132" font-size="10" text-anchor="middle" class="mono">repo.GetAsync(42)</text>
+<rect class="box" x="18" y="158" width="62" height="26" rx="4"/>
+<text x="49" y="175" font-size="9.5" text-anchor="middle" class="mono">Payout p</text>
+<line class="lnAcc" x1="80" y1="171" x2="96" y2="171" marker-end="url(#oA)"/>
+<rect class="boxAcc" x="98" y="152" width="70" height="38" rx="6"/>
+<text x="133" y="169" font-size="9.5" text-anchor="middle" font-weight="600" class="accT">BankPayout</text>
+<text x="133" y="183" font-size="8.5" text-anchor="middle" class="muted">object thật</text>
+<line class="ln" x1="133" y1="190" x2="133" y2="214"/>
+<path class="box" d="M133 226 L125 214 L141 214 Z" style="stroke:var(--vp-c-text-1)"/>
+<rect class="box" x="98" y="226" width="70" height="24" rx="4" style="stroke:var(--vp-c-text-2)"/>
+<text x="133" y="242" font-size="10" text-anchor="middle" font-weight="600">Payout</text>
+<text x="112" y="208" font-size="9" text-anchor="end" class="muted">is-a</text>
+<text x="92" y="280" font-size="10" text-anchor="middle">biến kiểu cha, object con</text>
+
+<line class="ln" x1="175" y1="190" x2="187" y2="190" marker-end="url(#oMut)"/>
+
+<!-- 2 -->
+<a href="#polymorphism" style="text-decoration:none">
+<rect class="box" x="188" y="80" width="164" height="218" rx="10"/>
+<circle class="boxAcc" cx="208" cy="100" r="12"/><text x="208" y="105" font-size="12" text-anchor="middle" font-weight="700" class="accT">2</text>
+<text x="226" y="105" font-size="12.5" font-weight="700">Polymorphism</text>
+</a>
+<text x="270" y="132" font-size="10" text-anchor="middle" class="mono">g.CanHandle(p)?</text>
+<path class="boxAcc" d="M270 152 L286 168 L270 184 L254 168 Z"/>
+<text x="270" y="172" font-size="10" text-anchor="middle" font-weight="700" class="accT">?</text>
+<line class="lnAcc" x1="262" y1="180" x2="236" y2="214" marker-end="url(#oA)"/>
+<line class="lnMuted dash" x1="278" y1="180" x2="304" y2="214" marker-end="url(#oMut)"/>
+<rect class="boxAcc" x="198" y="218" width="66" height="30" rx="6"/>
+<text x="231" y="237" font-size="10" text-anchor="middle" font-weight="600" class="accT">Bank</text>
+<rect class="box dash" x="276" y="218" width="66" height="30" rx="6"/>
+<text x="309" y="237" font-size="10" text-anchor="middle" class="muted">PayPal</text>
+<text x="270" y="280" font-size="10" text-anchor="middle">chọn theo object thật</text>
+
+<line class="ln" x1="353" y1="190" x2="365" y2="190" marker-end="url(#oMut)"/>
+
+<!-- 3 -->
+<a href="#abstraction" style="text-decoration:none">
+<rect class="box" x="366" y="80" width="164" height="218" rx="10"/>
+<circle class="boxAcc" cx="386" cy="100" r="12"/><text x="386" y="105" font-size="12" text-anchor="middle" font-weight="700" class="accT">3</text>
+<text x="404" y="105" font-size="12.5" font-weight="700">Abstraction</text>
+</a>
+<text x="448" y="132" font-size="10" text-anchor="middle" class="mono">SendAsync(p)</text>
+<rect class="box" x="374" y="176" width="58" height="26" rx="4"/>
+<text x="403" y="193" font-size="9" text-anchor="middle">Processor</text>
+<line class="lnAcc" x1="432" y1="189" x2="454" y2="189" marker-end="url(#oA)"/>
+<rect class="boxAcc" x="456" y="146" width="10" height="110" rx="3"/>
+<text x="461" y="270" font-size="9" text-anchor="middle" class="muted">interface</text>
+<g opacity="0.6">
+<rect class="box dash" x="472" y="150" width="52" height="102" rx="4"/>
+<text x="498" y="176" font-size="9" text-anchor="middle" class="muted">HTTP</text>
+<text x="498" y="202" font-size="9" text-anchor="middle" class="muted">ký HMAC</text>
+<text x="498" y="228" font-size="9" text-anchor="middle" class="muted">retry</text>
+</g>
+<text x="448" y="290" font-size="10" text-anchor="middle">chỉ thấy một mặt</text>
+
+<line class="ln" x1="531" y1="190" x2="543" y2="190" marker-end="url(#oMut)"/>
+
+<!-- 4 -->
+<a href="#encapsulation" style="text-decoration:none">
+<rect class="box" x="544" y="80" width="166" height="218" rx="10"/>
+<circle class="boxAcc" cx="564" cy="100" r="12"/><text x="564" y="105" font-size="12" text-anchor="middle" font-weight="700" class="accT">4</text>
+<text x="582" y="105" font-size="12.5" font-weight="700">Encapsulation</text>
+</a>
+<text x="627" y="132" font-size="10" text-anchor="middle" class="mono">p.MarkPaid(ref)</text>
+<rect class="box" x="552" y="186" width="62" height="22" rx="11"/>
+<text x="583" y="201" font-size="9.5" text-anchor="middle">Approved</text>
+<line class="lnAcc" x1="614" y1="197" x2="642" y2="197" marker-end="url(#oA)"/>
+<rect class="boxAcc" x="644" y="186" width="52" height="22" rx="11"/>
+<text x="670" y="201" font-size="9.5" text-anchor="middle" font-weight="600" class="accT">Paid</text>
+<text x="628" y="180" font-size="9" text-anchor="middle" class="muted">kiểm luật rồi mới đổi</text>
+<text x="554" y="236" font-size="9.5" class="mono badT">p.Status = Paid</text>
+<line class="lnBad" x1="554" y1="248" x2="638" y2="248" marker-end="url(#oBad)"/>
+<line class="lnBad" x1="644" y1="241" x2="656" y2="255" style="stroke-width:3"/>
+<line class="lnBad" x1="656" y1="241" x2="644" y2="255" style="stroke-width:3"/>
+<text x="627" y="280" font-size="10" text-anchor="middle">chỉ đổi qua method</text>
+
+<!-- đọc thêm -->
+<text x="10" y="322" font-size="10.5" class="muted">Đọc thêm</text>
+<a href="#mechanism" style="text-decoration:none">
+<rect class="box dash" x="10" y="330" width="164" height="46" rx="8"/>
+<text x="92" y="349" font-size="10.5" text-anchor="middle">Compiler hay runtime chọn</text>
+<text x="92" y="366" font-size="10" text-anchor="middle" class="muted">override, new, overload</text>
+</a>
+<a href="#value-reference" style="text-decoration:none">
+<rect class="box dash" x="188" y="330" width="164" height="46" rx="8"/>
+<text x="270" y="349" font-size="10.5" text-anchor="middle">Gán là copy biến</text>
+<text x="270" y="366" font-size="10" text-anchor="middle" class="muted">struct, record, string, ref</text>
+</a>
+<a href="#solid-lesson" style="text-decoration:none">
+<rect class="box dash" x="366" y="330" width="164" height="46" rx="8"/>
+<text x="448" y="349" font-size="10.5" text-anchor="middle">SOLID</text>
+<text x="448" y="366" font-size="10" text-anchor="middle" class="muted">thêm Wise = thêm 1 class</text>
+</a>
+<a href="#tradeoffs" style="text-decoration:none">
+<rect class="box dash" x="544" y="330" width="166" height="46" rx="8"/>
+<text x="627" y="349" font-size="10.5" text-anchor="middle">Trade-off</text>
+<text x="627" y="366" font-size="10" text-anchor="middle" class="muted">composition, khi nào không</text>
+</a>
+</svg>
+<p class="fig-caption">Ở chặng 1 biến và object khác kiểu nhau thế nào? Chặng 2 thêm Wise thì sửa gì? Chặng 4 vì sao dòng đỏ không compile?</p>
+</div>
+
+## 1. Vấn đề: nút Pay viết dồn một chỗ {#problem}
+
+Code Web Forms quen thuộc: một event handler vừa đọc DB, vừa kiểm luật, vừa gọi ngân hàng, vừa cập nhật trạng thái.
+
+```csharp
+protected void btnPay_Click(object sender, EventArgs e)
+{
+    var p = conn.QuerySingle<PayoutRow>("SELECT * FROM Payouts WHERE Id = @id", new { id });
+    if (p.Status != "Approved") { lblError.Text = "Not approved"; return; }
+
+    if (p.Method == "Bank")        { /* format request, ký HMAC, gọi API ngân hàng */ }
+    else if (p.Method == "PayPal") { /* lấy OAuth token, gọi API PayPal */ }
+
+    conn.Execute("UPDATE Payouts SET Status = 'Paid' WHERE Id = @id", new { id });
+}
+```
+
+Ba chỗ đau, mỗi chỗ là một tính chất OOP còn thiếu:
+
+- **Luật trạng thái nằm ở UI.** Trang khác, job khác cũng `UPDATE Status` được mà không qua kiểm tra "đã duyệt chưa".
+- **Page biết chi tiết ngân hàng.** Đổi cách ký request là sửa page.
+- **`if` theo loại payout.** Thêm Wise là tìm và sửa mọi chỗ có `if` này; quên một chỗ thì nổ lúc chạy.
+
+## 2. Bốn bước tách nút Pay: bốn tính chất OOP {#oop-evolve}
+
+Mỗi bước chữa một chỗ đau ở trên. Tên tính chất chỉ là nhãn dán lên bước đó.
 
 <div class="fig">
 <svg viewBox="0 0 720 592" role="img" aria-label="Bốn tính chất OOP trên ví dụ Payout: hộp kín có nút bấm, một mặt interface che máy phía sau, khuôn cha truyền xuống con, một lời gọi rẽ theo object thật">
@@ -133,22 +269,59 @@ Loại câu "X là gì, khác Y thế nào". Đáp ngắn, đúng, rồi chuyể
 <line class="lnMuted" x1="380" y1="538" x2="700" y2="538"/>
 <text x="540" y="562" font-size="11.5" text-anchor="middle">Một lời gọi; code chạy theo object thật lúc runtime.</text>
 </svg>
-<p class="fig-caption">Bốn ô, cùng ví dụ Payout. Nhìn từng ô, tự nói lại cơ chế trước khi đọc chữ bên dưới.</p>
+<p class="fig-caption">Ô nào chặn được dòng <code>UPDATE Status</code> ở UI? Ô nào làm page không còn biết HMAC? Thêm Wise thì ô nào không phải sửa?</p>
 </div>
 
+### Bước 1: Encapsulation, luật trạng thái về ở trong object {#encapsulation}
 
-::: info Bản chất
-Encapsulation và abstraction hay bị nói lẫn. Encapsulation là _bảo vệ dữ liệu và <T>invariant</T>_; abstraction là _giấu độ phức tạp_. Polymorphism có 2 loại: compile-time (overloading) và runtime (`virtual`/`override`, gọi qua <T k="vtable">bảng virtual method</T>).
-:::
+**Object tự giữ dữ liệu của mình và chỉ cho đổi qua method; method kiểm luật trước khi đổi**, nên không có đường nào đưa object vào trạng thái sai (gọi là giữ <T>invariant</T>). `Status` có `private set`, chỉ `Approve()` và `MarkPaid()` được đổi nó:
 
-### Ví dụ thật: một luồng trả tiền có đủ bốn tính chất {#oop-example}
+```csharp
+public PayoutStatus Status { get; private set; } = PayoutStatus.Pending;
 
-Luồng: finance duyệt payout, rồi hệ thống chuyển tiền cho affiliate qua ngân hàng hoặc PayPal. Mỗi file dưới đây ứng với một ô trong hình:
+public void MarkPaid(string reference)
+{
+    EnsureStatus(PayoutStatus.Approved); // chưa duyệt thì không thể "đã trả"
+    Status = PayoutStatus.Paid;
+    Reference = reference;
+}
+```
 
-- `Payout.cs`: **encapsulation** (`Status` chỉ đổi qua `Approve()`, `MarkPaid()`) và lớp cha cho **inheritance**.
-- `BankPayout.cs`, `PayPalPayout.cs`: **inheritance**, lớp con có sẵn luật duyệt của cha, chỉ thêm nơi nhận tiền.
-- `IPayoutGateway.cs`: **abstraction**, processor chỉ biết "gửi tiền", không biết HTTP, ký request, mã lỗi ngân hàng.
-- `PayoutProcessor.cs`: **polymorphism**, một dòng `gateway.SendAsync(payout)` chạy code của ngân hàng hay PayPal tuỳ object thật lúc runtime.
+Viết `p.Status = PayoutStatus.Paid` ở bất cứ đâu ngoài class là lỗi compile. Dùng EF Core vẫn giữ được điều này (private setter, private constructor, backing field): [Entity giàu hành vi với EF Core](/data/ef-core#rich-entity).
+
+### Bước 2: Abstraction, page chỉ thấy "gửi tiền" {#abstraction}
+
+**Bên gọi chỉ thấy một mặt nhỏ nói bằng ngôn ngữ nghiệp vụ; cách làm nằm phía sau.** `IPayoutGateway` chỉ có `SendAsync(payout)`. HTTP, ký HMAC, retry, dịch mã lỗi ngân hàng nằm trong `BankTransferGateway`; đổi chúng không chạm vào bên gọi.
+
+Encapsulation và abstraction hay bị nói lẫn vì cả hai đều "giấu". Khác ở chỗ giấu để làm gì: encapsulation giấu **dữ liệu** để không ai phá luật bên trong (bước 1); abstraction giấu **độ phức tạp** để bên ngoài dùng đơn giản (bước này).
+
+### Bước 3: Inheritance, Bank và PayPal dùng chung luật duyệt {#inheritance}
+
+**Class con nhận sẵn dữ liệu và hành vi của class cha, chỉ thêm phần riêng** (quan hệ "is-a"). Payout qua ngân hàng cần số tài khoản, qua PayPal cần email, nhưng luật Pending → Approved → Paid giống nhau. Đặt luật đó vào `Payout` (abstract) một lần:
+
+```csharp
+public class BankPayout(decimal amount, string accountNo) : Payout(amount)
+{
+    public string AccountNo { get; } = accountNo; // chỉ thêm phần riêng
+}
+```
+
+`Payout` là `abstract` vì không có "payout chung chung" để `new`; chỉ có payout qua kênh cụ thể. Inheritance có giá: con dính chặt vào cha. Khi nào nên ghép object thay vì kế thừa: [Composition over inheritance](#composition).
+
+### Bước 4: Polymorphism, một lời gọi chạy code theo object thật {#polymorphism}
+
+**Lời gọi qua interface hoặc method `virtual` được quyết định lúc chạy, theo kiểu thật của object, không theo kiểu của biến.** Processor chỉ có một dòng `gateway.SendAsync(payout)`; object thật là `BankTransferGateway` thì chạy code ngân hàng, là `PayPalGateway` thì chạy code PayPal.
+
+```csharp
+IPayoutGateway gateway = gateways.First(g => g.CanHandle(payout));
+TransferResult result = await gateway.SendAsync(payout, ct); // không có if theo loại
+```
+
+Vì không còn `if` theo loại, thêm Wise là thêm một class `WiseGateway` và một dòng đăng ký DI; processor không đổi. Đó chính là [Open/Closed](#ocp). Đây là **runtime polymorphism**. **Compile-time polymorphism** là overloading: `Log(string)` và `Log(Exception)` cùng tên, compiler chọn theo kiểu tham số. Hai đường chọn này khác nhau ra sao: [mục 3](#mechanism).
+
+### Code đầy đủ của bốn bước {#oop-example}
+
+Mỗi file ứng với một bước: `Payout.cs` (bước 1, và lớp cha cho bước 3), `IPayoutGateway.cs` cùng hai gateway (bước 2), `BankPayout.cs`, `PayPalPayout.cs` (bước 3), `PayoutProcessor.cs` (bước 4).
 
 ::: code-group
 
@@ -311,53 +484,40 @@ builder.Services.AddScoped<PayoutProcessor>();
 
 :::
 
-**Polymorphism đáng giá ở đâu:** thiếu nó thì `PayoutProcessor` phải viết `if (payout is BankPayout) {...} else if (payout is PayPalPayout) {...}`, và thêm Wise là sửa processor cùng mọi chỗ có if/else đó. Có nó thì thêm Wise là thêm một class `WiseGateway` và một dòng đăng ký; processor không đổi (đây chính là [Open/Closed](#solid)). Đó là **runtime polymorphism**: lời gọi qua interface hoặc method `virtual` được quyết định lúc chạy theo kiểu thật của object. **Compile-time polymorphism** là overloading: `Log(string)` và `Log(Exception)` cùng tên, compiler chọn theo kiểu tham số.
+## 3. Bên trong một lời gọi: compiler chọn hay runtime chọn {#mechanism}
 
-**Câu để nói khi phỏng vấn:** "Encapsulation protects the inside: Payout only changes status through Approve and MarkPaid. Abstraction simplifies the outside: the processor only sees IPayoutGateway. Inheritance shares the approval rules between BankPayout and PayPalPayout. Polymorphism means one call, gateway.SendAsync, runs the bank or the PayPal code depending on the real object, so adding a new provider doesn't touch the processor."
+**Mỗi lời gọi method được gắn với code theo một trong hai cách: compiler gắn sẵn lúc build theo kiểu của biến, hoặc runtime tra bảng method ảo (<T k="vtable">vtable</T>) của object thật lúc chạy.** Method `virtual`, `abstract` và method của interface đi đường runtime; mọi method khác đi đường compiler. Từ đó suy ra ba từ khoá hay bị hỏi:
 
-**Phản ví dụ hay gặp ở Web Forms:** nút "Pay" trong code-behind vừa gọi thẳng API ngân hàng, vừa chạy `UPDATE Payouts SET Status = 'Paid'`, vừa `if` theo loại payout. Thiếu cả bốn: luật trạng thái rải khắp các page, page biết chi tiết ngân hàng, và thêm một nhà cung cấp là sửa mọi page.
+- **`override`** thay ô của method cha trong vtable của object, nên gọi qua biến kiểu cha vẫn ra code của con.
+- **`new`** không thay ô nào, nó thêm một method khác trùng tên. Compiler chọn theo kiểu biến, nên cùng một object, gọi qua biến kiểu cha ra code của cha.
+- **Overloading** là nhiều method cùng tên khác tham số; compiler chọn theo kiểu tham số lúc build. Không dính tới vtable.
 
-Dùng EF Core vẫn giữ được encapsulation: private setter, private constructor, backing field. Xem [Entity giàu hành vi với EF Core](/data/ef-core#rich-entity).
+<div class="fig">
+<svg viewBox="0 0 720 214" role="img" aria-label="Biến kiểu Base trỏ tới object Derived. x.A() tra vtable của object nên ra Derived.A. x.B() không virtual nên compiler chọn theo kiểu biến, ra Base.B">
+<text x="20" y="26" font-size="11.5" class="mono">Base x = new Derived();</text>
+<rect class="box" x="20" y="72" width="100" height="40" rx="6"/>
+<text x="70" y="97" font-size="11" text-anchor="middle" class="mono">Base x</text>
+<line class="ln" x1="120" y1="92" x2="196" y2="92" marker-end="url(#oMut)"/>
+<rect class="box" x="200" y="44" width="224" height="156" rx="8"/>
+<text x="312" y="64" font-size="11" text-anchor="middle" font-weight="600">object Derived</text>
+<text x="214" y="86" font-size="10" class="muted">vtable</text>
+<rect class="boxAcc" x="214" y="94" width="196" height="26" rx="4"/>
+<text x="312" y="111" font-size="10.5" text-anchor="middle" class="mono accT">A → Derived.A</text>
+<text x="214" y="148" font-size="10" class="muted">không virtual: compiler chọn</text>
+<rect class="box dash" x="214" y="156" width="92" height="26" rx="4"/>
+<text x="260" y="173" font-size="10" text-anchor="middle" class="mono muted">Derived.B</text>
+<rect class="box" x="318" y="156" width="92" height="26" rx="4"/>
+<text x="364" y="173" font-size="10" text-anchor="middle" class="mono">Base.B</text>
+<line class="lnAcc" x1="462" y1="104" x2="414" y2="107" marker-end="url(#oA)"/>
+<text x="468" y="104" font-size="11" class="mono">x.A() → "Derived.A"</text>
+<text x="468" y="122" font-size="10" class="muted">runtime: tra vtable của object</text>
+<line class="ln" x1="462" y1="166" x2="414" y2="169" marker-end="url(#oMut)"/>
+<text x="468" y="166" font-size="11" class="mono">x.B() → "Base.B"</text>
+<text x="468" y="184" font-size="10" class="muted">compile: theo kiểu biến Base</text>
+</svg>
+<p class="fig-caption">Cùng một object, vì sao <code>x.A()</code> và <code>x.B()</code> đi hai đường? Ép <code>((Derived)x).B()</code> thì ra gì? Overloading đi đường nào?</p>
+</div>
 
-::: warning Bẫy & follow-up
-**"Composition over inheritance nghĩa là gì?"**
-
-Inheritance tạo <T>coupling</T> chặt: đổi class cha là ảnh hưởng mọi class con, và C# chỉ cho kế thừa một class. Chỉ dùng khi thật sự là "is-a" và cần chia sẻ hành vi. Còn lại thì ghép các object nhỏ qua interface và <T>DI</T>.
-:::
-
-## Abstract class vs interface {#abstract-vs-interface}
-
-::: tip Trả lời nhanh
-Interface là hợp đồng "làm được gì", một class implement được nhiều interface. Abstract class là class cha dở dang, có thể chứa state, constructor và code dùng chung, nhưng chỉ kế thừa được một.
-:::
-
-::: info Bản chất
-|  | Interface | Abstract class |
-|---|---|---|
-| Instance field / state | Không | Có |
-| Constructor | Không | Có |
-| Số lượng kế thừa | Nhiều | Một |
-| Code có sẵn | Default method (C# 8+), static abstract (C# 11) | Có |
-| Access modifier member | Mặc định public | Tùy ý |
-:::
-
-::: details Ở dự án thật
-Interface: `IPaymentGateway` để đổi provider và <T>mock</T> khi test. Abstract class: `ReportBase` giữ luồng chung (lấy data, build header, xuất file) và để class con chỉ override phần tính toán riêng, chính là <T>Template Method</T>.
-:::
-
-::: warning Bẫy & follow-up
-**"Interface có default method rồi thì khác gì abstract class?"**
-
-Vẫn không có instance state và constructor. Default method sinh ra chủ yếu để thêm member vào interface đã public mà không làm vỡ các class đang implement, không phải để thay abstract class.
-:::
-
-## Overriding vs overloading vs `new` (method hiding) {#override-overload-new}
-
-::: tip Trả lời nhanh
-**Overloading**: cùng tên, khác tham số, chọn lúc compile. **Overriding**: class con viết lại method `virtual` của cha, chọn lúc runtime theo kiểu thật. **new**: class con che method của cha, chọn theo kiểu của biến khai báo.
-:::
-
-::: info Bản chất
 ```csharp
 class Base    { public virtual string A() => "Base.A";   public string B() => "Base.B"; }
 class Derived : Base
@@ -368,56 +528,66 @@ x.A();   // "Derived.A": override đi theo kiểu runtime
 x.B();   // "Base.B":    new đi theo kiểu khai báo của biến
 ```
 
-**`new` làm gì:** khai báo một method mới trùng tên chứ không thay thế method của cha, nên object có cả `Base.B` lẫn `Derived.B`. `override` ghi đè ô của method cha trong <T>vtable</T> nên được chọn lúc runtime theo object thật; method `new` được compiler chọn lúc compile theo kiểu biến. Vì vậy `((Base)d).B()` ra "Base.B" dù cùng một object. Chỉ nên dùng khi class cha (thường từ thư viện) thêm method trùng tên với method bạn đã có.
-:::
+Quên ghi `override` thì compiler cảnh báo và coi như `new`. `new` chỉ nên dùng khi class cha (thường từ thư viện) thêm method trùng tên với method bạn đã có. **`sealed`** chặn kế thừa class hoặc chặn override tiếp một method; vì không còn con nào override được, <T>JIT</T> có thể gọi thẳng không qua vtable.
 
-::: warning Bẫy & follow-up
-**Đây là câu "cho đoạn code, đoán output" rất hay gặp.**
+### Abstract class hay interface {#abstract-or-interface}
 
-Nhớ quy tắc: `override` theo object thật, `new` theo kiểu biến. Quên ghi `override` thì compiler cảnh báo và mặc định coi như `new`.
+**Interface là danh sách ô method không có dữ liệu; abstract class là một class dở dang, có field, constructor và code chung, nhưng mỗi class chỉ kế thừa được một cha.** Vì vậy:
 
-**"`sealed` dùng làm gì?"**
+- `Payout` là abstract class vì nó **giữ state** (`Status`, `Amount`) và **luật trong constructor** (amount phải dương) mà các con dùng chung.
+- `IPayoutGateway` là interface vì hai gateway không chung dữ liệu gì, chỉ chung "làm được việc gì"; một class còn có thể implement thêm `IRefundableGateway`, điều mà kế thừa một cha không làm được.
 
-Chặn kế thừa (class) hoặc chặn override tiếp (method). <T>JIT</T> có thể tối ưu gọi method trên class sealed. Nhiều team để mặc định sealed cho class không thiết kế để kế thừa.
-:::
+Từ C# 8 interface có default method, từ C# 11 có `static abstract`, nhưng vẫn không có instance field và constructor. Default method sinh ra để thêm member vào một interface đã public mà không làm vỡ các class đang implement, không phải để thay abstract class. Abstract class giữ một luồng chung và để con override vài bước chính là <T>Template Method</T> (vd `ReportBase` lấy data, build header, xuất file; con chỉ override phần tính toán).
 
-## `const` vs `readonly` vs `static readonly` {#const-readonly}
+## 4. Dữ liệu đi qua code: gán là copy biến {#value-reference}
 
-::: tip Trả lời nhanh
-`const` là hằng lúc compile, chỉ cho kiểu primitive và string. `readonly` gán được trong constructor, mỗi instance một giá trị. `static readonly` gán một lần cho cả type, lúc runtime, dùng được với mọi kiểu.
-:::
+**Biến kiểu value (struct, `int`, `decimal`) chứa chính dữ liệu; biến kiểu reference (class, `string`) chứa địa chỉ của object. Phép gán và truyền tham số copy thứ nằm trong biến.** Value thì copy cả dữ liệu, reference thì copy địa chỉ, hai biến cùng trỏ một object.
 
-::: info Bản chất: gán lúc nào
-| Loại | Gán lúc nào | Số lần |
-|---|---|---|
-| `const` | Không gán lúc chạy: compiler chép giá trị vào chỗ dùng | 0 |
-| `static` / `static readonly` | Ngay trước lần đầu dùng tới type (tạo instance hoặc truy cập static member): chạy static initializer rồi static constructor | 1 lần mỗi process |
-| `readonly` | Mỗi lần `new` object, trong initializer hoặc constructor | 1 lần mỗi object |
+<div class="fig">
+<svg viewBox="0 0 720 226" role="img" aria-label="Bên trái struct Money: b = a copy cả dữ liệu, sửa b thì a vẫn 100. Bên phải class Payout: p2 = p1 copy địa chỉ, hai biến cùng trỏ một object, sửa qua p2 thì p1 thấy ngay">
+<text x="180" y="22" font-size="12.5" font-weight="600" text-anchor="middle">struct Money: biến chứa dữ liệu</text>
+<text x="540" y="22" font-size="12.5" font-weight="600" text-anchor="middle">class Payout: biến chứa địa chỉ</text>
+<text x="40" y="50" font-size="10.5" class="mono">Money b = a;</text>
+<rect class="box" x="40" y="66" width="140" height="38" rx="6"/>
+<text x="56" y="90" font-size="11" class="mono">a</text>
+<rect class="box" x="76" y="72" width="96" height="26" rx="4"/>
+<text x="124" y="89" font-size="10.5" text-anchor="middle">100 AUD</text>
+<rect class="box" x="40" y="146" width="140" height="38" rx="6"/>
+<text x="56" y="170" font-size="11" class="mono">b</text>
+<rect class="boxAcc" x="76" y="152" width="96" height="26" rx="4"/>
+<text x="124" y="169" font-size="10.5" text-anchor="middle" class="accT">120 AUD</text>
+<path class="lnAcc dash" d="M180 85 C 230 95, 230 155, 184 165" marker-end="url(#oA)"/>
+<text x="226" y="128" font-size="10" class="muted">copy dữ liệu</text>
+<text x="110" y="208" font-size="10.5" text-anchor="middle">sửa b, a vẫn 100</text>
+<line class="lnMuted" x1="360" y1="12" x2="360" y2="214"/>
+<text x="392" y="50" font-size="10.5" class="mono">Payout p2 = p1;</text>
+<rect class="box" x="392" y="66" width="120" height="38" rx="6"/>
+<text x="408" y="90" font-size="11" class="mono">p1</text>
+<rect class="box" x="432" y="72" width="72" height="26" rx="4"/>
+<text x="468" y="89" font-size="10.5" text-anchor="middle" class="mono">→ #42</text>
+<rect class="box" x="392" y="146" width="120" height="38" rx="6"/>
+<text x="408" y="170" font-size="11" class="mono">p2</text>
+<rect class="box" x="432" y="152" width="72" height="26" rx="4"/>
+<text x="468" y="169" font-size="10.5" text-anchor="middle" class="mono">→ #42</text>
+<rect class="boxAcc" x="590" y="98" width="116" height="56" rx="8"/>
+<text x="648" y="120" font-size="11" text-anchor="middle" font-weight="600" class="accT">Payout #42</text>
+<text x="648" y="140" font-size="10" text-anchor="middle">Status: Paid</text>
+<line class="lnAcc" x1="504" y1="85" x2="586" y2="114" marker-end="url(#oA)"/>
+<line class="lnAcc" x1="504" y1="165" x2="586" y2="140" marker-end="url(#oA)"/>
+<text x="540" y="208" font-size="10.5" text-anchor="middle">sửa qua p2, p1 thấy ngay</text>
+</svg>
+<p class="fig-caption"><code>b = a</code> copy cái gì ở mỗi bên? <code>readonly</code> trên <code>p1</code> khoá cái gì? <code>ref</code> đưa cái gì vào method?</p>
+</div>
 
-Static dùng chung cho mọi request của mọi user trên process. Web Forms recycle <T>app pool</T> thì static khởi tạo lại; nhiều server thì mỗi server một bản.
-:::
+Mọi câu "X vs Y" về kiểu dữ liệu suy ra từ một hình này:
 
-::: warning Bẫy & follow-up
-**"Đổi `const` trong một library thì sao?"**
+- **struct**: gán là copy. Vì thế struct có thể sửa (mutable) rất bẫy: `list[0].X = 5` không compile với `List<Point>`, còn sửa qua biến tạm chỉ sửa bản copy. Struct nên là `readonly struct`, nhỏ (khoảng 16 byte trở xuống), tạo nhiều, ít bị <T>boxing</T>.
+- **class**: gán là copy địa chỉ, sửa qua biến nào cũng thấy. Truyền object vào method rồi sửa property thì bên ngoài thấy; nhưng gán `param = new Payout(...)` trong method chỉ đổi bản copy địa chỉ, bên ngoài không đổi.
+- **record** (C# 9): vẫn là class, nhưng compiler sinh sẵn `Equals`/`==` so theo giá trị và `with` để tạo bản sao. Hợp với <T>DTO</T> và <T>value object</T>. `record struct` (C# 10) là bản value type.
+- **string**: là reference type vì độ dài thay đổi, copy cả nội dung mỗi lần gán thì quá đắt. Nhưng nó **immutable** (mọi phép "sửa" tạo string mới) và overload `==` để so nội dung, nên dùng giống value type. Nhờ immutable nó an toàn khi dùng chung giữa các thread và làm key Dictionary; cái giá là ghép string trong vòng lặp tạo rất nhiều bản, nên dùng `StringBuilder` hoặc `string.Join`.
+- **`ref`/`out`/`in`**: thay vì copy thứ trong biến, đưa **chính biến** vào method. `ref` phải gán trước, method đọc và sửa được; `out` method bắt buộc gán (như `int.TryParse`); `in` chỉ đọc, để truyền struct lớn mà không copy.
+- **`readonly`** khoá **biến**, không khoá object biến trỏ tới: `readonly List<int>` vẫn `Add` được. Muốn khoá nội dung thì dùng `IReadOnlyList` hoặc immutable collection.
 
-Giá trị const được copy thẳng vào <T>assembly</T> gọi nó lúc compile. Assembly khác không build lại vẫn dùng giá trị cũ. Giá trị có thể đổi theo version thì dùng `static readonly`.
-
-**"`readonly List<int>` có thêm phần tử được không?"**
-
-Được. `readonly` chỉ khóa tham chiếu, không khóa object. Muốn bất biến thật thì dùng `IReadOnlyList` hoặc immutable collection.
-
-**"Static constructor ném exception thì sao?"**
-
-`TypeInitializationException`, và <T>CLR</T> không thử lại: type hỏng tới khi process khởi động lại. Đừng gọi DB, file hay API trong static constructor.
-:::
-
-## `struct` vs `class` vs `record` {#struct-class-record}
-
-::: tip Trả lời nhanh
-`struct` là <T>value type</T>: gán là copy, không kế thừa, hợp với dữ liệu nhỏ và bất biến (tọa độ, tiền tệ). `class` là <T>reference type</T>: gán là copy tham chiếu. `record` (C# 9) là class có so sánh theo giá trị, có `with` để tạo bản sao, hợp với <T>DTO</T> và <T>value object</T>. `record struct` (C# 10) là bản value type của nó.
-:::
-
-::: info Bản chất
 ```csharp
 public record Money(decimal Amount, string Currency);
 
@@ -426,74 +596,22 @@ var b = new Money(100, "AUD");
 a == b;                         // true: so sánh theo giá trị
 var c = a with { Amount = 120 }; // bản sao mới, a không đổi
 ```
-:::
 
-::: warning Bẫy & follow-up
-**"Struct mutable có vấn đề gì?"**
+`==` và `Equals` mặc định so địa chỉ với class; string, record và kiểu tự override thì so nội dung. `ReferenceEquals` luôn so địa chỉ. Tự override `Equals` thì phải override cả `GetHashCode`, vì Dictionary tìm theo hash trước rồi mới gọi `Equals`.
 
-Vì mỗi lần lấy ra là một bản copy: `list[0].X = 5` không compile với `List<Point>`, còn sửa qua biến tạm thì chỉ sửa bản copy. Quy tắc: struct nên `readonly struct`.
+### Giá trị được gán lúc nào: const, readonly, static readonly {#when-assigned}
 
-**"Khi nào nên dùng struct?"**
+**Ba từ khoá khác nhau ở thời điểm giá trị được chốt.** `const` chốt lúc compile: compiler chép thẳng giá trị vào mọi chỗ dùng, nên chỉ cho kiểu primitive và string. `static readonly` chốt một lần cho cả type lúc runtime, ngay trước lần đầu type được dùng (chạy static initializer rồi static constructor), dùng được mọi kiểu. `readonly` chốt mỗi lần `new` object, trong initializer hoặc constructor.
 
-Nhỏ (khoảng 16 byte trở xuống), bất biến, tạo rất nhiều, và không bị <T>boxing</T> thường xuyên. Không chắc thì dùng class hoặc record.
+Vì `const` bị chép vào <T>assembly</T> gọi nó, đổi `const` trong một library mà assembly gọi không build lại thì vẫn dùng giá trị cũ; giá trị có thể đổi theo version thì dùng `static readonly`. Vì static sống theo process, nó dùng chung cho mọi request của mọi user; Web Forms recycle <T>app pool</T> thì static khởi tạo lại, nhiều server thì mỗi server một bản.
 
-**"`Tuple` và `ValueTuple` khác nhau thế nào?"**
+## 5. SOLID: năm câu hỏi khi requirement đổi {#solid-lesson}
 
-`System.Tuple` là class cũ, phần tử chỉ có tên `Item1`, `Item2`. `ValueTuple` `(int Id, string Name)` là struct, đặt tên được, nhưng tên chỉ tồn tại lúc compile và mất khi serialize. Dùng tuple cho giá trị trả về nội bộ; ở API public thì dùng record.
-:::
+**SOLID là năm thói quen trả lời một câu hỏi: khi requirement đổi, phải sửa bao nhiêu chỗ, và phần logic có test được không.** Nút Pay ở [mục 1](#problem) trả lời tệ cả hai, và mỗi nguyên tắc dưới đây gọi tên một kiểu tệ. Đây là heuristic, không phải luật: áp trước khi có lý do thì sinh interface và tầng lớp thừa ([khi nào không cần](#tradeoffs)).
 
-## String immutable nghĩa là gì? `==` vs `Equals` vs `ReferenceEquals` {#string-equality}
+### S · Single Responsibility {#srp}
 
-::: tip Trả lời nhanh
-String không bao giờ bị sửa tại chỗ; mọi phép "sửa" đều tạo string mới. Nhờ vậy nó an toàn khi dùng chung giữa các thread và làm key cho Dictionary. Ghép string trong vòng lặp là <T k="big-o">O(n²)</T> bộ nhớ, nên dùng `StringBuilder` hoặc `string.Join`.
-
-`ReferenceEquals` luôn so tham chiếu. `==` và `Equals` mặc định cũng so tham chiếu với class, nhưng string, record và các kiểu tự override sẽ so nội dung.
-:::
-
-::: warning Bẫy & follow-up
-**"Tại sao string là reference type chứ không phải value type như `int`?"**
-
-Độ dài thay đổi nên không thể có kích thước cố định như value type, và copy toàn bộ nội dung mỗi lần gán thì quá đắt. Immutable cộng với overload `==` giúp nó dùng giống value type mà vẫn chỉ copy địa chỉ.
-
-**"String là reference type mà sao `==` lại so nội dung?"**
-
-Vì class `string` overload operator `==`.
-
-**"Override `Equals` cần làm gì thêm?"**
-
-Override cả `GetHashCode`: hai object bằng nhau phải có hash bằng nhau. Nếu hash dựa vào field có thể sửa, object sẽ "biến mất" khỏi Dictionary/HashSet sau khi sửa.
-:::
-
-## `ref` vs `out` vs `in` {#ref-out-in}
-
-::: tip Trả lời nhanh
-Cả ba đều truyền theo tham chiếu. `ref`: phải gán trước khi truyền, method được đọc và sửa. `out`: không cần gán trước, method bắt buộc gán (như `int.TryParse`). `in`: chỉ đọc, dùng để truyền struct lớn mà không copy.
-:::
-
-::: warning Bẫy & follow-up
-**"Truyền object (class) vào method rồi sửa property, bên ngoài có thấy không?"**
-
-Có, vì cả hai cùng trỏ tới một object. Nhưng gán `param = new Order()` thì bên ngoài không đổi, trừ khi dùng `ref`. Reference type được truyền bằng cách copy tham chiếu, không phải "truyền theo tham chiếu".
-
-**"Async method có dùng `ref`/`out` được không?"**
-
-Không. Trả về tuple hoặc object kết quả thay vào đó.
-:::
-
-## SOLID <Badge type="warning" text="hay bị hỏi sâu" /> {#solid}
-
-::: tip Trả lời nhanh
-5 nguyên tắc để code dễ thay đổi và dễ test: **S**ingle Responsibility, **O**pen/Closed, **L**iskov Substitution, **I**nterface Segregation, **D**ependency Inversion. Đây là heuristic, không phải luật; áp quá tay thì sinh ra interface và tầng lớp thừa.
-
-Interviewer hiếm khi dừng ở định nghĩa. Họ thường đào theo 3 hướng: _cho ví dụ thật của từng nguyên tắc_, _đọc đoạn code này và chỉ ra vi phạm_, _khi nào không nên áp dụng_. Các block dưới đây chuẩn bị cho cả ba, dùng chung một domain là luồng payout cho affiliate.
-:::
-
-::: info S · Single Responsibility
-**Định nghĩa chính xác:** một class chỉ nên có _một lý do để thay đổi_, tức là chỉ phục vụ một bên hay yêu cầu sửa nó. Ví dụ: chỉ Finance (rule phí), hoặc chỉ Ops (layout báo cáo), không phải cả hai.
-
-Số method không phải thước đo. `Payout` có `Approve`, `Reject`, `MarkPaid`, `Cancel` vẫn đúng <T>SRP</T>, vì tất cả đều là luật trạng thái payout. Ngược lại, một class chỉ có mỗi `Run()` nhưng vừa tính phí, vừa dựng HTML, vừa gửi email thì sai. Tự kiểm tra: mô tả class trong một câu mà phải nối nhiều việc không liên quan bằng chữ "và" là dấu hiệu nên tách.
-
-**Dấu hiệu vi phạm:** class tên `...Manager`/`...Helper` dài hàng nghìn dòng; một file bị sửa bởi các ticket từ nhiều phòng ban khác nhau; không <T>unit test</T> được vì logic dính DB, <T>SMTP</T>.
+**Một class chỉ nên có một lý do để thay đổi**, tức là chỉ phục vụ một bên hay yêu cầu sửa nó (chỉ Finance với rule phí, hoặc chỉ Ops với layout báo cáo). Số method không phải thước đo: `Payout` có `Approve`, `MarkPaid`, `Cancel` vẫn đúng <T>SRP</T> vì tất cả là luật trạng thái payout. Ngược lại một class chỉ có `Run()` nhưng vừa tính phí, vừa dựng HTML, vừa gửi email thì sai. Tự kiểm tra: mô tả class mà phải nối nhiều việc không liên quan bằng chữ "và" là dấu hiệu nên tách.
 
 ```csharp
 // Trước: Finance, Ops và Marketing đều phải sửa chung class này
@@ -520,17 +638,11 @@ public class MonthlyStatementJob(ITxnRepository txns, CommissionCalculator calc,
                                  StatementRenderer renderer, INotifier notifier) { ... }
 ```
 
-**Lợi ích nói được bằng nghiệp vụ:** Finance đổi tỷ lệ phí thì chỉ sửa và test `CommissionCalculator`, không cần DB hay SMTP, và không có rủi ro làm hỏng email.
+Finance đổi tỷ lệ phí thì chỉ sửa và test `CommissionCalculator`, không cần DB hay <T>SMTP</T>, không có rủi ro làm hỏng email. Quá tay khi chẻ một class 50 dòng thành 5 file mỗi file một method: phần nào luôn đổi cùng nhau thì để chung.
 
-**Quá tay khi:** chẻ một class 50 dòng thành 5 file, mỗi file một method. Nếu các phần luôn đổi cùng nhau thì để chung.
-:::
+### O · Open/Closed {#ocp}
 
-::: info O · Open/Closed
-**Định nghĩa:** thêm hành vi bằng cách viết code mới, không phải sửa code đang chạy ổn. "Đóng" với sửa đổi, "mở" để mở rộng.
-
-**Tình huống:** hệ thống đang trả tiền cho affiliate qua Bank và PayPal. Business báo sprint sau thêm Wise.
-
-**Trước:** hiểu biết về từng phương thức bị rải ra: mỗi việc một file, và trong mỗi file lại có một `switch` theo phương thức.
+**Thêm hành vi bằng cách viết code mới, không sửa code đang chạy ổn.** [Bước 4](#polymorphism) đã làm điều này cho việc gửi tiền. Trong hệ thống thật, mỗi kênh trả tiền còn có phí và luật validate riêng; nếu mỗi việc là một file có `switch` theo kênh, hiểu biết về một kênh bị rải ra nhiều nơi:
 
 ```csharp
 // FeeCalculator.cs
@@ -560,9 +672,9 @@ public Task<TransferResult> SendAsync(Payout p) => p.Method switch
 };
 ```
 
-Thêm Wise nghĩa là phải sửa cả 3 file. Quên một chỗ thì không có lỗi compile; nó nổ lúc chạy, ví dụ payout đã tính phí và validate xong, tới bước gửi tiền mới ném `NotSupportedException`. Mỗi lần mở 3 file này ra sửa cũng là một lần có nguy cơ làm hỏng luồng Bank và PayPal đang chạy tốt.
+Thêm Wise phải sửa cả ba file. Quên một chỗ không có lỗi compile; nó nổ giữa luồng trả tiền, khi payout đã tính phí và validate xong mà bước gửi ném `NotSupportedException`. Và mỗi lần mở ba file ra sửa là một lần có thể làm hỏng Bank và PayPal đang chạy tốt.
 
-**Sau:** gom mọi thứ về _một_ phương thức vào _một_ class. Interface đóng vai trò bản checklist mà phương thức nào cũng phải trả lời đủ.
+Chữa: gom mọi hiểu biết về **một** kênh vào **một** class. Interface là checklist mà kênh nào cũng phải trả lời đủ:
 
 ```csharp
 // 1. Hợp đồng chung
@@ -618,25 +730,11 @@ builder.Services.AddScoped<IPayoutMethod, PayPalMethod>();
 builder.Services.AddScoped<PayoutMethods>();
 ```
 
-**Sprint sau thêm Wise thì phải làm gì:**
+Bây giờ thêm Wise chỉ là thêm `WiseMethod.cs` và một dòng `AddScoped`; không file cũ nào bị sửa, chỉ phải test `WiseMethod`, và quên một method thì là lỗi compile chứ không nổ lúc chạy. Về pattern, đây là <T>Strategy</T> kết hợp <T>DI</T>. Không code nào "đóng" với mọi kiểu thay đổi; <T>OCP</T> là chọn đúng hướng nghiệp vụ hay đổi để mở, ở đây là "thêm kênh trả tiền". `switch` chỉ ở một chỗ, 2–3 giá trị, gần như không đổi thì cứ để `switch`.
 
-|  | Trước | Sau |
-|---|---|---|
-| File cũ phải sửa | `FeeCalculator`, `PayoutValidator`, `PayoutSender`, và mọi chỗ khác có switch | Không file nào |
-| File thêm mới | Không | `WiseMethod.cs` |
-| Chỗ khác | Không | Thêm 1 dòng `AddScoped` |
-| Quên một phần | Nổ lúc chạy, giữa luồng trả tiền | Lỗi compile: class chưa implement đủ interface |
-| Phải test lại | Cả Bank lẫn PayPal | Chỉ `WiseMethod` |
+### L · Liskov Substitution {#lsp}
 
-"Đóng" là `PayoutProcessor`, `PayoutMethods`, `BankTransferMethod` và `PayPalMethod` không bị đụng tới. "Mở" là hệ thống vẫn nhận thêm phương thức mới. Về mặt pattern, đây chính là <T>Strategy</T> (2.9) kết hợp với <T>DI</T>.
-
-**Quá tay khi:** switch chỉ ở một chỗ, 2–3 giá trị, gần như không đổi. Khi đó một switch expression rõ ràng hơn. Không có code nào "đóng" với mọi kiểu thay đổi; <T>OCP</T> là chọn đúng hướng mà nghiệp vụ hay thay đổi để mở. Ở đây hướng đó là "thêm phương thức thanh toán".
-:::
-
-::: info L · Liskov Substitution
-**Định nghĩa:** chỗ nào dùng được kiểu cha thì thay kiểu con vào mà caller không bị bất ngờ. Cụ thể, class con không được: đòi điều kiện đầu vào chặt hơn, trả về ít hơn những gì đã hứa, hoặc ném loại exception mà cha không ném.
-
-**Dấu hiệu vi phạm:** class con ném `NotSupportedException` hoặc override rỗng; caller phải viết `if (x is LoaiConDacBiet)` để né.
+**Chỗ nào dùng được kiểu cha thì thay kiểu con vào mà bên gọi không bị bất ngờ.** Cụ thể, class con không được đòi đầu vào chặt hơn, trả về ít hơn điều đã hứa, hay ném loại exception mà cha không ném. Dấu hiệu vi phạm: con ném `NotSupportedException` hoặc override rỗng, bên gọi phải viết `if (x is LoaiDacBiet)` để né.
 
 ```csharp
 // Trước: interface hứa mọi gateway đều refund được
@@ -657,11 +755,11 @@ public interface IRefundableGateway : IPayoutGateway { Task RefundAsync(Payout p
 // Luồng refund chỉ nhận IRefundableGateway, compiler chặn CryptoGateway từ đầu
 ```
 
-**Ví dụ có sẵn trong .NET:** `ReadOnlyCollection<T>` implement `ICollection<T>.Add` rồi ném lỗi. Ví dụ kinh điển Square/Rectangle cũng nên biết, nhưng ví dụ từ nghiệp vụ ghi điểm hơn.
-:::
+Ví dụ có sẵn trong .NET: `ReadOnlyCollection<T>` implement `ICollection<T>.Add` rồi ném lỗi. Ví dụ Square/Rectangle nên biết, nhưng ví dụ từ nghiệp vụ ghi điểm hơn.
 
-::: info I · Interface Segregation
-**Định nghĩa:** bên dùng không nên bị buộc phụ thuộc vào method nó không dùng. Thiết kế interface theo _vai trò của bên gọi_, không theo mọi thứ class làm được.
+### I · Interface Segregation {#isp}
+
+**Bên dùng không nên bị buộc phụ thuộc vào method nó không dùng**, nên thiết kế interface theo vai trò của bên gọi, không theo mọi thứ class làm được.
 
 ```csharp
 // Trước: màn hình báo cáo chỉ đọc nhưng nhận cả interface 15 method, có cả Delete
@@ -673,11 +771,11 @@ public interface IMerchantWriter { Task AddAsync(Merchant m); Task UpdateBalance
 public class MerchantRepository : IMerchantReader, IMerchantWriter { ... }
 ```
 
-**Lợi ích:** <T>mock</T> trong test chỉ cần 2 method thay vì 15; code báo cáo không thể vô tình ghi dữ liệu. **Quá tay khi:** mỗi method một interface.
-:::
+<T>Mock</T> trong test chỉ cần 2 method thay vì 15, và code báo cáo không thể vô tình ghi dữ liệu. Quá tay khi mỗi method một interface.
 
-::: info D · Dependency Inversion
-**Định nghĩa đủ hai ý:** (1) tầng nghiệp vụ không phụ thuộc trực tiếp vào hạ tầng; cả hai phụ thuộc abstraction. (2) **Abstraction do tầng nghiệp vụ định nghĩa**, theo ngôn ngữ của nghiệp vụ. Ý thứ hai là chỗ phân biệt người hiểu sâu.
+### D · Dependency Inversion {#dip}
+
+**Tầng nghiệp vụ không phụ thuộc trực tiếp hạ tầng; cả hai phụ thuộc một abstraction, và abstraction đó do tầng nghiệp vụ định nghĩa bằng ngôn ngữ nghiệp vụ.** Ý thứ hai là chỗ phân biệt người hiểu sâu: một interface sao chép nguyên SDK thì vẫn bị hạ tầng định hình.
 
 ```csharp
 // Sai 1: business gọi thẳng SDK
@@ -695,12 +793,12 @@ namespace Payouts.Infrastructure;
 public class StripePayoutGateway(StripeClient stripe) : IPayoutGateway { ... }
 ```
 
-Mũi tên reference giữa các project: `Infrastructure → Core`, không bao giờ ngược lại. Đổi Stripe sang nhà cung cấp khác không chạm vào Core; test dùng `FakePayoutGateway`.
+Mũi tên reference giữa các project là `Infrastructure → Core`, không bao giờ ngược lại. Đổi Stripe sang nhà cung cấp khác không chạm Core; test dùng `FakePayoutGateway`. Code khó viết test gần như luôn vi phạm DIP: nó tự `new` DB, HTTP, clock (`DateTime.Now`) bên trong. DIP là nguyên tắc; **DI** là kỹ thuật truyền dependency từ ngoài vào; **IoC** là ý tưởng framework gọi code của bạn. Chi tiết: [DI hoạt động thế nào](/aspnet-core/dependency-injection).
 
-**Quá tay khi:** tạo interface cho mọi class. Class tính toán thuần, không I/O như `CommissionCalculator`, cứ `new` và test trực tiếp.
-:::
+### Bài tập: chỉ ra vi phạm trong nút Approve {#solid-exercise}
 
-::: details Bài tập kiểu phỏng vấn: chỉ ra vi phạm rồi refactor
+Dạng phỏng vấn hay gặp: cho một đoạn code, chỉ ra vi phạm rồi nói cách refactor.
+
 ```csharp
 // Web Forms code-behind
 protected void btnApprove_Click(object sender, EventArgs e)
@@ -721,19 +819,19 @@ protected void btnApprove_Click(object sender, EventArgs e)
 }
 ```
 
-**Bước 1, gọi tên vi phạm:**
+**Vi phạm:**
 
-- **SRP:** một event handler làm 5 việc: đọc input UI, truy cập DB, rule nghiệp vụ, gọi cổng thanh toán, gửi email.
-- **OCP:** `if/else` theo `Method`, chắc chắn lặp lại ở các màn hình khác.
-- **<T>DIP</T>:** `new SqlConnection`, `new SmtpClient` ngay trong UI, nên không test được nếu không có DB và mail server thật.
-- Bonus: rule "chỉ duyệt khi Pending" nằm ở UI, nên màn hình hoặc API khác có thể duyệt sai.
+- **SRP**: một handler làm năm việc: đọc input UI, truy cập DB, luật nghiệp vụ, gọi cổng thanh toán, gửi email.
+- **OCP**: `if/else` theo `Method`, chắc chắn lặp lại ở màn hình khác.
+- **<T>DIP</T>**: `new SqlConnection`, `new SmtpClient` ngay trong UI, không test được nếu thiếu DB và mail server thật.
+- Thêm nữa: luật "chỉ duyệt khi Pending" nằm ở UI, màn hình hoặc API khác có thể duyệt sai (thiếu [encapsulation](#encapsulation)).
 
-**Bước 2, refactor theo thứ tự rủi ro thấp lên cao, không làm một lần:**
+**Refactor theo thứ tự rủi ro thấp lên cao, không làm một lần:**
 
 1. Viết vài test bao quanh hành vi hiện tại (<T>characterization test</T>) để biết mình không làm hỏng gì.
-2. Đưa rule vào domain: `payout.Approve(user)` tự kiểm tra trạng thái (xem ví dụ 2.1).
+2. Đưa luật vào domain: `payout.Approve(user)` tự kiểm trạng thái, như [bước 1](#encapsulation).
 3. Tách data access ra `IPayoutRepository`, email ra `INotifier`.
-4. Thay `if/else` bằng `IPayoutMethod` theo từng phương thức.
+4. Thay `if/else` bằng `IPayoutMethod` theo từng kênh, như [Open/Closed](#ocp).
 5. Gom luồng vào một use case `ApprovePayout`; Web Forms nhận nó qua DI (4.7.2+ có `WebObjectActivator`).
 
 ```csharp
@@ -744,38 +842,12 @@ protected void btnApprove_Click(object sender, EventArgs e)
 }
 ```
 
-**Bước 3, nói trade-off:** không refactor toàn bộ codebase một lần. Làm dần theo các ticket có chạm vào chỗ đó. Phần `ApprovePayout` tách ra cũng chính là phần mang sang .NET mới được nguyên vẹn khi migrate.
-:::
+Làm dần theo các ticket có chạm vào chỗ đó. Phần `ApprovePayout` tách ra cũng là phần mang sang .NET mới nguyên vẹn khi migrate.
 
-::: details Cách nói của senior
-"Mình không ngồi check từng chữ cái khi code. Mình để ý xem khi requirement đổi thì phải sửa bao nhiêu chỗ, và có test được phần logic không. <T>SOLID</T> là tên gọi cho những thói quen đó. Ví dụ ở dự án cũ, logic tính phí nằm trong code-behind nên mỗi lần đổi rule phải test tay cả màn hình; tách ra một class riêng thì viết unit test được."
-:::
+## 6. Design pattern: tên cho những cách ghép đã thấy {#patterns}
 
-::: warning Bẫy & follow-up
-**"SOLID có mâu thuẫn với <T>KISS</T>/<T>YAGNI</T> không?"**
+**Pattern là tên đặt cho một cách ghép object lặp đi lặp lại, để nói ngắn với nhau.** Trang này đã dùng vài cái mà không gọi tên: bước 4 là Strategy, `Payout` abstract với luồng chung là Template Method, `PayoutMethods` tra theo code là một Factory. Khi trả lời, nêu chỗ pattern có sẵn trong .NET mà bạn đã dùng, nghe thực tế hơn ví dụ Pizza. Ba nhóm: **Creational** (tạo object), **Structural** (ghép object), **Behavioral** (object phối hợp thế nào).
 
-Có thể, nếu áp trước khi có lý do. Thực tế: viết đơn giản trước; khi thay đổi thứ hai hoặc thứ ba cùng loại xuất hiện (<T>rule of three</T>) thì mới tách abstraction. Abstraction đúng sinh ra từ thay đổi thật, không từ phỏng đoán.
-
-**"SOLID liên quan gì tới testability?"**
-
-SRP làm unit nhỏ, dễ test. DIP cho phép thay hạ tầng bằng fake. Code khó viết test gần như luôn vi phạm DIP: nó tự `new` DB, HTTP, clock (`DateTime.Now`) bên trong.
-
-**"Nguyên tắc nào quan trọng nhất với bạn?"**
-
-Không có đáp án đúng, nên trả lời có lý do. Ví dụ: "SRP và DIP, vì hai cái đó quyết định code có test được và có sửa được an toàn không. OCP thì mình chỉ áp khi thấy một trục thay đổi lặp lại."
-
-**"DIP, DI và IoC khác nhau thế nào?"**
-
-**IoC** là ý tưởng chung: framework gọi code của bạn chứ không phải ngược lại. **DIP** là nguyên tắc thiết kế: phụ thuộc abstraction do tầng nghiệp vụ định nghĩa. **DI** là kỹ thuật: dependency được truyền từ ngoài vào (thường qua constructor). DI container chỉ là công cụ tự động hóa DI. Có hình và câu hỏi sâu hơn: [DI hoạt động thế nào](/aspnet-core/dependency-injection).
-:::
-
-## Design pattern hay bị hỏi (và chỗ chúng có sẵn trong .NET) {#design-patterns}
-
-::: tip Trả lời nhanh
-Ba nhóm: **Creational** (tạo object), **Structural** (ghép object), **Behavioral** (cách object phối hợp). Mẹo trả lời: mỗi pattern nêu 1 ví dụ ngay trong .NET mà bạn đã dùng, nghe thực tế hơn nhiều so với ví dụ Pizza.
-:::
-
-::: info Bản chất
 | Pattern | Dùng khi | Có sẵn trong .NET |
 |---|---|---|
 | Singleton | Cả app chỉ cần 1 instance | `AddSingleton`, `ArrayPool<T>.Shared` |
@@ -789,6 +861,8 @@ Ba nhóm: **Creational** (tạo object), **Structural** (ghép object), **Behavi
 | Template Method | Luồng cố định, các bước con cho override | `BackgroundService.ExecuteAsync` |
 | Repository / Unit of Work | Tách data access khỏi business | `DbSet<T>` ≈ repository, `DbContext` ≈ unit of work |
 
+Singleton không dùng DI thì viết thread-safe bằng `Lazy<T>`:
+
 ```csharp
 // Singleton thread-safe khi không dùng DI
 public sealed class AppClock
@@ -798,30 +872,206 @@ public sealed class AppClock
     private AppClock() { }
 }
 ```
-:::
 
-::: warning Bẫy & follow-up
-**"Tại sao dùng Strategy thay vì if/else?"**
+## 7. Biến thể và trade-off {#tradeoffs}
 
-Khi số nhánh tăng dần, mỗi nhánh có logic riêng cần test riêng, và muốn thêm nhánh mà không sửa code cũ. Còn 2–3 nhánh ổn định thì if/switch đơn giản hơn: đó là <T>KISS</T>.
+### Composition over inheritance {#composition}
 
-**"Singleton có nhược điểm gì?"**
+**Kế thừa nối con vào cha lúc compile: con nhận mọi thứ của cha, đổi cha là ảnh hưởng mọi con, và C# chỉ cho một cha.** Vì vậy chỉ kế thừa khi thật sự là "is-a" và cần chia sẻ hành vi, như `BankPayout` với `Payout`. Còn lại thì ghép: `PayoutProcessor` không kế thừa gì, nó **có** một danh sách `IPayoutGateway` nhận qua <T>DI</T>, nên thay gateway lúc chạy hoặc trong test được mà không đụng cây kế thừa. Nhiều team để class mặc định `sealed` khi không thiết kế để kế thừa.
 
-Là global state: khó <T>mock</T>, ẩn dependency, phải thread-safe nếu có state thay đổi. Trong ASP.NET Core dùng `AddSingleton` thay cho static Instance để vẫn inject và test được.
+### Khi nào không cần interface, không cần tách
 
-**"Có nên viết Repository trên <T>EF Core</T> không?"**
+Vì interface chỉ đáng giá khi có nhiều implementation hoặc cần thay khi test, class tính toán thuần, không I/O như `CommissionCalculator` cứ `new` và test trực tiếp. Vì Strategy chỉ đáng khi số nhánh tăng và mỗi nhánh cần test riêng, 2–3 nhánh ổn định thì `switch` rõ hơn. Thực tế: viết đơn giản trước, khi thay đổi cùng loại xuất hiện lần thứ hai, thứ ba (<T>rule of three</T>) mới tách abstraction. Abstraction đúng sinh ra từ thay đổi thật, không từ phỏng đoán.
 
-Đây là câu tranh luận, trả lời theo trade-off: <T>DbContext</T> đã là UoW + repository, bọc thêm một lớp generic thường chỉ làm mất tính năng (`Include`, projection). Nên viết repository theo nghiệp vụ (`GetPendingPayouts`) khi cần gom query hoặc tách khỏi EF để test. Sẽ nói kỹ ở mục EF Core.
-:::
+Singleton (static `Instance`) là global state: khó <T>mock</T>, ẩn dependency, phải thread-safe nếu có state thay đổi. Trong ASP.NET Core dùng `AddSingleton` để vẫn inject và test được. Repository bọc <T>EF Core</T>: <T>DbContext</T> đã là unit of work và `DbSet` đã là repository, bọc thêm một lớp generic thường làm mất `Include` và projection; chỉ viết repository theo nghiệp vụ (`GetPendingPayouts`) khi cần gom query hoặc tách khỏi EF để test.
 
-## DRY, KISS, YAGNI {#dry-kiss-yagni}
+### DRY, KISS, YAGNI {#principles}
+
+**DRY**: mỗi **kiến thức nghiệp vụ** chỉ nằm một chỗ. **KISS**: chọn cách đơn giản nhất mà đủ đúng. **YAGNI**: không làm trước thứ chưa ai cần. DRY nói về kiến thức, không về ký tự trùng nhau: hai đoạn code giống nhau nhưng đổi vì hai lý do khác nhau mà bị gộp làm một, sau này mỗi bên đổi một kiểu, abstraction chung đầy cờ `if`. Lặp lại một chút rẻ hơn một abstraction sai. Đây cũng là lý do SOLID áp quá sớm mâu thuẫn với <T>KISS</T>/<T>YAGNI</T>.
+
+## Câu hỏi phỏng vấn {#interview}
+
+### 4 tính chất của OOP {#oop}
 
 ::: tip Trả lời nhanh
-**DRY**: mỗi kiến thức nghiệp vụ chỉ nằm ở một chỗ. **KISS**: chọn cách đơn giản nhất mà đủ đúng. **YAGNI**: không làm trước thứ chưa ai cần.
+Encapsulation giữ dữ liệu và chỉ cho đổi qua method có kiểm luật. Abstraction cho bên ngoài thấy một mặt đơn giản, giấu cách làm. Inheritance cho class con dùng lại phần chung của cha. Polymorphism: một lời gọi, code chạy theo object thật lúc runtime. Xem [bốn bước tách nút Pay](#oop-evolve).
+:::
+
+::: details Câu trả lời mẫu (English)
+Encapsulation protects the inside: in my payout example, Status has a private setter, so it only changes through Approve and MarkPaid, which check the rules first. Abstraction simplifies the outside: the processor only sees IPayoutGateway.SendAsync, not HTTP, signing or bank error codes. Inheritance shares the approval rules between BankPayout and PayPalPayout through an abstract Payout base class. Polymorphism means one call, gateway.SendAsync, runs the bank or the PayPal code depending on the real object at runtime, so adding a new provider means adding a class, not editing the processor.
 :::
 
 ::: warning Bẫy & follow-up
-**"DRY có lúc nào sai không?"**
+**"Encapsulation và abstraction khác gì nhau?"** Encapsulation giấu dữ liệu để bảo vệ <T>invariant</T>; abstraction giấu độ phức tạp để bên ngoài dùng đơn giản. Xem [bước 2](#abstraction).
 
-Có. Hai đoạn code giống nhau nhưng thay đổi vì hai lý do khác nhau mà bị gộp làm một, thì sau này mỗi bên đổi một kiểu, abstraction chung đầy cờ `if`. Lặp lại một chút rẻ hơn một abstraction sai. DRY là về kiến thức, không phải về ký tự trùng nhau.
+**"Polymorphism có mấy loại?"** Runtime (`virtual`/`override`, interface) và compile-time (overloading). Xem [mục 3](#mechanism).
+
+**"Composition over inheritance nghĩa là gì?"** Xem [trade-off](#composition).
 :::
+
+### Abstract class vs interface {#abstract-vs-interface}
+
+::: tip Trả lời nhanh
+Interface là hợp đồng "làm được gì", không có state, một class implement được nhiều. Abstract class là class cha dở dang, có field, constructor và code chung, nhưng chỉ kế thừa được một. Xem [Abstract class hay interface](#abstract-or-interface).
+:::
+
+::: details Câu trả lời mẫu (English)
+An interface is a contract: a list of members with no instance state, and a class can implement many of them. An abstract class is a partially built base class: it can hold fields, a constructor and shared code, but a class can inherit only one. In my payout code, Payout is an abstract class because it owns the status and the validation in its constructor that every payout type shares. IPayoutGateway is an interface because the bank and PayPal gateways share no data, only a capability, and I want to mock it in tests.
+:::
+
+::: warning Bẫy & follow-up
+**"Interface có default method rồi thì khác gì abstract class?"** Vẫn không có instance field và constructor. Default method để thêm member vào interface đã public mà không làm vỡ các class đang implement.
+:::
+
+### Overriding vs overloading vs `new` (method hiding) {#override-overload-new}
+
+::: tip Trả lời nhanh
+Overloading: cùng tên khác tham số, compiler chọn lúc build. Override: con thay ô của method `virtual` trong vtable, chọn lúc runtime theo object thật. `new`: con thêm method khác trùng tên, compiler chọn theo kiểu biến. Xem [compiler chọn hay runtime chọn](#mechanism).
+:::
+
+::: details Câu trả lời mẫu (English)
+Overloading is several methods with the same name and different parameters; the compiler picks one at build time from the argument types. Overriding replaces a virtual method's slot in the object's vtable, so the call is resolved at runtime by the real object type, even through a base-class variable. The new keyword hides the base method instead: it adds a second method with the same name, and the compiler picks based on the declared type of the variable. So with Base x = new Derived(), x.A() runs the override but x.B() runs the base version if B was hidden with new.
+:::
+
+::: warning Bẫy & follow-up
+**Câu "cho đoạn code, đoán output" rất hay gặp.** `override` theo object thật, `new` theo kiểu biến. Quên ghi `override` thì compiler cảnh báo và coi như `new`.
+
+**"`sealed` dùng làm gì?"** Chặn kế thừa hoặc chặn override tiếp; <T>JIT</T> có thể gọi thẳng không qua vtable.
+:::
+
+### `const` vs `readonly` vs `static readonly` {#const-readonly}
+
+::: tip Trả lời nhanh
+`const` chốt lúc compile, được chép vào chỗ dùng, chỉ primitive và string. `readonly` chốt trong constructor, mỗi object một giá trị. `static readonly` chốt một lần cho cả type lúc runtime, mọi kiểu. Xem [giá trị được gán lúc nào](#when-assigned).
+:::
+
+::: details Câu trả lời mẫu (English)
+They differ in when the value is fixed. A const is a compile-time constant: the compiler copies the value into every place that uses it, so it only works for primitives and strings. A readonly field is set once per instance, in the initializer or the constructor. A static readonly field is set once per type at runtime, before the type is first used, and can hold any type. One practical consequence: if a library changes a public const, callers keep the old value until they're recompiled, so for values that may change between versions I use static readonly.
+:::
+
+::: warning Bẫy & follow-up
+**"`readonly List<int>` có thêm phần tử được không?"** Được. `readonly` khoá biến, không khoá object. Xem [gán là copy biến](#value-reference).
+
+**"Static constructor ném exception thì sao?"** Xem [Hỏi đáp](#static-ctor-exception).
+:::
+
+### `struct` vs `class` vs `record` {#struct-class-record}
+
+::: tip Trả lời nhanh
+`struct` là <T>value type</T>: biến chứa dữ liệu, gán là copy. `class` là <T>reference type</T>: biến chứa địa chỉ, gán là copy địa chỉ. `record` là class có so sánh theo giá trị và `with`; `record struct` là bản value type. Xem [gán là copy biến](#value-reference).
+:::
+
+::: details Câu trả lời mẫu (English)
+A struct is a value type: the variable holds the data itself, so assigning or passing it copies the whole value. A class is a reference type: the variable holds a reference, so two variables can point to the same object. A record is a class where the compiler generates value-based equality and a with expression for non-destructive copies, which makes it a good fit for DTOs and value objects like Money; record struct is the value-type version. I use structs only for small, immutable, frequently created values, and default to classes or records otherwise.
+:::
+
+::: warning Bẫy & follow-up
+**"Struct mutable có vấn đề gì?"** Mỗi lần lấy ra là một bản copy, sửa bản copy không sửa bản gốc. Struct nên là `readonly struct`.
+
+**"Khi nào dùng struct?"** Nhỏ (khoảng 16 byte trở xuống), bất biến, tạo rất nhiều, ít bị <T>boxing</T>.
+
+**"`Tuple` và `ValueTuple`?"** Xem [Hỏi đáp](#tuple).
+:::
+
+### String immutable nghĩa là gì? `==` vs `Equals` vs `ReferenceEquals` {#string-equality}
+
+::: tip Trả lời nhanh
+String không bao giờ bị sửa tại chỗ, mọi phép "sửa" tạo string mới, nên an toàn khi dùng chung giữa thread và làm key. `ReferenceEquals` luôn so địa chỉ; `==` và `Equals` mặc định so địa chỉ với class, nhưng string, record và kiểu tự override thì so nội dung. Xem [gán là copy biến](#value-reference).
+:::
+
+::: details Câu trả lời mẫu (English)
+Immutable means a string is never changed in place: Replace, ToUpper or concatenation all return a new string. That makes strings safe to share across threads and to use as dictionary keys, but building a string in a loop creates many copies, so I use StringBuilder or string.Join there. For equality, ReferenceEquals always compares references. Equals and == compare references by default for classes, but string overrides both to compare content, and records generate value equality too.
+:::
+
+::: warning Bẫy & follow-up
+**"String là reference type mà sao giống value type?"** Độ dài thay đổi nên không thể là value type cố định kích thước; immutable cộng với overload `==` làm nó dùng giống value type mà vẫn chỉ copy địa chỉ.
+
+**"Override `Equals` cần làm gì thêm?"** Override cả `GetHashCode`. Nếu hash dựa vào field có thể sửa, object "biến mất" khỏi Dictionary/HashSet sau khi sửa.
+:::
+
+### `ref` vs `out` vs `in` {#ref-out-in}
+
+::: tip Trả lời nhanh
+Cả ba đưa chính biến vào method thay vì copy. `ref`: gán trước, method đọc và sửa. `out`: method bắt buộc gán (`int.TryParse`). `in`: chỉ đọc, để truyền struct lớn không copy. Xem [gán là copy biến](#value-reference).
+:::
+
+::: details Câu trả lời mẫu (English)
+All three pass the variable itself instead of a copy of its content. With ref, the caller must initialize it and the method can read and change it. With out, the method must assign it, like int.TryParse returning the parsed value. With in, the method can only read it; it's for passing large structs without copying. Note that passing a class without ref already shares the object, but reassigning the parameter inside the method doesn't affect the caller.
+:::
+
+::: warning Bẫy & follow-up
+**"Truyền object vào method rồi sửa property, bên ngoài có thấy không?"** Có, cùng trỏ một object. Nhưng gán `param = new Order()` thì bên ngoài không đổi, trừ khi dùng `ref`. Reference type được truyền bằng copy địa chỉ, không phải "truyền theo tham chiếu".
+
+**"Async method dùng `ref`/`out` được không?"** Không; trả về tuple hoặc object kết quả.
+:::
+
+### SOLID <Badge type="warning" text="hay bị hỏi sâu" /> {#solid}
+
+::: tip Trả lời nhanh
+Năm thói quen để requirement đổi thì sửa ít chỗ và logic test được: **S**ingle Responsibility, **O**pen/Closed, **L**iskov Substitution, **I**nterface Segregation, **D**ependency Inversion. Interviewer thường đào tiếp: ví dụ thật từng nguyên tắc, chỉ ra vi phạm trong đoạn code, khi nào không nên áp. Xem [SOLID](#solid-lesson) và [bài tập nút Approve](#solid-exercise).
+:::
+
+::: details Câu trả lời mẫu (English)
+I don't check the five letters one by one while coding; I ask how many places I'd have to change when a requirement changes, and whether the logic can be unit tested. SOLID names those habits. Single responsibility: one reason to change, so the fee rules live in a CommissionCalculator that Finance changes without touching email. Open/closed: adding Wise as a payout method means adding a WiseMethod class and one DI registration, not editing switches in three files. Liskov: a gateway that throws NotSupportedException on Refund breaks the contract, so refund gets its own interface. Interface segregation: a read-only report gets a reader interface, not a fifteen-method repository. Dependency inversion: the core defines IPayoutGateway in business terms and infrastructure implements it. I apply them when a second or third change of the same kind shows up, not upfront.
+:::
+
+::: warning Bẫy & follow-up
+**"SOLID có mâu thuẫn với KISS/YAGNI không?"** Có thể, nếu áp trước khi có lý do. Xem [khi nào không cần](#tradeoffs).
+
+**"SOLID liên quan gì tới testability?"** SRP làm unit nhỏ; DIP cho thay hạ tầng bằng fake. Code khó test gần như luôn vi phạm DIP.
+
+**"Nguyên tắc nào quan trọng nhất với bạn?"** Không có đáp án đúng, trả lời có lý do: "SRP và DIP, vì chúng quyết định code test được và sửa an toàn được. OCP thì chỉ áp khi thấy một trục thay đổi lặp lại."
+
+**"DIP, DI và IoC khác nhau thế nào?"** Xem [Dependency Inversion](#dip).
+:::
+
+### Design pattern hay bị hỏi (và chỗ chúng có sẵn trong .NET) {#design-patterns}
+
+::: tip Trả lời nhanh
+Creational (tạo object), Structural (ghép object), Behavioral (phối hợp). Mỗi pattern nêu một chỗ có sẵn trong .NET: Factory là `IHttpClientFactory`, Decorator là `DelegatingHandler`, Chain of Responsibility là middleware pipeline, Template Method là `BackgroundService`. Xem [design pattern](#patterns).
+:::
+
+::: details Câu trả lời mẫu (English)
+I think of patterns as names for arrangements I already use in .NET. Strategy is injecting several implementations of one interface, like payout methods for bank and PayPal. Factory is IHttpClientFactory. Decorator is a DelegatingHandler wrapping an HttpClient, or GZipStream wrapping a Stream. Chain of responsibility is the ASP.NET Core middleware pipeline. Template method is BackgroundService, where I only implement ExecuteAsync. And singleton today is usually AddSingleton in the container rather than a static Instance, so it stays injectable and testable.
+:::
+
+::: warning Bẫy & follow-up
+**"Tại sao dùng Strategy thay vì if/else?"** Khi số nhánh tăng, mỗi nhánh cần test riêng và muốn thêm nhánh không sửa code cũ. 2–3 nhánh ổn định thì `switch` đơn giản hơn.
+
+**"Singleton có nhược điểm gì?"** Global state: khó <T>mock</T>, ẩn dependency, phải thread-safe. Dùng `AddSingleton` thay static `Instance`.
+
+**"Có nên viết Repository trên EF Core không?"** Trả lời theo trade-off, xem [khi nào không cần](#tradeoffs).
+:::
+
+### DRY, KISS, YAGNI {#dry-kiss-yagni}
+
+::: tip Trả lời nhanh
+**DRY**: mỗi kiến thức nghiệp vụ một chỗ. **KISS**: cách đơn giản nhất mà đủ đúng. **YAGNI**: không làm trước thứ chưa ai cần. Xem [DRY, KISS, YAGNI](#principles).
+:::
+
+::: details Câu trả lời mẫu (English)
+DRY means every piece of business knowledge lives in one place, for example the rule that only approved payouts can be paid lives in Payout.MarkPaid, not in every page. KISS means picking the simplest design that is correct. YAGNI means not building things nobody needs yet. DRY is about knowledge, not identical-looking code: two similar blocks that change for different reasons should stay separate, because a wrong shared abstraction ends up full of flags.
+:::
+
+::: warning Bẫy & follow-up
+**"DRY có lúc nào sai không?"** Có: gộp hai đoạn giống nhau nhưng đổi vì hai lý do khác nhau. Lặp lại một chút rẻ hơn một abstraction sai.
+:::
+
+## Hỏi đáp
+
+### `Tuple` và `ValueTuple` khác nhau thế nào? {#tuple}
+
+`System.Tuple` là class cũ, phần tử chỉ có tên `Item1`, `Item2`. `ValueTuple` `(int Id, string Name)` là struct, đặt tên được, nhưng tên chỉ tồn tại lúc compile và mất khi serialize. Dùng tuple cho giá trị trả về nội bộ; ở API public thì dùng record.
+
+### Static constructor ném exception thì sao? {#static-ctor-exception}
+
+Mọi lần dùng type sau đó ném `TypeInitializationException`, và <T>CLR</T> không thử chạy lại static constructor: type hỏng tới khi process khởi động lại. Vì vậy đừng gọi DB, file hay API trong static constructor.
+
+## Tự kiểm tra
+
+1. Trong [bản đồ](#topic-map), biến `Payout p` trỏ tới `BankPayout`. Nếu `SendAsync` không phải method của interface mà là method thường của class, chặng 2 còn chạy đúng không? Vì sao?
+2. Bỏ `private set` của `Status` đi thì bước nào trong bốn bước hỏng, và lỗi đó lộ ra ở đâu?
+3. `Base x = new Derived(); x.B();` với `B` khai báo bằng `new` ra gì? Đổi thành `override` thì sao?
+4. Truyền một `Money` (struct) và một `Payout` (class) vào method rồi sửa bên trong: bên ngoài thấy gì ở mỗi cái? Thêm `ref` thì khác gì?
+5. Thêm kênh Wise: với code `switch` ở ba file, rủi ro là gì? Với `IPayoutMethod`, quên một method thì chuyện gì xảy ra?
+6. Khi nào bạn **không** tạo interface cho một class?
