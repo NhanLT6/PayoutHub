@@ -310,7 +310,10 @@ public class BankPayout(decimal amount, string accountNo) : Payout(amount)
 
 ### Bước 4: Polymorphism, một lời gọi chạy code theo object thật {#polymorphism}
 
-**Lời gọi qua interface hoặc method `virtual` được quyết định lúc chạy, theo kiểu thật của object, không theo kiểu của biến.** Processor chỉ có một dòng `gateway.SendAsync(payout)`; object thật là `BankTransferGateway` thì chạy code ngân hàng, là `PayPalGateway` thì chạy code PayPal.
+**Lời gọi qua interface hoặc method `virtual` được quyết định lúc chạy, theo kiểu thật của object, không theo kiểu của biến.** Polymorphism chỉ lo việc **gọi**; việc **chọn** object nào thì phải có người làm trước. Ở đây là hai dòng:
+
+1. **Chọn**: DI đưa vào danh sách `[BankTransferGateway, PayPalGateway]`. `First` hỏi lần lượt `CanHandle(payout)`; payout 42 là `BankPayout` nên gateway ngân hàng trả `true`, và biến `gateway` giữ object đó.
+2. **Gọi**: `gateway.SendAsync(payout)` không biết và không cần biết mình giữ object nào; runtime chạy `SendAsync` của object thật, ở đây là code ngân hàng.
 
 ```csharp
 IPayoutGateway gateway = gateways.First(g => g.CanHandle(payout));
@@ -462,10 +465,12 @@ public class PayoutProcessor(IEnumerable<IPayoutGateway> gateways, IPayoutReposi
     {
         Payout payout = await repo.GetAsync(payoutId, ct); // object thật: BankPayout hoặc PayPalPayout
 
+        // CHỌN: hỏi lần lượt từng gateway "bạn xử lý được payout này không?"
+        // payout là BankPayout → BankTransferGateway trả true → biến gateway giữ object đó
         IPayoutGateway gateway = gateways.First(g => g.CanHandle(payout));
 
-        // POLYMORPHISM: cùng một dòng, chạy SendAsync của BankTransferGateway hay PayPalGateway
-        // tuỳ object thật lúc runtime. Processor không có if/else theo loại.
+        // GỌI (POLYMORPHISM): biến kiểu IPayoutGateway, nhưng runtime chạy SendAsync
+        // của object mà biến đang giữ. Processor không có if/else theo loại.
         TransferResult result = await gateway.SendAsync(payout, ct);
 
         payout.MarkPaid(result.Reference); // ENCAPSULATION: không tự gán Status
