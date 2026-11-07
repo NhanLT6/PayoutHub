@@ -141,103 +141,183 @@ Loại câu "X là gì, khác Y thế nào". Đáp ngắn, đúng, rồi chuyể
 Encapsulation và abstraction hay bị nói lẫn. Encapsulation là _bảo vệ dữ liệu và <T>invariant</T>_; abstraction là _giấu độ phức tạp_. Polymorphism có 2 loại: compile-time (overloading) và runtime (`virtual`/`override`, gọi qua <T k="vtable">bảng virtual method</T>).
 :::
 
-::: details Ở dự án thật
-```csharp
-public class Payout
+### Ví dụ thật: một luồng trả tiền có đủ bốn tính chất {#oop-example}
+
+Luồng: finance duyệt payout, rồi hệ thống chuyển tiền cho affiliate qua ngân hàng hoặc PayPal. Mỗi file dưới đây ứng với một ô trong hình:
+
+- `Payout.cs`: **encapsulation** (`Status` chỉ đổi qua `Approve()`, `MarkPaid()`) và lớp cha cho **inheritance**.
+- `BankPayout.cs`, `PayPalPayout.cs`: **inheritance**, lớp con có sẵn luật duyệt của cha, chỉ thêm nơi nhận tiền.
+- `IPayoutGateway.cs`: **abstraction**, processor chỉ biết "gửi tiền", không biết HTTP, ký request, mã lỗi ngân hàng.
+- `PayoutProcessor.cs`: **polymorphism**, một dòng `gateway.SendAsync(payout)` chạy code của ngân hàng hay PayPal tuỳ object thật lúc runtime.
+
+::: code-group
+
+```csharp [Payout.cs]
+namespace PayoutHub.Core.Domain;
+
+public enum PayoutStatus { Pending, Approved, Paid }
+
+// Lớp cha trừu tượng: không có "payout chung chung", chỉ có payout qua bank hoặc PayPal
+public abstract class Payout
 {
-    public PayoutStatus Status { get; private set; } = PayoutStatus.Pending;
-
-    public void Approve(string approvedBy)
-    {
-        if (Status != PayoutStatus.Pending)
-            throw new InvalidOperationException($"Cannot approve a {Status} payout");
-        Status = PayoutStatus.Approved;
-        ApprovedBy = approvedBy;
-    }
-}
-```
-
-Không ai set thẳng `Status = Approved` được, nên không có chuyện duyệt một payout đã bị reject. Đây là encapsulation giữ đúng luồng business.
-
-Dùng EF Core vẫn giữ được encapsulation: private setter, private constructor, backing field. Xem [Entity giàu hành vi với EF Core](/data/ef-core#rich-entity).
-:::
-
-::: details Ví dụ có cả encapsulation và abstraction
-Mở rộng ví dụ trên thành luồng trả tiền cho affiliate. Hai khái niệm nằm ở hai chỗ khác nhau trong cùng một luồng:
-
-```csharp
-// ABSTRACTION: service chỉ cần biết "gửi tiền cho payout này",
-// không cần biết phía sau là bank API hay PayPal, ký request ra sao, retry thế nào
-public interface IPayoutGateway
-{
-    Task<TransferResult> SendAsync(Payout payout, CancellationToken ct);
-}
-
-public class BankTransferGateway(HttpClient http) : IPayoutGateway
-{
-    public async Task<TransferResult> SendAsync(Payout payout, CancellationToken ct)
-    {
-        // build request, ký HMAC, gọi API, dịch mã lỗi của ngân hàng...
-        // mọi chi tiết này bị giấu sau interface
-    }
-}
-
-// ENCAPSULATION: Payout tự bảo vệ trạng thái của nó
-public class Payout
-{
-    private readonly List<PayoutEvent> _history = [];
-
+    public int Id { get; private set; }
     public decimal Amount { get; private set; }
-    public PayoutStatus Status { get; private set; } = PayoutStatus.Pending;
-    public string? BankReference { get; private set; }
-    public IReadOnlyList<PayoutEvent> History => _history;   // đọc được, không sửa được
+    public PayoutStatus Status { get; private set; } = PayoutStatus.Pending; // ENCAPSULATION
+    public string? Reference { get; private set; }
 
-    public void Approve(string by)
+    protected Payout(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount));
+
+        Amount = amount;
+    }
+
+    public void Approve()
     {
         EnsureStatus(PayoutStatus.Pending);
         Status = PayoutStatus.Approved;
-        _history.Add(new PayoutEvent("Approved", by));
     }
 
-    public void MarkPaid(string bankReference)
+    public void MarkPaid(string reference)
     {
-        EnsureStatus(PayoutStatus.Approved);   // chưa duyệt thì không thể "đã trả"
+        EnsureStatus(PayoutStatus.Approved); // chưa duyệt thì không thể "đã trả"
         Status = PayoutStatus.Paid;
-        BankReference = bankReference;
-        _history.Add(new PayoutEvent("Paid", "system"));
+        Reference = reference;
     }
 
     private void EnsureStatus(PayoutStatus expected)
     {
         if (Status != expected)
-            throw new InvalidOperationException($"Payout is {Status}, expected {expected}");
+            throw new InvalidOperationException($"Payout is {Status}, expected {expected}.");
     }
 }
+```
 
-// Nơi hai thứ gặp nhau
-public class PayoutProcessor(IPayoutGateway gateway, IPayoutRepository repo)
+```csharp [BankPayout.cs]
+namespace PayoutHub.Core.Domain;
+
+// INHERITANCE: có sẵn Amount, Status, Approve(), MarkPaid() của Payout
+public class BankPayout(decimal amount, string accountNo) : Payout(amount)
+{
+    public string AccountNo { get; } = accountNo; // chỉ thêm phần riêng
+}
+```
+
+```csharp [PayPalPayout.cs]
+namespace PayoutHub.Core.Domain;
+
+public class PayPalPayout(decimal amount, string email) : Payout(amount)
+{
+    public string Email { get; } = email;
+}
+```
+
+```csharp [IPayoutGateway.cs]
+using PayoutHub.Core.Domain;
+
+namespace PayoutHub.Core.Payments;
+
+public record TransferResult(string Reference);
+
+// ABSTRACTION: chỉ lộ "có gửi được payout này không" và "gửi đi"
+public interface IPayoutGateway
+{
+    bool CanHandle(Payout payout);
+
+    Task<TransferResult> SendAsync(Payout payout, CancellationToken ct);
+}
+```
+
+```csharp [BankTransferGateway.cs]
+using System.Net.Http.Json;
+using PayoutHub.Core.Domain;
+using PayoutHub.Core.Payments;
+
+namespace PayoutHub.Infrastructure.Payments;
+
+public class BankTransferGateway(HttpClient http) : IPayoutGateway
+{
+    public bool CanHandle(Payout payout) => payout is BankPayout;
+
+    public async Task<TransferResult> SendAsync(Payout payout, CancellationToken ct)
+    {
+        var bank = (BankPayout)payout;
+
+        // phần bị che sau interface: format request, ký, gọi API, dịch mã lỗi của ngân hàng
+        var response = await http.PostAsJsonAsync("transfers", new { bank.AccountNo, bank.Amount }, ct);
+        response.EnsureSuccessStatusCode();
+
+        var body = await response.Content.ReadFromJsonAsync<BankResponse>(ct);
+        return new TransferResult(body!.TransactionId);
+    }
+
+    private record BankResponse(string TransactionId);
+}
+```
+
+```csharp [PayPalGateway.cs]
+using PayoutHub.Core.Domain;
+using PayoutHub.Core.Payments;
+
+namespace PayoutHub.Infrastructure.Payments;
+
+public class PayPalGateway(HttpClient http) : IPayoutGateway
+{
+    public bool CanHandle(Payout payout) => payout is PayPalPayout;
+
+    public async Task<TransferResult> SendAsync(Payout payout, CancellationToken ct)
+    {
+        var paypal = (PayPalPayout)payout;
+
+        // cách gọi khác hẳn ngân hàng: OAuth token, API payouts của PayPal...
+        await Task.Delay(10, ct);
+        return new TransferResult($"PP-{paypal.Email}-{Guid.NewGuid():N}");
+    }
+}
+```
+
+```csharp [PayoutProcessor.cs]
+using PayoutHub.Core.Domain;
+using PayoutHub.Core.Payments;
+
+namespace PayoutHub.Api.Payouts;
+
+public class PayoutProcessor(IEnumerable<IPayoutGateway> gateways, IPayoutRepository repo)
 {
     public async Task PayAsync(int payoutId, CancellationToken ct)
     {
-        var payout = await repo.GetAsync(payoutId, ct);
-        var result = await gateway.SendAsync(payout, ct);  // abstraction: không biết gửi bằng cách nào
-        payout.MarkPaid(result.Reference);                 // encapsulation: không tự set Status
+        Payout payout = await repo.GetAsync(payoutId, ct); // object thật: BankPayout hoặc PayPalPayout
+
+        IPayoutGateway gateway = gateways.First(g => g.CanHandle(payout));
+
+        // POLYMORPHISM: cùng một dòng, chạy SendAsync của BankTransferGateway hay PayPalGateway
+        // tuỳ object thật lúc runtime. Processor không có if/else theo loại.
+        TransferResult result = await gateway.SendAsync(payout, ct);
+
+        payout.MarkPaid(result.Reference); // ENCAPSULATION: không tự gán Status
         await repo.SaveAsync(payout, ct);
     }
 }
 ```
 
-|  | Encapsulation | Abstraction |
-|---|---|---|
-| Trả lời câu hỏi | Ai được sửa dữ liệu này, và sửa bằng cách nào? | Bên dùng cần biết gì để dùng được cái này? |
-| Trong ví dụ | `private set`, `EnsureStatus`, `History` chỉ đọc | `IPayoutGateway` giấu toàn bộ chi tiết ngân hàng |
-| Nếu thiếu | Code ở đâu đó set `Status = Paid` cho payout chưa được duyệt | Đổi từ chuyển khoản sang PayPal phải sửa `PayoutProcessor` và mọi chỗ gọi |
-| Công cụ C# | Access modifier, `private set`, `init`, method có kiểm tra điều kiện | Interface, abstract class, API public gọn |
+```csharp [Program.cs]
+builder.Services.AddHttpClient<BankTransferGateway>();
+builder.Services.AddHttpClient<PayPalGateway>();
+builder.Services.AddTransient<IPayoutGateway>(sp => sp.GetRequiredService<BankTransferGateway>());
+builder.Services.AddTransient<IPayoutGateway>(sp => sp.GetRequiredService<PayPalGateway>());
+builder.Services.AddScoped<PayoutProcessor>();
+```
 
-**Câu để nói khi phỏng vấn:** "Encapsulation bảo vệ bên trong, abstraction đơn giản hóa bên ngoài. Payout tự giữ luật chuyển trạng thái của nó, nên không ai đánh dấu đã trả cho payout chưa duyệt. Còn service chỉ thấy `IPayoutGateway`, nên chuyển từ chuyển khoản sang PayPal không phải sửa luồng trả tiền."
-
-**Phản ví dụ hay gặp ở Web Forms:** nút "Pay" trong code-behind vừa gọi thẳng API ngân hàng, vừa chạy `UPDATE Payouts SET Status = 'Paid'`. Thiếu cả hai: luật chuyển trạng thái bị rải ở mọi page có thao tác với payout, và page biết quá nhiều chi tiết của ngân hàng.
 :::
+
+**Polymorphism đáng giá ở đâu:** thiếu nó thì `PayoutProcessor` phải viết `if (payout is BankPayout) {...} else if (payout is PayPalPayout) {...}`, và thêm Wise là sửa processor cùng mọi chỗ có if/else đó. Có nó thì thêm Wise là thêm một class `WiseGateway` và một dòng đăng ký; processor không đổi (đây chính là [Open/Closed](#solid)). Đó là **runtime polymorphism**: lời gọi qua interface hoặc method `virtual` được quyết định lúc chạy theo kiểu thật của object. **Compile-time polymorphism** là overloading: `Log(string)` và `Log(Exception)` cùng tên, compiler chọn theo kiểu tham số.
+
+**Câu để nói khi phỏng vấn:** "Encapsulation protects the inside: Payout only changes status through Approve and MarkPaid. Abstraction simplifies the outside: the processor only sees IPayoutGateway. Inheritance shares the approval rules between BankPayout and PayPalPayout. Polymorphism means one call, gateway.SendAsync, runs the bank or the PayPal code depending on the real object, so adding a new provider doesn't touch the processor."
+
+**Phản ví dụ hay gặp ở Web Forms:** nút "Pay" trong code-behind vừa gọi thẳng API ngân hàng, vừa chạy `UPDATE Payouts SET Status = 'Paid'`, vừa `if` theo loại payout. Thiếu cả bốn: luật trạng thái rải khắp các page, page biết chi tiết ngân hàng, và thêm một nhà cung cấp là sửa mọi page.
+
+Dùng EF Core vẫn giữ được encapsulation: private setter, private constructor, backing field. Xem [Entity giàu hành vi với EF Core](/data/ef-core#rich-entity).
 
 ::: warning Bẫy & follow-up
 **"Composition over inheritance nghĩa là gì?"**
