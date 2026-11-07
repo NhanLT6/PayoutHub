@@ -137,3 +137,14 @@ Mẫu:
   - DDD: đặt luật "một crew không trùng đêm" vào Allotment; aggregate chỉ giữ được luật trên dữ liệu bên trong nó.
   - Live coding: chỉ so hai booking kề nhau, điều kiện trùng một chiều, không sort; chưa biết cách nêu Big-O và chọn test case.
 - **Tiếp theo:** live coding bài 2 (nói to Big-O và test case bằng tiếng Anh), rồi C#/.NET, thiết kế bài toán HRS, SOLID, SQL, testing, Azure/K8s, chuẩn bị nói, mock cuối.
+
+## 2026-11-07 · Ôn phỏng vấn HRS, ngày 2–3 (kiến trúc, OOP, C#/.NET)
+- **Đã làm:** ngày 2 viết docs: ranh giới service trong [Microservices](/architecture/microservices), trang mới [Tooling](/architecture/tooling) (Kafka vs RabbitMQ, MassTransit, Service Bus emulator), [Rich entity](/data/ef-core#rich-entity), tách OOP thành [OOP](/dotnet/oop-fundamentals), [Kiểu C#](/dotnet/csharp-types), [SOLID & pattern](/dotnet/solid-patterns). Ngày 3: dời live coding xuống cuối (ưu tiên lý thuyết), khảo sát 10 câu C#/.NET.
+- **Chỗ yếu:**
+  - `await Task.WhenAll` ném exception **đầu tiên**, không phải AggregateException (sai lần thứ hai).
+  - `.Result`: Framework kẹt request context (không phải UI thread); Core không deadlock nhưng gây thread pool starvation.
+  - N+1: quên hẳn; lazy loading / query trong vòng lặp gây ra, `Include`/`Select` chữa.
+  - Concurrency: `DbUpdateConcurrencyException`, `WHERE RowVersion = @gốc`, trả 409/412 (đã nói 503); version lấy từ client.
+  - Status code: 202 Accepted (đã nói 203). Static HttpClient không nhận DNS đổi.
+- **Quiz:** `.Result` 6, WhenAll 5, scope trong singleton 8, Options 8, N+1 0, record 9, AsNoTracking 9, concurrency 5, HttpClient 7, status code 8.
+- **Tiếp theo:** trả lời câu thiết kế HRS (flight delay 6h → tự rebook: dữ liệu vào, chia phần, sync hay message, API khách sạn lỗi, khi nào cần operator), rồi SOLID, SQL, testing, Azure/K8s, chuẩn bị nói, mock cuối, live coding bài 2 nếu còn giờ.
