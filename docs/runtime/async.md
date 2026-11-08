@@ -385,42 +385,73 @@ Không. Nếu task đó đã xong sẵn, code chạy tiếp đồng bộ và v�
 ## Deadlock xảy ra khi nào? <Badge type="warning" text="câu kinh điển" /> {#deadlock}
 
 ::: tip Trả lời nhanh
-Cần đủ 3 điều kiện cùng lúc:
-
-1. Có một <T>SynchronizationContext</T> chỉ cho **một thread chạy tại một thời điểm** (UI, ASP.NET Framework).
-2. Code **block đồng bộ** để chờ một async method: `.Result`, `.Wait()`, `.GetAwaiter().GetResult()`.
-3. Bên trong async method đó có `await` **không** có `ConfigureAwait(false)`, nên continuation muốn quay về đúng context đó.
-
-Thread đang chờ task xong; task lại chờ thread đó rảnh để chạy tiếp. Không bên nào nhường.
+Chỉ cần hỏi **ai đang giữ thread, ai đang cần nó**. `.Result` / `.Wait()` giữ thread hiện tại đứng chờ Task; Task chỉ xong khi phần code sau `await` (continuation) có thread để chạy. Nếu chỗ continuation cần chính là chỗ `.Result` đang giữ thì treo (ASP.NET Framework); nếu chỉ là cùng một pool có hạn thì nghẽn dần (ASP.NET Core).
 :::
 
-::: info Bản chất
+<div class="fig">
+<svg viewBox="0 0 720 300" role="img" aria-label="Bên trái: ASP.NET Framework, thread ở .Result giữ request context, continuation cần vào context nên chờ nhau mãi. Bên phải: ASP.NET Core, mọi thread của pool bị .Result chặn, continuation và request mới xếp hàng.">
+<defs><marker id="dlInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="dlBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs>
+<rect class="box" x="10" y="10" width="345" height="280" rx="10"/>
+<text x="24" y="34" font-size="14" font-weight="600">ASP.NET Framework</text>
+<text x="24" y="52" font-size="11" class="muted">context: mỗi lúc chỉ 1 thread</text>
+<rect class="boxAcc dash" x="30" y="66" width="140" height="94" rx="8"/>
+<text x="40" y="82" font-size="10" class="accT">request context</text>
+<rect class="boxBad" x="45" y="96" width="110" height="46" rx="6"/>
+<text x="100" y="115" font-size="11" text-anchor="middle">Thread</text>
+<text x="100" y="132" font-size="11" text-anchor="middle" class="mono badT">.Result</text>
+<line class="ln" x1="157" y1="119" x2="226" y2="119" marker-end="url(#dlInk)"/>
+<text x="192" y="111" font-size="10" text-anchor="middle">chờ</text>
+<rect class="box" x="230" y="96" width="110" height="46" rx="6"/>
+<text x="285" y="115" font-size="11" text-anchor="middle">Task</text>
+<text x="285" y="132" font-size="9.5" text-anchor="middle" class="mono">GetReportAsync</text>
+<line class="ln dash" x1="285" y1="144" x2="285" y2="196" marker-end="url(#dlInk)"/>
+<text x="279" y="174" font-size="10" text-anchor="end">xong khi C chạy</text>
+<rect class="box" x="230" y="200" width="110" height="42" rx="6"/>
+<text x="285" y="218" font-size="11" text-anchor="middle">C: continuation</text>
+<text x="285" y="233" font-size="9.5" text-anchor="middle" class="muted">code sau await</text>
+<path class="lnBad" d="M228 221 H100 V164" marker-end="url(#dlBad)"/>
+<line class="lnBad" x1="158" y1="213" x2="172" y2="229"/><line class="lnBad" x1="172" y1="213" x2="158" y2="229"/>
+<text x="165" y="246" font-size="10" text-anchor="middle" class="badT">cần vào context</text>
+<text x="182" y="276" font-size="12.5" text-anchor="middle" font-weight="700" class="badT">chờ nhau mãi: treo</text>
+<rect class="box" x="365" y="10" width="345" height="280" rx="10"/>
+<text x="379" y="34" font-size="14" font-weight="600">ASP.NET Core</text>
+<text x="379" y="52" font-size="11" class="muted">không context, nhưng pool có hạn</text>
+<rect class="boxAcc dash" x="380" y="66" width="176" height="150" rx="8"/>
+<text x="390" y="82" font-size="10" class="accT">thread pool</text>
+<rect class="boxBad" x="392" y="92" width="152" height="24" rx="4"/><text x="400" y="108" font-size="10" class="mono badT">W1 · R1 .Result</text>
+<rect class="boxBad" x="392" y="122" width="152" height="24" rx="4"/><text x="400" y="138" font-size="10" class="mono badT">W2 · R2 .Result</text>
+<rect class="boxBad" x="392" y="152" width="152" height="24" rx="4"/><text x="400" y="168" font-size="10" class="mono badT">W3 · R3 .Result</text>
+<rect class="boxBad" x="392" y="182" width="152" height="24" rx="4"/><text x="400" y="198" font-size="10" class="mono badT">W4 · R4 .Result</text>
+<text x="645" y="82" font-size="10" text-anchor="middle" class="muted">hàng đợi</text>
+<rect class="box" x="592" y="92" width="106" height="24" rx="4"/><text x="645" y="108" font-size="10" text-anchor="middle" class="accT">C gỡ R1</text>
+<rect class="box" x="592" y="122" width="106" height="24" rx="4"/><text x="645" y="138" font-size="10" text-anchor="middle" class="accT">C gỡ R2</text>
+<rect class="box" x="592" y="152" width="106" height="24" rx="4"/><text x="645" y="168" font-size="10" text-anchor="middle">R5 mới</text>
+<rect class="box" x="592" y="182" width="106" height="24" rx="4"/><text x="645" y="198" font-size="10" text-anchor="middle">R6 mới …</text>
+<line class="lnBad" x1="590" y1="150" x2="560" y2="150" marker-end="url(#dlBad)"/>
+<line class="lnBad" x1="569" y1="141" x2="581" y2="153"/><line class="lnBad" x1="581" y1="141" x2="569" y2="153"/>
+<text x="537" y="246" font-size="10.5" text-anchor="middle" class="muted">pool thêm thread từ từ, thread mới lại bị chặn</text>
+<text x="537" y="276" font-size="12.5" text-anchor="middle" font-weight="700" class="badT">starvation: latency tăng, CPU thấp</text>
+</svg>
+<p class="fig-caption">Cùng một câu hỏi cho hai bên: thread mà continuation cần đang bị ai giữ? Bên trái là đúng thread đó; bên phải là mọi thread của pool.</p>
+</div>
+
 ```csharp
 // Web Forms 4.8: treo vĩnh viễn
 protected void Page_Load(object sender, EventArgs e)
 {
-    var report = _service.GetReportAsync().Result;  // (1) block request thread
+    var report = _service.GetReportAsync().Result;  // giữ request thread, chờ Task
 }
 
 public async Task<Report> GetReportAsync()
 {
-    var data = await _http.GetStringAsync(url);     // (2) xong rồi, muốn quay về request context
-    return Parse(data);                             // (3) không bao giờ chạy tới: context đang bị (1) giữ
+    var data = await _http.GetStringAsync(url);     // xong rồi, continuation muốn quay về request context
+    return Parse(data);                             // không bao giờ chạy tới: context đang bị .Result giữ
 }
 ```
 
-```mermaid
-flowchart LR
-    T["Request thread<br/>đang ở .Result"] -- "chờ Task xong" --> K["Task GetReportAsync"]
-    K -- "continuation cần đúng<br/>request context (thread đó) rảnh" --> T
-```
-
-**Cách sửa**, theo thứ tự nên dùng:
-
-1. **Async từ đầu tới cuối.** Với Web Forms: `<%@ Page Async="true" %>` và `RegisterAsyncTask(new PageAsyncTask(LoadAsync))`.
-2. `ConfigureAwait(false)` ở mọi await trong library: hết deadlock, nhưng vẫn đang block một thread.
-3. `Task.Run(() => GetReportAsync()).Result`: chữa cháy, tốn thêm một thread và mất `HttpContext.Current` bên trong.
-:::
+- **Framework treo vì context chỉ có một chỗ.** `AspNetSynchronizationContext` chỉ cho một thread chạy trong request tại một thời điểm, và `await` không có `ConfigureAwait(false)` sẽ đưa continuation về đúng context đó. Thread giữ chỗ chờ continuation, continuation chờ chỗ trống. Đây không phải chuyện riêng của "UI thread": UI thread treo được chỉ vì nó cũng là một context một-thread.
+- **Core không treo nhưng vẫn cạn thread.** Không có <T>SynchronizationContext</T> nên continuation chạy trên pool thread bất kỳ. Nhưng `.Result` vẫn giữ một pool thread đứng chờ; dưới tải, mọi thread đều bị giữ, chính các continuation sẽ gỡ chúng cũng phải xếp hàng. Đó là <T>thread pool starvation</T>: thread đang chờ thì không tốn CPU, nên CPU thấp mà latency vọt lên. `dotnet-counters`: _ThreadPool Queue Length_ tăng, _ThreadPool Thread Count_ tăng dần đều.
+- **Cách sửa suy ra từ đó.** Bỏ phía *giữ* (async từ đầu tới cuối; Web Forms: `<%@ Page Async="true" %>` + `RegisterAsyncTask(new PageAsyncTask(LoadAsync))`) thì hết cả deadlock lẫn starvation. Chỉ bỏ phía *cần* (`ConfigureAwait(false)` ở mọi await, hay `Task.Run(() => GetReportAsync()).Result`) thì hết treo, nhưng thread vẫn bị giữ; `Task.Run` còn tốn thêm một thread và mất `HttpContext.Current` bên trong.
 
 ::: details Ở dự án thật
 Đây là câu bạn có thể kể từ chính codebase Web Forms: gọi một thư viện chỉ có API async (SDK mới, `HttpClient`) từ page đồng bộ. Nêu được cả nguyên nhân lẫn cách làm page async đúng chuẩn là điểm cộng rõ.
@@ -429,13 +460,11 @@ flowchart LR
 ::: warning Bẫy & follow-up
 **"ASP.NET Core có bị deadlock kiểu này không?"**
 
-Không, vì không có SynchronizationContext. Nhưng `.Result` vẫn xấu: nó block một thread pool thread. Dưới tải, nhiều request cùng block gây <T>thread pool starvation</T>: latency tăng vọt, request timeout, trong khi CPU thấp. Nhận biết qua `dotnet-counters`: _ThreadPool Queue Length_ tăng, _ThreadPool Thread Count_ tăng dần đều.
-
-<Timeline :duration="12" :markers="[{ at: 8, text: 'pool thêm W5' }]" :lanes="[{ label: 'W1', segments: [{ from: 0, to: 1, text: 'R1', kind: 'busy' }, { from: 1, to: 12, text: 'R1 .Result: bị chặn', kind: 'wait' }] }, { label: 'W2', segments: [{ from: 1, to: 2, text: 'R2', kind: 'busy' }, { from: 2, to: 12, text: 'R2 .Result: bị chặn', kind: 'wait' }] }, { label: 'W3', segments: [{ from: 2, to: 3, text: 'R3', kind: 'busy' }, { from: 3, to: 12, text: 'R3 .Result: bị chặn', kind: 'wait' }] }, { label: 'W4', segments: [{ from: 3, to: 4, text: 'R4', kind: 'busy' }, { from: 4, to: 12, text: 'R4 .Result: bị chặn', kind: 'wait' }] }, { label: 'W5', segments: [{ from: 8, to: 9, text: 'R5', kind: 'busy' }, { from: 9, to: 12, text: 'R5 .Result…', kind: 'wait' }] }, { label: 'Hàng đợi', sub: 'của pool', segments: [{ from: 4, to: 12, text: 'R5 R6 R7 R8 … chờ thread, kể cả continuation để gỡ R1–R4', kind: 'other' }] }]" caption="Minh hoạ: pool 4 thread, mọi thread bị .Result chặn. CPU gần như rảnh, nhưng việc mới (gồm cả continuation sẽ giải phóng R1–R4) không có thread để chạy. Pool thêm thread từ từ, mỗi thread mới lại bị chặn tiếp." />
+Không treo, vì continuation không cần quay về thread nào cả. Nhưng đừng dừng ở "không": `.Result` vẫn giữ một pool thread, nên dưới tải sẽ starvation (hình bên phải).
 
 **"`.GetAwaiter().GetResult()` khác `.Result` chỗ nào?"**
 
-Cùng block, cùng deadlock. Khác duy nhất: ném exception gốc thay vì bọc trong `AggregateException`.
+Cùng giữ thread nên cùng deadlock, cùng starvation. Khác duy nhất: nó ném exception gốc như `await`, còn `.Result` ném `AggregateException` (lý do ở [Exception trong async](/runtime/async#async-exceptions)).
 :::
 
 ## `async void` có vấn đề gì? {#async-void}
@@ -457,41 +486,60 @@ Nó thành `async void` ngầm. Ví dụ `list.ForEach(async x => await SaveAsyn
 ## Exception trong async và `Task.WhenAll` {#async-exceptions}
 
 ::: tip Trả lời nhanh
-`await` ném lại exception gốc. Với `Task.WhenAll`, `await` chỉ ném **exception đầu tiên**; muốn xem hết thì đọc `task.Exception.InnerExceptions`.
+Mục tiêu của `await` là **code async chạy như code sync**. Code sync mỗi lúc chỉ ném một exception, nên `await` mở "hộp lỗi" của Task và ném **một** cái: cái đầu tiên. Nhưng bản thân Task phải lưu **mọi** lỗi, và nó lưu dưới dạng `AggregateException` (`task.Exception`). `.Result` / `.Wait()` là API block có từ trước khi có `await`, nên đưa thẳng cả hộp đó cho bạn.
 :::
 
-::: info Bản chất
+<div class="fig">
+<svg viewBox="0 0 720 210" role="img" aria-label="Task.WhenAll giữ một AggregateException chứa hai lỗi. await ném lỗi đầu tiên, .Result ném cả AggregateException, task.Exception.InnerExceptions cho đọc hết.">
+<defs><marker id="exInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker></defs>
+<rect class="boxAcc" x="20" y="38" width="230" height="160" rx="10"/>
+<text x="135" y="64" font-size="12" text-anchor="middle" font-weight="700" class="mono">Task.WhenAll(a, b)</text>
+<rect class="boxBad" x="40" y="80" width="190" height="30" rx="5"/>
+<text x="50" y="100" font-size="10.5" class="mono">[0] HttpRequestException</text>
+<rect class="boxBad" x="40" y="118" width="190" height="30" rx="5"/>
+<text x="50" y="138" font-size="10.5" class="mono">[1] TimeoutException</text>
+<text x="135" y="176" font-size="10.5" text-anchor="middle" class="accT">task.Exception: AggregateException</text>
+<text x="135" y="190" font-size="9.5" text-anchor="middle" class="muted">cái hộp giữ mọi lỗi</text>
+<line class="ln" x1="252" y1="62" x2="326" y2="62" marker-end="url(#exInk)"/>
+<line class="ln" x1="252" y1="117" x2="326" y2="117" marker-end="url(#exInk)"/>
+<line class="ln" x1="252" y1="172" x2="326" y2="172" marker-end="url(#exInk)"/>
+<rect class="boxOk" x="330" y="40" width="370" height="44" rx="6"/>
+<text x="344" y="58" font-size="11" class="mono">await all  /  .GetAwaiter().GetResult()</text>
+<text x="344" y="76" font-size="11" class="okT">mở hộp, ném [0]: giống code sync</text>
+<rect class="boxBad" x="330" y="95" width="370" height="44" rx="6"/>
+<text x="344" y="113" font-size="11" class="mono">.Result  /  .Wait()</text>
+<text x="344" y="131" font-size="11" class="badT">đưa nguyên hộp: AggregateException</text>
+<rect class="box" x="330" y="150" width="370" height="44" rx="6"/>
+<text x="344" y="168" font-size="11" class="mono">all.Exception.InnerExceptions</text>
+<text x="344" y="186" font-size="11">tự mở hộp, đọc hết để log</text>
+</svg>
+<p class="fig-caption">Một cái hộp, ba cách lấy ra. Chỉ có cách thứ ba thấy được lỗi [1].</p>
+</div>
+
 ```csharp
 var all = Task.WhenAll(tasks);
-try { await all; }
+try { await all; }                       // chỉ bắt được [0]
 catch
 {
-    foreach (var ex in all.Exception!.InnerExceptions)
+    foreach (var ex in all.Exception!.InnerExceptions)   // giữ biến all để mở hộp
         _logger.LogError(ex, "Sync failed");
 }
 ```
 
-Task bị fire-and-forget mà lỗi sẽ không làm sập app (từ .NET 4.5); lỗi chỉ đi vào sự kiện `TaskScheduler.UnobservedTaskException`, nghĩa là bị nuốt im lặng nếu không ai log.
-:::
+- **"Đầu tiên" là theo thứ tự task truyền vào**, không phải lỗi xảy ra sớm nhất: Task phải lưu đủ mọi lỗi nên `WhenAll` chờ **mọi** task xong rồi mới đóng hộp, xếp theo thứ tự danh sách. Vì vậy nó khác `Promise.all` của JS (reject ngay ở lỗi đầu); muốn từng kết quả kể cả lỗi như `Promise.allSettled` thì đọc `Status` / `Exception` của từng task sau `WhenAll`.
+- **Fire-and-forget = không ai mở hộp.** Lỗi nằm im trong Task; từ .NET 4.5 nó không làm sập app mà chỉ đi vào sự kiện `TaskScheduler.UnobservedTaskException`, tức bị nuốt im lặng nếu không ai log.
 
-**Await từng cái vs `Task.WhenAll`:** khác nhau trước hết ở **thời gian**: tuần tự thì tổng = A + B + C, `WhenAll` thì tổng ≈ việc lâu nhất (xem hình ở [Concurrency vs parallelism](#concurrency-vs-parallelism)).
-
-Task (C#) và Promise (JS) đều **hot**: chạy ngay khi được tạo. Vì vậy kết quả phụ thuộc vào *lúc tạo task*:
+Task (C#) và Promise (JS) đều **hot**: chạy ngay khi được tạo, nên kết quả phụ thuộc vào *lúc tạo task* (thời gian: xem hình ở [Concurrency vs parallelism](#concurrency-vs-parallelism)):
 
 ```csharp
 // (a) tạo + await trong vòng lặp → tuần tự; A lỗi thì B, C chưa bao giờ chạy
 foreach (var id in ids) await CallAsync(id);
 
 // (b) tạo trước, await từng cái → đã chạy đồng thời; A lỗi thì vòng lặp dừng,
-//     nhưng B, C vẫn chạy tiếp và lỗi của chúng không ai đọc
+//     nhưng B, C vẫn chạy tiếp và hộp lỗi của chúng không ai mở
 var tasks = ids.Select(CallAsync).ToList();
 foreach (var t in tasks) await t;
 ```
-
-| Dễ nhầm | C# | JS/TS |
-|---|---|---|
-| Chờ tất cả | `Task.WhenAll`: **chờ tất cả xong** rồi mới ném lỗi đầu tiên | `Promise.all`: **fail-fast**, reject ngay ở lỗi đầu tiên |
-| Lấy kết quả từng cái kể cả lỗi | đọc `task.Status` / `task.Exception` sau `WhenAll` | `Promise.allSettled` |
 
 ::: warning Bẫy
 Không `Task.WhenAll` nhiều query trên **cùng một `DbContext`**: DbContext không thread-safe, EF ném *"A second operation was started on this context"*.

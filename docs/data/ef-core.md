@@ -54,13 +54,19 @@ Ba mục tiếp theo chữa lần lượt từng cái.
 
 ## 2. N+1: 50 payout thành 51 query {#n-plus-one}
 
-**Navigation property (`p.Affiliate`) không tự có dữ liệu: EF chỉ lấy bảng `Affiliates` khi query yêu cầu.** Nếu query không yêu cầu mà code vẫn cần, thì có hai khả năng: hoặc navigation là `null`, hoặc có thứ gì đó chạy thêm một query cho **từng dòng**. Trường hợp sau là <T>N+1</T>: 1 query lấy list, N query lấy dữ liệu liên quan.
+**Dữ liệu mà query đầu tiên không mang về thì chỉ có hai số phận: có ai đó đi lấy sau, hoặc không ai lấy.** Navigation `p.Affiliate` là loại đó: EF chỉ đụng tới bảng `Affiliates` khi query yêu cầu. Từ câu này suy ra cả mục:
+
+- **Có ai đó đi lấy sau, từng dòng một** → 1 query lấy list + N chuyến lấy phần thiếu = <T>N+1</T>.
+- **Không ai đi lấy** → navigation là `null`, dòng dưới ném `NullReferenceException`. Không có N+1, chỉ có lỗi.
+- **Chữa** luôn là bỏ chữ "sau": bảo query đầu mang về luôn, hoặc lấy hết phần thiếu trong **một** chuyến. Xem [cách chữa](#n-plus-one-fixes).
 
 ### Hai cách gây ra N+1 {#n-plus-one-causes}
 
-**Cách 1: lazy loading.** Proxy của EF chặn lần đọc `p.Affiliate` đầu tiên và chạy một `SELECT` ngay lúc đó. Vì lần đọc nằm trong vòng lặp nên mỗi vòng một query. Lazy loading **tắt mặc định** trong EF Core; phải tự bật đủ ba thứ: package `Microsoft.EntityFrameworkCore.Proxies`, gọi `UseLazyLoadingProxies()`, và navigation khai báo `virtual`. Không bật thì `p.Affiliate` là `null` và dòng dưới ném `NullReferenceException`, không có N+1. (<T>EF6</T> trên .NET Framework bật lazy loading mặc định, nên code cũ hay dính N+1 mà không ai viết query trong vòng lặp.)
+Hai "người đi lấy sau" hay gặp:
 
-**Cách 2: tự query trong vòng lặp.** Không cần proxy, chỉ cần một `await db...` nằm trong `foreach`.
+**Cách 1: lazy-loading proxy.** Proxy chặn lần đọc `p.Affiliate` và chạy một `SELECT` ngay lúc đó; đọc nằm trong vòng lặp nên mỗi vòng một chuyến. Proxy **không có mặc định** trong EF Core; phải tự bật đủ ba thứ: package `Microsoft.EntityFrameworkCore.Proxies`, `UseLazyLoadingProxies()`, navigation `virtual`. Không bật thì không có ai đi lấy: `null`. (<T>EF6</T> trên .NET Framework bật lazy loading mặc định, nên code cũ hay dính N+1 mà không ai viết query trong vòng lặp.)
+
+**Cách 2: chính bạn đi lấy, trong vòng lặp.** Không cần proxy, chỉ cần một `await db...` nằm trong `foreach`.
 
 ::: code-group
 
@@ -104,7 +110,14 @@ Không bật lazy loading mà `p.Affiliate` lúc có lúc không: đó là **rel
 
 ### Chữa: từ 51 query về 1 {#n-plus-one-fixes}
 
-Cả hai cách chữa đều làm một việc: **nói trước cho EF biết cần bảng nào**, để EF gộp vào một câu SQL có JOIN.
+**Bỏ chữ "sau": hoặc nói cho query đầu biết phải mang gì về (`Include`, `Select`, gộp thành một câu SQL có JOIN), hoặc lấy hết phần thiếu trong một chuyến.** Cách thứ hai dùng khi phần thiếu không đi qua navigation (vd gọi sang service khác, hoặc bảng không có quan hệ khai báo):
+
+```csharp
+var ids = payouts.Select(p => p.AffiliateId).Distinct().ToList();
+var names = await db.Affiliates
+    .Where(a => ids.Contains(a.Id))                     // 1 chuyến: WHERE Id IN (...)
+    .ToDictionaryAsync(a => a.Id, a => a.Name, ct);     // rồi tra trong RAM: names[p.AffiliateId]
+```
 
 <div class="fig">
 <svg viewBox="0 0 720 344" role="img" aria-label="Ba nấc chữa N+1: lazy loading 51 query, Include 1 query JOIN, Select sang DTO 1 query 3 cột, nhánh collection dùng AsSplitQuery">
@@ -412,7 +425,7 @@ Hay gặp khi một request vừa load entity để kiểm tra, vừa nhận m�
 
 ## 4. Optimistic concurrency: hai người cùng duyệt {#concurrency}
 
-**Optimistic concurrency không khoá gì lúc đọc. Nó chỉ kiểm tra lúc ghi: dòng này có còn đúng là phiên bản tôi đã đọc không? EF làm việc đó bằng cách thêm version gốc vào `WHERE` của `UPDATE`; nếu có người đã sửa thì không dòng nào khớp, 0 dòng bị đổi, EF ném `DbUpdateConcurrencyException`.** "Optimistic" vì giả định xung đột hiếm: không trả giá khoá cho mọi lần đọc, chỉ xử lý khi xung đột thật sự xảy ra.
+**Câu `UPDATE` phải tự chứng minh dòng vẫn là thứ người dùng đã thấy: version người dùng đã thấy nằm trong `WHERE`.** Có người sửa trước thì không dòng nào khớp, 0 dòng bị đổi; EF mong 1 mà nhận 0 nên biết có xung đột và ném `DbUpdateConcurrencyException` (Update + Concurrency: tên kể đúng chuyện). Không khoá gì lúc đọc, chỉ kiểm lúc ghi, nên gọi là "optimistic": giả định xung đột hiếm.
 
 Không có nó thì người ghi sau thắng (last write wins): A duyệt, B từ chối cùng lúc, kết quả là của ai `SaveChanges` sau, người kia không biết. Đó là <T>lost update</T>.
 
@@ -560,7 +573,9 @@ public class PayoutsController(PayoutDbContext db) : ControllerBase
 
 Dòng quan trọng là `OriginalValue = ...`: EF lấy giá trị gốc từ snapshot để đặt vào `WHERE`, nên ghi đè giá trị gốc chính là "đổi version mà `WHERE` sẽ so". Gán vào `payout.RowVersion` (giá trị hiện tại) thì không có tác dụng, vì `WHERE` không dùng giá trị hiện tại.
 
-Phía client, khi nhận 412/409: **tải lại payout, cho người dùng xem bản mới, để họ quyết định lại**. Không tự động thử lại với version mới: làm vậy chính là bỏ qua check. Exception có `ex.Entries` để đọc giá trị hiện tại trong DB nếu muốn trả kèm bản mới trong body.
+**Status code suy ra từ câu "ai phải làm gì tiếp":** server không hỏng gì, nó vừa làm đúng việc phát hiện dữ liệu người dùng thấy đã cũ. Bước tiếp theo là của người dùng: **tải lại payout, xem bản mới, quyết định lại**. Việc của client nên là 4xx (409, hoặc 412 khi version đi bằng `If-Match`); 5xx (500, 503) nói "server có lỗi, thử lại sau", sai cả người lẫn việc, xem [409 và 412](/aspnet-core/rest-api#conflict).
+
+Cũng vì vậy không tự động thử lại với version mới: version vừa đọc lại luôn khớp, nên thử lại chính là bỏ qua check. Exception có `ex.Entries` để đọc giá trị hiện tại trong DB nếu muốn trả kèm bản mới trong body.
 
 ### Chuyển trạng thái đơn giản: ExecuteUpdate có điều kiện {#conditional-update}
 
@@ -694,7 +709,7 @@ Khi nào không cần: màn hình CRUD thuần, không có luật nào ngoài "k
 ### Trang list có 50 dòng mà chạy 51 query. Vì sao, sửa thế nào? <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#n-plus-one-51-queries}
 
 ::: tip Trả lời nhanh
-Đó là N+1: 1 query lấy list, rồi mỗi dòng một query lấy dữ liệu liên quan. Nguyên nhân là lazy loading (phải tự bật trong EF Core) hoặc query nằm trong vòng lặp. Sửa bằng cách nói trước cho EF cần gì: `Select` sang DTO cho trang list (1 query, chỉ cột cần, không track), hoặc `Include` (eager loading, JOIN) khi cần cả entity để sửa. Phát hiện bằng cách đếm dòng `Executed DbCommand` trong log. Xem [N+1](#n-plus-one) và [cách chữa](#n-plus-one-fixes).
+N+1: dữ liệu query đầu không mang về thì có ai đó đi lấy **sau, từng dòng một**: lazy-loading proxy (phải tự bật trong EF Core) hoặc `await` trong vòng lặp. Không ai lấy thì chỉ là `null`, không phải N+1. Chữa = bỏ chữ "sau": `Select` sang DTO cho trang list (1 query, chỉ cột cần, không track), `Include` (eager loading, JOIN) khi cần cả entity để sửa, hoặc lấy phần thiếu trong một chuyến `WHERE IN`. Phát hiện bằng cách đếm dòng `Executed DbCommand` trong log. Xem [N+1](#n-plus-one) và [cách chữa](#n-plus-one-fixes).
 :::
 
 ::: details Câu trả lời mẫu (English)
@@ -704,7 +719,7 @@ That's the N+1 problem: one query for the list, then one more query per row to f
 ::: warning Bẫy & follow-up
 **"Eager loading gây ra N+1 đúng không?"**
 
-Ngược lại. Eager loading (`Include`) load dữ liệu liên quan **ngay trong query đầu** bằng JOIN, nên nó là cách chữa. Thứ gây N+1 là lazy loading: load từng cái khi được đọc tới. Xem [Include](#include).
+Ngược lại. N+1 là "lấy sau, từng cái"; eager loading (`Include`) là "lấy trước, ngay trong query đầu" bằng JOIN, nên không còn gì để lấy sau: nó là cách chữa. Thứ gây N+1 là lazy loading. Xem [Include](#include).
 
 **"Include rồi Select thì sao?"**
 
@@ -746,7 +761,7 @@ Chỉ khi họ sửa **cột khác nhau**. Cùng một cột thì người ghi s
 ### Hai user cùng sửa một payout qua API. Chặn lost update thế nào? <Badge type="warning" text="câu senior" /> {#lost-update-api}
 
 ::: tip Trả lời nhanh
-Optimistic concurrency: thêm cột version (`rowversion` trên SQL Server, `xmin` trên PostgreSQL). EF đưa version gốc vào `WHERE` của `UPDATE`; có người sửa trước thì 0 dòng khớp, EF ném `DbUpdateConcurrencyException`, API trả 409 (hoặc 412 nếu dùng `If-Match`), client tải lại rồi làm lại. Trong Web API, version phải **đi qua client** (ETag/`If-Match` hoặc field trong DTO) và đặt vào `OriginalValue`, vì load lại trong request ghi thì luôn ra version mới nhất. Xem [rowversion](#rowversion) và [version qua client](#version-round-trip).
+Optimistic concurrency: `UPDATE` phải chứng minh dòng vẫn là thứ người dùng đã thấy, nên version **người dùng đã thấy** nằm trong `WHERE` (`rowversion` trên SQL Server, `xmin` trên PostgreSQL). Có người sửa trước thì 0 dòng khớp, EF ném `DbUpdateConcurrencyException`. Bước tiếp theo là của người dùng (tải lại, quyết lại) nên trả 4xx: 409, hoặc 412 nếu dùng `If-Match`; không phải 5xx vì server không hỏng. Trong Web API, version phải **đi qua client** (ETag/`If-Match` hoặc field trong DTO) và đặt vào `OriginalValue`: đọc lại lúc ghi thì luôn ra version mới nhất, luôn khớp, không chứng minh gì. Xem [rowversion](#rowversion) và [version qua client](#version-round-trip).
 :::
 
 ::: details Câu trả lời mẫu (English)
@@ -765,6 +780,10 @@ Không có tác dụng: `WHERE` dùng **giá trị gốc** trong snapshot. Phả
 **"Nhận exception rồi tự retry với version mới?"**
 
 Đó là bỏ qua check. Retry tự động chỉ đúng khi thao tác không phụ thuộc vào dữ liệu người dùng đã thấy (vd cộng một bộ đếm). Với duyệt tiền thì trả về cho người dùng quyết định.
+
+**"Trả 500 hoặc 503 được không?"**
+
+Không. 5xx nói "server hỏng, thử lại sau": client retry y nguyên và hỏng y nguyên, alert 5xx bắn nhầm. Ai phải làm tiếp? Người dùng, nên 4xx. Xem [409 và 412](/aspnet-core/rest-api#conflict).
 :::
 
 ### Dùng EF Core thì entity có giữ được encapsulation không, hay phải là POCO setter public? {#ef-core-encapsulation}

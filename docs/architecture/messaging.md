@@ -28,7 +28,7 @@ Message broker (Azure Service Bus, RabbitMQ) là hộp thư nằm giữa các se
 <a href="#peek-lock" style="text-decoration:none"><line class="ln" x1="566" y1="372" x2="566" y2="474" marker-end="url(#msInk)"/><text x="556" y="426" font-size="12" text-anchor="end">giao + khoá</text><circle cx="566" cy="402" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="566" cy="402" r="12"/><text x="566" y="406.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">4</text></a>
 <rect class="boxAcc" x="430" y="478" width="170" height="54" rx="8"/><text x="515" y="501" font-size="13" font-weight="600" text-anchor="middle" class="accT">Inventory consumer</text><text x="515" y="520" font-size="11.5" text-anchor="middle">giữ hàng</text>
 <a href="#idempotent-consumer" style="text-decoration:none"><line class="ln" x1="430" y1="505" x2="398" y2="505" marker-end="url(#msInk)"/><rect class="box" x="200" y="476" width="194" height="116" rx="8"/><text x="214" y="496" font-size="12" font-weight="600">Inventory DB</text><rect class="box" x="214" y="504" width="166" height="26" rx="5"/><text x="297" y="521" font-size="11.5" text-anchor="middle">Reservation</text><rect class="boxOk" x="214" y="534" width="166" height="26" rx="5"/><text x="297" y="551" font-size="11.5" font-weight="600" text-anchor="middle" class="okT">ProcessedMessages</text><text x="297" y="579" font-size="11" text-anchor="middle" class="muted">một transaction, trùng Id: bỏ qua</text><circle cx="200" cy="476" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="200" cy="476" r="12"/><text x="200" y="480.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">5</text></a>
-<a href="#at-least-once" style="text-decoration:none"><path class="lnOk" d="M600 492 H650 V376" marker-end="url(#msOk)"/><text x="658" y="400" font-size="12" font-weight="600" class="okT mono">Complete()</text><text x="658" y="424" font-size="11.5" class="okT">→ xoá message</text><text x="515" y="554" font-size="11.5" font-weight="600" text-anchor="middle">at-least-once</text><text x="515" y="571" font-size="11" text-anchor="middle" class="muted">chết trước 6: tới lần 2</text><circle cx="650" cy="460" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="650" cy="460" r="12"/><text x="650" y="464.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">6</text></a>
+<a href="#at-least-once" style="text-decoration:none"><path class="lnOk" d="M600 492 H650 V376" marker-end="url(#msOk)"/><text x="658" y="400" font-size="12" font-weight="600" class="okT mono">Complete()</text><text x="658" y="424" font-size="11.5" class="okT">→ xoá message</text><text x="515" y="554" font-size="11.5" font-weight="600" text-anchor="middle">at-least-once</text><text x="515" y="571" font-size="11" font-weight="600" text-anchor="middle" class="badT">chết trước 6: chạy 2 lần</text><circle cx="650" cy="460" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="650" cy="460" r="12"/><text x="650" y="464.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">6</text></a>
 <a href="#dead-letter" style="text-decoration:none"><path class="lnBad" d="M600 518 H760 V376" marker-end="url(#msBad)"/><text x="680" y="540" font-size="12" font-weight="600" text-anchor="middle" class="badT">lỗi: quay lại, retry</text><text x="680" y="557" font-size="11" text-anchor="middle" class="mono muted">DeliveryCount + 1</text><circle cx="760" cy="480" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="760" cy="480" r="12"/><text x="760" y="484.5" font-size="13" text-anchor="middle" font-weight="700" class="accT">7</text></a>
 </svg>
 <p class="fig-caption">Đọc 1 đến 7. Tự hỏi: vì sao 4 chỉ khoá mà chưa xoá? Chết ngay trước 6 thì sao, và 5 cứu thế nào? Vì sao Outbox phải chung transaction với Order (1)?</p>
@@ -115,34 +115,33 @@ Consumer biết chắc thử lại vô ích (validation sai) thì đừng đốt
 
 ## 4. Hệ quả 2: có thể trùng, at-least-once {#at-least-once}
 
-**Vì message chỉ bị xoá *sau* `Complete`, nên consumer có thể làm xong việc rồi chết ngay trước `Complete`; message quay lại và việc chạy lần hai.**
+**Vì "làm việc" (ghi DB, gửi email) và "`Complete()`" là hai bước ở hai hệ thống khác nhau, không có transaction chung nên không thể xảy ra cùng lúc; crash giữa hai bước thì broker không biết việc đã xong, message quay lại và việc chạy lần hai.** Không mất việc ([mục 3](#dead-letter)) và có thể trùng là hai mặt của cùng một luật "chỉ xoá khi `Complete`".
 
-Theo dõi cột Email: cùng một message, khách nhận hai email.
+Ví dụ: Report service nghe `OrderPlaced` để đếm đơn trong ngày. Theo dõi cột Report DB: một đơn, counter tăng hai lần.
 
 ```mermaid
 sequenceDiagram
-    participant Q as Queue
-    participant C as Consumer
-    participant E as Email
-    Q->>C: giao OrderPlaced, message bị khoá
-    C->>E: gửi email xác nhận
-    E-->>C: OK, khách đã nhận
+    participant Q as Subscription report
+    participant C as Report consumer
+    participant R as Report DB
+    Q->>C: giao OrderPlaced (đơn 121), message bị khoá
+    C->>R: UPDATE DailySales SET OrderCount += 1
+    R-->>C: commit, OrderCount = 121
     Note over C: crash trước khi gọi Complete()
     Note over Q: 1 phút sau lock hết hạn, message vẫn còn
     Q->>C: giao lại (consumer đã chạy lại), DeliveryCount = 2
-    C->>E: gửi email xác nhận lần 2
+    C->>R: OrderCount += 1 lần 2 → 122
     C->>Q: Complete(), giờ mới xoá
+    Note over R: Report 122 đơn, Order DB chỉ có 121
 ```
 
-Không mất việc ([mục 3](#dead-letter)) và có thể trùng (mục này) là hai mặt của cùng một luật.
-
-Nên cam kết của broker là <T>at-least-once</T> (giao ít nhất một lần), không phải exactly-once. Không broker nào giao đúng một lần qua mạng được, vì luôn có khoảnh khắc "đã làm xong nhưng chưa kịp báo". Thứ làm được là **xử lý đúng một lần về mặt kết quả**: at-least-once cộng với consumer idempotent (mục 5).
-
-Service Bus có **duplicate detection** (phải bật lúc tạo queue, theo `MessageId` trong một khoảng thời gian), nhưng nó chỉ chặn bên gửi **gửi trùng**. Nó không chặn được ca ở hình trên, vì đây là cùng một message được **giao lại**.
+- **Mọi tác dụng không idempotent chạy hai lần**: cộng counter trong report hay read model, gửi email, trừ tiền. Counter là nạn nhân kinh điển, vì `+= 1` không biết mình đã chạy hay chưa.
+- **Đoán nguyên nhân từ hướng lệch**: số dựng từ event **cao hơn** nguồn thì là **trùng** (giao lại); **thấp hơn** thì là **mất hoặc chưa tới** (message nằm DLQ, consumer đang chậm). Timeout hay request lỗi chỉ làm số thấp đi, không bao giờ làm cao lên.
+- **Không có exactly-once delivery qua mạng**, vì luôn có khoảnh khắc "đã làm xong nhưng chưa kịp báo". Broker chỉ hứa <T>at-least-once</T> (giao ít nhất một lần); thứ làm được là **đúng một lần về kết quả** = at-least-once + [idempotent consumer](#idempotent-consumer). **Duplicate detection** của Service Bus (phải bật lúc tạo queue, lọc theo `MessageId`) chỉ chặn bên gửi **gửi trùng**, không chặn ca ở hình trên, vì đây là cùng một message được **giao lại**.
 
 ## 5. Idempotent consumer {#idempotent-consumer}
 
-**Vì một message có thể tới hai lần, nên xử lý nó hai lần phải cho cùng kết quả như một lần (<T>idempotent</T>).** Ví dụ ở đây là Inventory nhận `OrderPlaced` và giữ hàng: giữ hai lần là trừ kho hai lần.
+**Vì một message có thể tới hai lần, nên xử lý nó hai lần phải cho cùng kết quả như một lần (<T>idempotent</T>).** Ví dụ ở đây là Inventory nhận `OrderPlaced` và giữ hàng: giữ hai lần là trừ kho hai lần, giống report cộng counter hai lần ở [mục 4](#at-least-once).
 
 ### Cách 1: bảng ProcessedMessages, chung transaction với việc nghiệp vụ {#processed-messages}
 
@@ -167,6 +166,8 @@ processor.ProcessMessageAsync += async args =>   // db: DbContext mới cho mỗ
     await args.CompleteMessageAsync(args.Message);
 };
 ```
+
+Report đếm dư ở [mục 4](#at-least-once) chữa y hệt: INSERT `MessageId` và `OrderCount += 1` trong một transaction; lần giao lại trùng khoá, rollback cả hai, counter đứng yên.
 
 Hai điều kiện để cách này đúng: `MessageId` phải **ổn định** (bên gửi đặt, vd id dòng outbox ở [mục 7](#outbox-table), không để mỗi lần gửi một id mới), và chống trùng dựa vào **khoá chính/UNIQUE**, không đọc trước rồi mới ghi, vì hai instance có thể cùng đọc thấy "chưa có". Lý do chi tiết: [UNIQUE, không check-then-insert](/aspnet-core/rest-api#unique-constraint).
 
@@ -336,7 +337,32 @@ Tên gọi lấy từ bài báo "Sagas" (1987) của Hector Garcia-Molina và Ke
 - **Compensation cũng có thể lỗi** (cổng thanh toán đang sập), nên nó phải retry được và idempotent: hoàn tiền với idempotency key `refund-order-123`.
 - **Không phải lúc nào cũng quay đầu.** Có thể đi tiếp (forward recovery): thử hãng vận chuyển khác, hoặc giữ đơn chờ hãng mở lại tuyến. Hoặc đẩy cho người xử lý (hàng chờ duyệt tay). Chọn hướng nào là **quyết định nghiệp vụ** (hoàn tiền tốn phí giao dịch, khách có chịu chờ không), dev đưa ra lựa chọn và chi phí, PO quyết.
 
-Thứ tự bước cũng là thiết kế: đặt bước dễ bù (giữ hàng: nhả là xong) trước bước đắt để bù (trừ tiền: hoàn tiền tốn phí, mất vài ngày).
+### Thứ tự bước: giành cái mới trước, nhả cái cũ sau {#step-order}
+
+**Vì mỗi bước commit riêng, nên thứ tự quyết định một lỗi giữa chừng để lại gì: đặt bước có thể hỏng (giành tài nguyên khan hiếm) trước bước khó hoàn tác (nhả, huỷ), để lỗi không bao giờ để khách trắng tay.** Ví dụ: khách đổi áo size M đang giữ sang size L, kho chỉ còn 1 cái L.
+
+```mermaid
+flowchart LR
+    subgraph wrong ["Sai: nhả trước, giữ sau"]
+        direction TB
+        W1["1. Nhả size M<br/>người khác lấy ngay"] --> W2["2. Giữ size L<br/>hết hàng"] --> W3["Khách mất cả hai"]
+    end
+    subgraph right ["Đúng: giữ trước, nhả sau"]
+        direction TB
+        R1["1. Giữ size L<br/>bước có thể hỏng"] -- "OK" --> R2["2. Nhả size M"] --> R3["Khách có size L"]
+        R1 -- "hết hàng" --> R4["Vẫn giữ size M<br/>báo khách"]
+    end
+    classDef ok fill:#10b98124,stroke:#10b981,stroke-width:1.5px
+    classDef bad fill:#f43f5e24,stroke:#e5484d,stroke-width:2px
+    class R3,R4 ok
+    class W2,W3 bad
+    style wrong fill:none,stroke:#8888,stroke-dasharray:4 4
+    style right fill:none,stroke:#8888,stroke-dasharray:4 4
+```
+
+- **Giữ cái mới chỉ hỏng kiểu "không có"**, lúc đó cái cũ còn nguyên. Nhả trước thì compensation "giữ lại M" cũng có thể hỏng, vì M đã về kho chung.
+- **Cùng một ý với chi phí bù**: bước dễ bù (giữ hàng: nhả là xong) đặt trước bước đắt để bù (trừ tiền: hoàn tiền tốn phí, mất vài ngày).
+- **Thay đổi thường không cần huỷ rồi đặt lại**: giao trễ thì dời slot giao, là một bước sửa. Tái dùng "huỷ đơn + flow đặt hàng gốc" cho một thay đổi là tự tạo ra ca "Sai" ở trên.
 
 ### Choreography và orchestration {#choreography-vs-orchestration}
 
@@ -426,6 +452,10 @@ It means the broker won't lose a message, but it may deliver it more than once. 
 
 Không: nó lọc theo `MessageId` lúc **gửi**, trong một khoảng thời gian. Message bị giao lại vì consumer crash là cùng một message, nó không chặn. Xem [at-least-once](#at-least-once).
 
+**"Report dựng từ event đếm 123 đơn, Order DB có 120. Vì sao?"**
+
+Số **cao hơn** nguồn nên là **trùng**, không phải timeout hay lỗi (lỗi chỉ làm số thấp đi): consumer đã cộng counter rồi chết trước `Complete`, message giao lại, cộng lần hai. Chữa bằng `ProcessedMessages` chung transaction với update counter. Xem [at-least-once](#at-least-once), [Cách 1](#processed-messages).
+
 **"Sao không dùng ReceiveAndDelete cho khỏi trùng?"**
 
 Thì quay lại at-most-once: crash là mất, đúng như MSMQ receive thường. Xem [vấn đề](#problem).
@@ -474,7 +504,7 @@ Cùng đọc "dòng chưa gửi" và publish trùng. Chạy một instance hoặ
 ### Saga: choreography hay orchestration, compensation là gì? <Badge type="warning" text="câu senior" /> {#saga-orchestration-choreography}
 
 ::: tip Trả lời nhanh
-Saga là quy trình nhiều bước qua nhiều hệ thống không chung transaction: mỗi bước commit local, bước sau hỏng hẳn thì chạy compensation, là **hành động nghiệp vụ mới** (hoàn tiền, nhả hàng, đơn `Cancelled` giữ làm lịch sử, email báo huỷ), không phải xoá. Có khi đi tiếp (hãng khác) hoặc đẩy cho người; chọn gì là quyết định nghiệp vụ. Choreography: service nghe event và tự làm, không coordinator, nhưng luồng rải rác, khó biết đơn đang kẹt ở đâu. Orchestration: process manager giữ trạng thái và gửi lệnh, một chỗ xem trạng thái, phải giữ gầy. Nhiều bước nhiều ngoại lệ: orchestration; fan-out đơn giản: choreography. Xem [saga](#saga), [compensation](#compensation), [choreography và orchestration](#choreography-vs-orchestration).
+Saga là quy trình nhiều bước qua nhiều hệ thống không chung transaction: mỗi bước commit local, bước sau hỏng hẳn thì chạy compensation, là **hành động nghiệp vụ mới** (hoàn tiền, nhả hàng, đơn `Cancelled` giữ làm lịch sử, email báo huỷ), không phải xoá. Có khi đi tiếp (hãng khác) hoặc đẩy cho người; chọn gì là quyết định nghiệp vụ. Thứ tự: bước có thể hỏng (giành hàng/slot mới) trước bước khó hoàn tác (nhả, huỷ cái cũ). Choreography: service nghe event và tự làm, không coordinator, nhưng luồng rải rác, khó biết đơn đang kẹt ở đâu. Orchestration: process manager giữ trạng thái và gửi lệnh, một chỗ xem trạng thái, phải giữ gầy. Nhiều bước nhiều ngoại lệ: orchestration; fan-out đơn giản: choreography. Xem [saga](#saga), [compensation](#compensation), [choreography và orchestration](#choreography-vs-orchestration).
 :::
 
 ::: details Câu trả lời mẫu (English)
@@ -489,6 +519,10 @@ Không: rollback làm như chưa xảy ra; compensation thừa nhận nó đã x
 **"Monolith thì không cần saga?"**
 
 Vẫn cần khi gọi hệ thống ngoài (cổng thanh toán, hãng vận chuyển): không có transaction chung là đủ lý do. Xem [saga](#saga).
+
+**"Khách đổi size: huỷ món cũ rồi đặt lại qua flow đặt hàng, được không?"**
+
+Không: huỷ trước thì món cũ về kho, đặt mới hỏng là khách mất cả hai. Giữ cái mới trước, xác nhận rồi mới nhả cái cũ; và nhiều thay đổi chỉ cần sửa một bước, không cần huỷ. Xem [thứ tự bước](#step-order).
 
 **"Compensation lỗi thì sao?"**
 
@@ -541,6 +575,14 @@ Thường không ai: khách thấy đặt hàng thành công, nhưng Inventory, 
 Trừ tiền đã commit ở hệ thống của cổng thanh toán, ngoài transaction của bạn; khách và kế toán có thể đã thấy nó. Chỉ làm được hành động ngược chiều: một giao dịch hoàn tiền mới. Đơn giữ lại với trạng thái `Cancelled` để còn lịch sử cho hỗ trợ khách hàng và đối soát.
 :::
 
-::: details 7. Sếp hỏi "đơn 123 đang kẹt ở bước nào?". Với choreography và orchestration, bạn trả lời thế nào?
+::: details 7. Report dựng từ event cao hơn Order DB 3 đơn. Đồng nghiệp bảo "do timeout". Bạn phản biện thế nào?
+Timeout hay lỗi làm event không tới, tức số **thấp hơn**. Cao hơn chỉ có thể do cùng một event được xử lý nhiều lần: at-least-once giao lại sau khi consumer đã cộng counter mà chưa `Complete`. Consumer report chưa idempotent.
+:::
+
+::: details 8. Đơn đã trừ tiền, khách đổi sang ngày giao khác (slot có hạn). Vì sao "huỷ đơn rồi đặt lại" nguy hiểm?
+Huỷ là bước khó hoàn tác (hoàn tiền, nhả slot cũ cho người khác), đặt lại là bước có thể hỏng (slot mới hết). Hỏng ở bước sau thì khách mất cả đơn lẫn slot cũ. Đúng: giữ slot mới trước, rồi nhả slot cũ; tiền không cần đụng tới vì chỉ là sửa đơn.
+:::
+
+::: details 9. Sếp hỏi "đơn 123 đang kẹt ở bước nào?". Với choreography và orchestration, bạn trả lời thế nào?
 Orchestration: query bảng trạng thái của `OrderSaga`. Choreography: không có chỗ nào giữ câu trả lời, phải ghép log/trace của từng service (cần <T>distributed tracing</T> mới làm nổi).
 :::

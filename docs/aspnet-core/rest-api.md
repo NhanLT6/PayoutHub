@@ -72,10 +72,10 @@ Bốn lỗi đầu là chọn sai status code; lỗi cuối là thiếu idempote
 
 ### Một luật: ai phải hành động tiếp theo? {#status-rule}
 
-**Status code trả lời một câu: gửi lại y nguyên request này thì có khác không, và ai phải làm gì?** Ba nhóm suy ra từ câu đó:
+**Status code trả lời một câu: ai phải hành động tiếp, và hành động gì?** Nhóm suy ra từ "ai", mã cụ thể suy ra từ "hành động gì":
 
-- **2xx: thành công, client đi tiếp.** Chọn đúng loại để nói thêm điều gì đã xảy ra: 200 có body, 204 xong mà không có body, 201 vừa tạo một resource mới, 202 mới **nhận** việc chứ chưa làm xong.
-- **4xx: client phải đổi request** (sửa body, lấy token mới, xin quyền, tải lại dữ liệu). Gửi lại y nguyên thì hỏng y nguyên, nên client không tự retry, và đây không phải bug của server nên không ai bị gọi dậy.
+- **2xx: không ai phải sửa gì, client đi tiếp.** Mã nói bước kế của client: đọc body → **200**; không có gì để đọc → **204**; đi tới resource mới → **201** + `Location`; việc **chưa xong**, phải quay lại hỏi sau → **202** + `Location` để poll.
+- **4xx: client phải đổi request** (sửa body, lấy token mới, xin quyền, tải lại dữ liệu rồi quyết lại). Gửi lại y nguyên thì hỏng y nguyên, nên client không tự retry, và đây không phải bug của server nên không ai bị gọi dậy.
 - **5xx: lỗi của ta** (bug, DB sập, dependency chết). Request có thể đúng, gửi lại sau có thể được. Vì vậy công cụ retry coi 5xx là lỗi tạm thời: `AddStandardResilienceHandler()` của `Microsoft.Extensions.Http.Resilience` mặc định retry khi gặp 5xx, 408, 429; còn monitoring đặt alert theo tỉ lệ 5xx.
 
 Hệ quả: trả 500 cho một xung đột bình thường thì **cả hai cơ chế trên cùng chạy sai**, client retry vô ích và alert bắn nhầm. Trả 400 cho chuyện thiếu quyền thì client sửa nhầm chỗ.
@@ -178,9 +178,13 @@ Controller thường **không tự viết** hai mã này: `[Authorize(Policy = "
 
 ### 409 và 412: xung đột trạng thái, không phải 500 {#conflict}
 
-**409 Conflict nói "request đúng, nhưng trạng thái hiện tại của resource không cho phép"; 412 Precondition Failed nói "điều kiện bạn gửi kèm (`If-Match`) không còn đúng".** Duyệt payout đã Approved là 409. Duyệt với `If-Match` mang version cũ là 412; quên gửi `If-Match` mà API bắt buộc thì 428 Precondition Required. Cả ba đều bảo client cùng một việc: **tải lại, cho người dùng xem bản mới, để họ quyết lại**.
+**Xung đột không phải lỗi của server: server làm đúng việc và phát hiện dữ liệu người dùng đang thấy đã cũ, nên người phải hành động là người dùng (tải lại, xem bản mới, quyết lại) → 4xx.** Mã cụ thể theo việc client đã gửi gì:
 
-Để exception lọt ra thành 500 thì hỏng ở ba chỗ: alert 5xx bắn cho một chuyện bình thường; resilience handler phía client retry một request chắc chắn hỏng lại; client không phân biệt được "server chết" với "người khác vừa sửa". Cách bắt và map: [version đi qua client](/data/ef-core#version-round-trip) (412 từ `DbUpdateConcurrencyException`) và [ExecuteUpdate có điều kiện](/data/ef-core#conditional-update) (0 dòng bị đổi thì 409).
+- Trạng thái resource không cho phép (duyệt payout đã Approved, version gửi trong body không khớp) → **409 Conflict**.
+- Điều kiện client tự gửi kèm trong header (`If-Match`) không còn đúng → **412 Precondition Failed**; API bắt buộc mà quên gửi → **428 Precondition Required**.
+- Trả 500 hay 503 thì cả ba cơ chế đọc 5xx chạy sai: resilience handler retry một request chắc chắn hỏng lại, alert gọi người trực dậy, client hiện "lỗi hệ thống" thay vì "người khác vừa sửa, tải lại".
+
+Cách bắt và map: [version đi qua client](/data/ef-core#version-round-trip) (412 từ `DbUpdateConcurrencyException`) và [ExecuteUpdate có điều kiện](/data/ef-core#conditional-update) (0 dòng bị đổi thì 409).
 
 ### 201 Created + Location {#created}
 
@@ -196,7 +200,7 @@ Code đầy đủ nằm trong [controller có Idempotency-Key](#idempotency-key-
 
 ### 202 Accepted: việc chưa xong {#accepted}
 
-**202 nói "đã nhận việc, chưa làm xong; theo dõi ở `Location`".** Dùng khi việc dài hơn thời gian một request được phép sống: gateway, load balancer và client đều có timeout (thường 30 giây tới vài phút), quá hạn là cắt kết nối dù server vẫn đang chạy. `POST /payout-runs` sinh payout cho cả kỳ mất 3 phút, nên server chỉ ghi một dòng `PayoutRun` trạng thái `Queued`, đẩy id vào hàng đợi cho một [`BackgroundService`](/aspnet-core/questions#background-service) xử lý, rồi trả ngay:
+**Response rời server khi việc chưa xong, nên bước kế của client là quay lại hỏi sau; muốn hỏi thì cần một địa chỉ → 202 Accepted + `Location`.** Tình huống này sinh ra mỗi khi việc dài hơn thời gian một request được phép sống: gateway, load balancer và client đều có timeout (thường 30 giây tới vài phút), quá hạn là cắt kết nối dù server vẫn chạy. `POST /payout-runs` mất 3 phút, nên server chỉ ghi một dòng `PayoutRun` trạng thái `Queued`, đẩy id vào hàng đợi cho một [`BackgroundService`](/aspnet-core/questions#background-service), rồi trả ngay. (203 là chuyện khác hẳn: response bị một proxy sửa, không liên quan tới hàng đợi.)
 
 ```mermaid
 sequenceDiagram
@@ -566,7 +570,7 @@ Cùng ý tưởng quay lại khi đọc message từ queue như Azure Service Bu
 ### Thiết kế REST API: status code và các quy ước <Badge type="warning" text="hay bị hỏi" /> {#rest-design}
 
 ::: tip Trả lời nhanh
-Status code cho client biết ai phải làm gì tiếp: 2xx đi tiếp, 4xx client phải đổi request (gửi lại y nguyên vẫn hỏng), 5xx lỗi của server (có thể retry, alert bắn). Theo thứ tự trạm: 401 thiếu hoặc sai token, 403 đủ danh tính nhưng thiếu quyền, 400 body sai (`[ApiController]` tự trả `ValidationProblemDetails`), 404 không có, 409/412 xung đột trạng thái hoặc version. Thành công: 201 + `Location` khi tạo, 202 + `Location` khi việc chạy nền, 204 khi xong không có body. Xem [một luật](#status-rule), [409/412](#conflict), [202](#accepted).
+Status code cho client biết ai phải làm gì tiếp: 2xx đi tiếp, 4xx client phải đổi request (gửi lại y nguyên vẫn hỏng), 5xx lỗi của server (có thể retry, alert bắn). Theo thứ tự trạm: 401 thiếu hoặc sai token, 403 đủ danh tính nhưng thiếu quyền, 400 body sai (`[ApiController]` tự trả `ValidationProblemDetails`), 404 không có, 409/412 xung đột: người dùng phải tải lại và quyết lại nên là 4xx, không phải 5xx. Thành công: 201 + `Location` khi tạo, 204 khi xong không có body, 202 + `Location` khi việc vào hàng đợi chưa xong, vì client phải quay lại poll. Xem [một luật](#status-rule), [409/412](#conflict), [202](#accepted).
 :::
 
 ::: details Câu trả lời mẫu (English)
