@@ -32,6 +32,14 @@ Theo dõi hai thứ ở cột trái của mỗi bước: **tầng** đang xử l
 
 ## Luồng đầy đủ {#flow}
 
+::: tip Đọc luồng bằng một câu: UI chỉ đơ khi thread vẽ UI bị chặn
+- **Hai máy, hai bộ giống nhau.** Browser có `Promise` + async function bị cất dở + event loop (**một** thread). Server có `Task` + <T>state machine</T> + <T>thread pool</T> (nhiều thread). Bên nào gặp `await` cũng nhả thread rồi chạy tiếp khi có "chuông" báo.
+- **Server sync hay async không làm UI đơ**, vì code server không chạm được JS thread trên máy user (bước 1, 15). Thay `await FindAsync` bằng `Find()`: user vẫn thấy spinner y như cũ, nhưng Thread #7 **đứng chờ** suốt bước 8–10 thay vì về pool. Nhiều request chậm cùng lúc thì pool cạn: [starvation](/runtime/async#deadlock). Async ở server mua **sức chứa**, không mua tốc độ.
+- **Không có bước "server báo web".** Response đi ngược về trên **chính kết nối TCP** của request (bước 14). Việc quá lâu thì trả `202` rồi để client hỏi lại hoặc nhận đẩy qua WebSocket/SignalR.
+
+"UI đơ" thật sự xảy ra ở app desktop (WinForms/WPF): code xử lý click chạy **trên UI thread**, gọi sync là chặn chính thread vẽ cửa sổ.
+:::
+
 <FlowStep :n="1" title="User bấm Approve" layer="Browser" thread="UI thread (JS)" icon="click" tone="busy">
 
 Browser gọi event handler JavaScript trên **UI thread** của tab. Mỗi tab chỉ có **một** thread chạy JS.
