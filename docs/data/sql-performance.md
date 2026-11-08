@@ -6,13 +6,15 @@ title: "SQL chậm: tìm nguyên nhân và thêm index"
 
 Trang này là một quy trình làm được ngay khi gặp query chậm: **đo** xem thời gian đi đâu, **đọc** execution plan để biết DB đang làm gì thừa, **sửa** bằng đúng index, rồi **đo lại**. Ví dụ xuyên suốt là trang finance của PayoutHub, câu `SELECT * FROM Payouts WHERE Status = 'Pending' ORDER BY CreatedAt` trên bảng 5 triệu dòng. Ví dụ dùng SQL Server; chỗ nào PostgreSQL khác thì có một dòng riêng. Phía EF Core (N+1, projection) nằm ở [EF Core](/data/ef-core).
 
+Cùng hình dạng với hệ thống đặt phòng: bảng `Bookings` lọc `HotelId = @h` và khoảng `CheckIn` thì `HotelId` đóng vai `Status`, `CheckIn` đóng vai `CreatedAt`; mọi lập luận trên trang giữ nguyên.
+
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="eAcc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headAcc" d="M0 0L10 5L0 10z"/></marker><marker id="eInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker><marker id="eOk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headOk" d="M0 0L10 5L0 10z"/></marker><marker id="eBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headBad" d="M0 0L10 5L0 10z"/></marker></defs></svg>
 
 ## Bản đồ chủ đề {#topic-map}
 
 <div class="fig">
-<svg viewBox="0 0 720 536" role="img" aria-label="Bản đồ chủ đề SQL chậm: đo, đọc plan, sửa bằng index, đo lại; ORDER BY Id và giá của index"><rect class="box dash" x="10" y="8" width="226" height="392" rx="10"/><text x="22" y="28" font-size="12.5" font-weight="600" class="muted">Bước 1 · Đo: thời gian đi đâu</text><a href="#ef-log" style="text-decoration:none"><rect class="box" x="10" y="48" width="226" height="74" rx="8"/><circle cx="30" cy="70" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="30" cy="70" r="12"/><text x="30" y="75" font-size="13" text-anchor="middle" font-weight="700" class="accT">1</text><text x="50" y="75" font-size="13" font-weight="600">Query nào chậm?</text><text x="24" y="98" font-size="11.5">log EF: Executed DbCommand (ms)</text><text x="24" y="114" font-size="11.5">production: Query Store</text></a><line class="ln" x1="123" y1="122" x2="123" y2="134" marker-end="url(#eInk)"/><a href="#statistics-io" style="text-decoration:none"><rect class="boxAcc" x="10" y="136" width="226" height="74" rx="8"/><circle cx="30" cy="158" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="30" cy="158" r="12"/><text x="30" y="163" font-size="13" text-anchor="middle" font-weight="700" class="accT">2</text><text x="50" y="163" font-size="13" font-weight="600" class="accT">Logical reads</text><text x="24" y="186" font-size="11.5">SET STATISTICS IO, TIME ON</text><text x="24" y="202" font-size="11.5">số page đọc: ổn định hơn giây</text></a><rect class="box dash" x="247" y="8" width="226" height="392" rx="10"/><text x="259" y="28" font-size="12.5" font-weight="600" class="muted">Bước 2 · Đọc execution plan</text><a href="#plan-direction" style="text-decoration:none"><rect class="box" x="247" y="48" width="226" height="74" rx="8"/><circle cx="267" cy="70" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="267" cy="70" r="12"/><text x="267" y="75" font-size="13" text-anchor="middle" font-weight="700" class="accT">3</text><text x="287" y="75" font-size="13" font-weight="600">Đọc từ phải sang trái</text><text x="261" y="98" font-size="11.5">tìm mũi tên dày nhất,</text><text x="261" y="114" font-size="11.5">operator có cost cao nhất</text></a><line class="ln" x1="360" y1="122" x2="360" y2="134" marker-end="url(#eInk)"/><a href="#red-flags" style="text-decoration:none"><rect class="boxBad" x="247" y="136" width="226" height="74" rx="8"/><circle cx="267" cy="158" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="267" cy="158" r="12"/><text x="267" y="163" font-size="13" text-anchor="middle" font-weight="700" class="accT">4</text><text x="287" y="163" font-size="13" font-weight="600" class="badT">Bốn cờ đỏ</text><text x="261" y="186" font-size="11.5">Scan · Sort · Key Lookup</text><text x="261" y="202" font-size="11.5">ước lượng ≠ thực tế</text></a><line class="ln" x1="360" y1="210" x2="360" y2="222" marker-end="url(#eInk)"/><a href="#missing-index-hint" style="text-decoration:none"><rect class="box" x="247" y="224" width="226" height="74" rx="8"/><circle cx="267" cy="246" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="267" cy="246" r="12"/><text x="267" y="251" font-size="13" text-anchor="middle" font-weight="700" class="accT">5</text><text x="287" y="251" font-size="13" font-weight="600">Missing index hint</text><text x="261" y="274" font-size="11.5">gợi ý cho 1 query,</text><text x="261" y="290" font-size="11.5">không áp dụng mù</text></a><rect class="boxOk dash" x="484" y="8" width="226" height="392" rx="10"/><text x="496" y="28" font-size="12.5" font-weight="600" class="muted">Bước 3 · Sửa bằng index</text><a href="#btree" style="text-decoration:none"><rect class="boxOk" x="484" y="48" width="226" height="74" rx="8"/><circle cx="504" cy="70" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="70" r="12"/><text x="504" y="75" font-size="13" text-anchor="middle" font-weight="700" class="accT">6</text><text x="524" y="75" font-size="13" font-weight="600" class="okT">Danh bạ đã sắp xếp</text><text x="498" y="98" font-size="11.5">(Status, CreatedAt): seek tới</text><text x="498" y="114" font-size="11.5">Pending, đọc ra đã đúng thứ tự</text></a><line class="ln" x1="597" y1="122" x2="597" y2="134" marker-end="url(#eInk)"/><a href="#column-order" style="text-decoration:none"><rect class="boxOk" x="484" y="136" width="226" height="74" rx="8"/><circle cx="504" cy="158" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="158" r="12"/><text x="504" y="163" font-size="13" text-anchor="middle" font-weight="700" class="accT">7</text><text x="524" y="163" font-size="13" font-weight="600" class="okT">Bằng trước, sắp xếp sau</text><text x="498" y="186" font-size="11.5">cột so sánh = đứng đầu,</text><text x="498" y="202" font-size="11.5">cột range / ORDER BY đứng sau</text></a><line class="ln" x1="597" y1="210" x2="597" y2="222" marker-end="url(#eInk)"/><a href="#covering" style="text-decoration:none"><rect class="boxOk" x="484" y="224" width="226" height="74" rx="8"/><circle cx="504" cy="246" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="246" r="12"/><text x="504" y="251" font-size="13" text-anchor="middle" font-weight="700" class="accT">8</text><text x="524" y="251" font-size="13" font-weight="600" class="okT">INCLUDE, bỏ SELECT *</text><text x="498" y="274" font-size="11.5">index trả đủ cột</text><text x="498" y="290" font-size="11.5">→ hết Key Lookup</text></a><line class="ln" x1="597" y1="298" x2="597" y2="310" marker-end="url(#eInk)"/><a href="#filtered-index" style="text-decoration:none"><rect class="box" x="484" y="312" width="226" height="74" rx="8"/><circle cx="504" cy="334" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="334" r="12"/><text x="504" y="339" font-size="13" text-anchor="middle" font-weight="700" class="accT">9</text><text x="524" y="339" font-size="13" font-weight="600">Filtered index · keyset</text><text x="498" y="362" font-size="11.5">WHERE Status = 'Pending';</text><text x="498" y="378" font-size="11.5">TOP + WHERE CreatedAt &gt; @last</text></a><line class="lnAcc" x1="236" y1="85" x2="245" y2="85" marker-end="url(#eAcc)"/><line class="lnAcc" x1="473" y1="85" x2="482" y2="85" marker-end="url(#eAcc)"/><a href="#re-measure" style="text-decoration:none"><rect class="boxAcc" x="10" y="414" width="700" height="44" rx="8"/><circle cx="30" cy="436" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="30" cy="436" r="12"/><text x="30" y="441" font-size="13" text-anchor="middle" font-weight="700" class="accT">10</text><text x="52" y="441" font-size="13" font-weight="600" class="accT">Đo lại</text><text x="110" y="441" font-size="11.5">so logical reads trước / sau: 62.500 → khoảng 100. Không giảm thì quay lại bước 2.</text></a><path class="lnAcc dash" d="M597 400 L597 412" marker-end="url(#eAcc)"/><path class="lnAcc dash" d="M123 414 L123 402" marker-end="url(#eAcc)"/><a href="#order-by-id" style="text-decoration:none"><rect class="boxBad" x="10" y="470" width="344" height="58" rx="8"/><circle cx="30" cy="492" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="30" cy="492" r="12"/><text x="30" y="497" font-size="13" text-anchor="middle" font-weight="700" class="accT">11</text><text x="52" y="497" font-size="13" font-weight="600" class="badT">ORDER BY Id cho khỏi Sort?</text><text x="24" y="518" font-size="11.5">hết Sort, nhưng vẫn quét tìm Pending và đổi nghĩa query</text></a><a href="#index-cost" style="text-decoration:none"><rect class="box" x="366" y="470" width="344" height="58" rx="8"/><circle cx="386" cy="492" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="386" cy="492" r="12"/><text x="386" y="497" font-size="13" text-anchor="middle" font-weight="700" class="accT">12</text><text x="408" y="497" font-size="13" font-weight="600">Giá của index</text><text x="380" y="518" font-size="11.5">mỗi INSERT / UPDATE ghi thêm vào từng index</text></a></svg>
-<p class="fig-caption">Ba bước trái sang phải, rồi đo lại. Hai thẻ dưới đứng riêng: một ý tưởng hay gặp và cái giá phải trả. Ôn lại: nhìn từng ô, tự nói được "làm gì, vì sao"; ô nào không nói được thì bấm vào.</p>
+<svg viewBox="0 0 720 624" role="img" aria-label="Bản đồ chủ đề SQL chậm: đo, đọc plan, sửa bằng index (thứ tự cột, sargable, INCLUDE), đo lại; ORDER BY Id và giá của index"><rect class="box dash" x="10" y="8" width="226" height="480" rx="10"/><text x="22" y="28" font-size="12.5" font-weight="600" class="muted">Bước 1 · Đo: thời gian đi đâu</text><a href="#measure" style="text-decoration:none"><rect class="box" x="10" y="48" width="226" height="92" rx="8"/><circle cx="30" cy="70" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="30" cy="70" r="12"/><text x="30" y="75" font-size="13" text-anchor="middle" font-weight="700" class="accT">1</text><text x="50" y="75" font-size="13" font-weight="600">Query nào chậm?</text><text x="24" y="98" font-size="11.5">log EF: Executed DbCommand (ms)</text><text x="24" y="114" font-size="11.5">Query Store: hộp đen máy bay</text><text x="24" y="130" font-size="11.5">đang chậm: Extended Events</text></a><line class="ln" x1="123" y1="140" x2="123" y2="152" marker-end="url(#eInk)"/><a href="#statistics-io" style="text-decoration:none"><rect class="boxAcc" x="10" y="154" width="226" height="74" rx="8"/><circle cx="30" cy="176" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="30" cy="176" r="12"/><text x="30" y="181" font-size="13" text-anchor="middle" font-weight="700" class="accT">2</text><text x="50" y="181" font-size="13" font-weight="600" class="accT">Logical reads</text><text x="24" y="204" font-size="11.5">SET STATISTICS IO, TIME ON</text><text x="24" y="220" font-size="11.5">số page đọc: ổn định hơn giây</text></a><rect class="box dash" x="247" y="8" width="226" height="480" rx="10"/><text x="259" y="28" font-size="12.5" font-weight="600" class="muted">Bước 2 · Đọc execution plan</text><a href="#plan-direction" style="text-decoration:none"><rect class="box" x="247" y="48" width="226" height="74" rx="8"/><circle cx="267" cy="70" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="267" cy="70" r="12"/><text x="267" y="75" font-size="13" text-anchor="middle" font-weight="700" class="accT">3</text><text x="287" y="75" font-size="13" font-weight="600">Đọc từ phải sang trái</text><text x="261" y="98" font-size="11.5">mũi tên dày = nhiều dòng chảy</text><text x="261" y="114" font-size="11.5" class="badT">đọc 5 triệu để trả 50 = cờ đỏ</text></a><line class="ln" x1="360" y1="122" x2="360" y2="134" marker-end="url(#eInk)"/><a href="#red-flags" style="text-decoration:none"><rect class="boxBad" x="247" y="136" width="226" height="74" rx="8"/><circle cx="267" cy="158" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="267" cy="158" r="12"/><text x="267" y="163" font-size="13" text-anchor="middle" font-weight="700" class="accT">4</text><text x="287" y="163" font-size="13" font-weight="600" class="badT">Bốn cờ đỏ</text><text x="261" y="186" font-size="11.5">Scan · Sort · Key Lookup</text><text x="261" y="202" font-size="11.5">ước lượng ≠ thực tế</text></a><line class="ln" x1="360" y1="210" x2="360" y2="222" marker-end="url(#eInk)"/><a href="#missing-index-hint" style="text-decoration:none"><rect class="box" x="247" y="224" width="226" height="74" rx="8"/><circle cx="267" cy="246" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="267" cy="246" r="12"/><text x="267" y="251" font-size="13" text-anchor="middle" font-weight="700" class="accT">5</text><text x="287" y="251" font-size="13" font-weight="600">Missing index hint</text><text x="261" y="274" font-size="11.5">gợi ý cho 1 query,</text><text x="261" y="290" font-size="11.5">không áp dụng mù</text></a><rect class="boxOk dash" x="484" y="8" width="226" height="480" rx="10"/><text x="496" y="28" font-size="12.5" font-weight="600" class="muted">Bước 3 · Sửa bằng index</text><a href="#btree" style="text-decoration:none"><rect class="boxOk" x="484" y="48" width="226" height="74" rx="8"/><circle cx="504" cy="70" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="70" r="12"/><text x="504" y="75" font-size="13" text-anchor="middle" font-weight="700" class="accT">6</text><text x="524" y="75" font-size="13" font-weight="600" class="okT">Danh bạ đã sắp xếp</text><text x="498" y="98" font-size="11.5">(Status, CreatedAt): seek tới</text><text x="498" y="114" font-size="11.5">Pending, đọc ra đã đúng thứ tự</text></a><line class="ln" x1="597" y1="122" x2="597" y2="134" marker-end="url(#eInk)"/><a href="#column-order" style="text-decoration:none"><rect class="boxOk" x="484" y="136" width="226" height="74" rx="8"/><circle cx="504" cy="158" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="158" r="12"/><text x="504" y="163" font-size="13" text-anchor="middle" font-weight="700" class="accT">7</text><text x="524" y="163" font-size="13" font-weight="600" class="okT">Bằng trước, range sau</text><text x="498" y="186" font-size="11.5">cột bằng đầu, range/ORDER BY sau</text><text x="498" y="202" font-size="11.5" class="badT">đảo vế trong WHERE: không sao</text></a><line class="ln" x1="597" y1="210" x2="597" y2="222" marker-end="url(#eInk)"/><a href="#sargable" style="text-decoration:none"><rect class="boxOk" x="484" y="224" width="226" height="74" rx="8"/><circle cx="504" cy="246" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="246" r="12"/><text x="504" y="251" font-size="13" text-anchor="middle" font-weight="700" class="accT">8</text><text x="524" y="251" font-size="13" font-weight="600" class="okT">Cột trần mới seek được</text><text x="498" y="274" font-size="11.5" class="badT">YEAR(CreatedAt) = 2026 → Scan</text><text x="498" y="290" font-size="11.5">→ CreatedAt &gt;= … AND &lt; …</text></a><line class="ln" x1="597" y1="298" x2="597" y2="310" marker-end="url(#eInk)"/><a href="#covering" style="text-decoration:none"><rect class="boxOk" x="484" y="312" width="226" height="74" rx="8"/><circle cx="504" cy="334" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="334" r="12"/><text x="504" y="339" font-size="13" text-anchor="middle" font-weight="700" class="accT">9</text><text x="524" y="339" font-size="13" font-weight="600" class="okT">INCLUDE, bỏ SELECT *</text><text x="498" y="362" font-size="11.5">danh bạ chép thêm cột</text><text x="498" y="378" font-size="11.5">→ hết lật sang bảng (Key Lookup)</text></a><line class="ln" x1="597" y1="386" x2="597" y2="398" marker-end="url(#eInk)"/><a href="#filtered-index" style="text-decoration:none"><rect class="box" x="484" y="400" width="226" height="74" rx="8"/><circle cx="504" cy="422" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="504" cy="422" r="12"/><text x="504" y="427" font-size="13" text-anchor="middle" font-weight="700" class="accT">10</text><text x="524" y="427" font-size="13" font-weight="600">Filtered index · keyset</text><text x="498" y="450" font-size="11.5">WHERE Status = 'Pending';</text><text x="498" y="466" font-size="11.5">TOP + WHERE CreatedAt &gt; @last</text></a><line class="lnAcc" x1="236" y1="85" x2="245" y2="85" marker-end="url(#eAcc)"/><line class="lnAcc" x1="473" y1="85" x2="482" y2="85" marker-end="url(#eAcc)"/><a href="#re-measure" style="text-decoration:none"><rect class="boxAcc" x="10" y="502" width="700" height="44" rx="8"/><circle cx="30" cy="524" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="30" cy="524" r="12"/><text x="30" y="529" font-size="13" text-anchor="middle" font-weight="700" class="accT">11</text><text x="52" y="529" font-size="13" font-weight="600" class="accT">Đo lại</text><text x="110" y="529" font-size="11.5">so logical reads trước / sau: 62.500 → khoảng 100. Không giảm thì quay lại bước 2.</text></a><path class="lnAcc dash" d="M597 488 L597 500" marker-end="url(#eAcc)"/><path class="lnAcc dash" d="M123 502 L123 490" marker-end="url(#eAcc)"/><a href="#order-by-id" style="text-decoration:none"><rect class="boxBad" x="10" y="558" width="344" height="58" rx="8"/><circle cx="30" cy="580" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="30" cy="580" r="12"/><text x="30" y="585" font-size="13" text-anchor="middle" font-weight="700" class="accT">12</text><text x="52" y="585" font-size="13" font-weight="600" class="badT">ORDER BY Id cho khỏi Sort?</text><text x="24" y="606" font-size="11.5">hết Sort, nhưng vẫn quét tìm Pending và đổi nghĩa query</text></a><a href="#index-cost" style="text-decoration:none"><rect class="box" x="366" y="558" width="344" height="58" rx="8"/><circle cx="386" cy="580" r="12" style="fill:var(--vp-c-bg)"/><circle class="boxAcc" cx="386" cy="580" r="12"/><text x="386" y="585" font-size="13" text-anchor="middle" font-weight="700" class="accT">13</text><text x="408" y="585" font-size="13" font-weight="600">Giá của index</text><text x="380" y="606" font-size="11.5">mỗi INSERT / UPDATE ghi thêm vào từng index</text></a></svg>
+<p class="fig-caption">Ba bước trái sang phải, rồi đo lại. Hai thẻ dưới đứng riêng: một ý tưởng hay gặp và cái giá phải trả. Chữ đỏ là bẫy hay bị hỏi. Ôn lại: nhìn từng ô, tự nói được "làm gì, vì sao"; ô nào không nói được thì bấm vào.</p>
 </div>
 
 ## 1. Vấn đề: một query, 5 triệu dòng {#problem}
@@ -38,24 +40,85 @@ Ba mục tiếp theo đi đúng thứ tự bạn sẽ làm khi gặp chuyện n�
 
 **Phần lớn thời gian của một query đọc dữ liệu là đọc page.** SQL Server lưu dữ liệu thành các page 8 KB; query đọc càng nhiều page thì càng chậm. Vì vậy con số cần theo dõi là **số page đọc** (logical reads), không chỉ số giây: số giây đổi theo việc page đã nằm sẵn trong RAM hay chưa (cache "nóng" hay "nguội") và theo tải của server, còn số page đọc thì gần như không đổi giữa các lần chạy.
 
-### Từ app: query nào chậm {#ef-log}
+Không cần đoán query nào chậm rồi tự thêm log: ba chỗ dưới đây đã ghi sẵn, chỉ cần biết bật và mở ở đâu.
 
-EF Core ghi mỗi câu SQL kèm thời gian chạy (mức Information, category `Microsoft.EntityFrameworkCore.Database.Command`; với `appsettings.json` hiện tại của PayoutHub là `Default: Information` thì dòng này hiện ra khi đã đăng ký `DbContext`):
+```mermaid
+flowchart LR
+  A["PayoutHub.Api<br/>EF Core"] -->|"mỗi câu SQL + số ms"| L["Log của app<br/>Executed DbCommand"]
+  A -->|SQL| S[("SQL Server")]
+  S -->|"mọi query, plan, số liệu<br/>theo giờ, giữ nhiều ngày"| Q["Query Store<br/>hộp đen máy bay"]
+  S -->|"bắt sự kiện đang xảy ra<br/>vd câu chạy quá 1 s"| X["Extended Events"]
+```
+
+### Từ app: EF Core đã log sẵn mọi câu {#ef-log}
+
+**EF Core ghi mỗi câu SQL nó gửi đi kèm thời gian chạy, ở category `Microsoft.EntityFrameworkCore.Database.Command`, mức Information.** `appsettings.json` hiện tại của PayoutHub để `Default: Information`, nên dòng này hiện ra ngay khi đã đăng ký `DbContext`, không phải bật gì (console mặc định in dạng text như dưới; `Program.cs` có thêm `AddJsonConsole` nên cùng dòng in thêm một bản JSON):
 
 ```
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1,234ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (1,523ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT p.Id, p.AffiliateId, p.Amount, p.CreatedAt, p.Note, p.Status
       FROM Payouts AS p
       WHERE p.Status = N'Pending'
       ORDER BY p.CreatedAt
 ```
 
-Copy **đúng câu SQL này** (không phải câu bạn nghĩ EF sẽ sinh) sang SSMS để đo tiếp. Có tham số thì giá trị chỉ hiện khi bật `EnableSensitiveDataLogging()`, chỉ bật ở Development.
+- Copy **đúng câu SQL này** (không phải câu bạn nghĩ EF sẽ sinh) sang SSMS để đo tiếp. Giá trị tham số chỉ hiện khi bật `EnableSensitiveDataLogging()`, chỉ bật ở Development.
+- Vì log mọi câu ở Information quá ồn trên production, nên production thường đặt category đó lên `Warning` và dùng một <T>DbCommandInterceptor</T> chỉ log câu chạy quá N ms.
+- `eventData.Duration` là thời gian tới lúc có kết quả đầu tiên, chưa gồm thời gian app đọc hết các dòng. Interceptor dưới chỉ bắt câu trả về reader (SELECT); `NonQueryExecutedAsync`, `ScalarExecutedAsync` override tương tự.
+
+::: code-group
+
+```csharp [SlowQueryInterceptor.cs]
+using System.Data.Common;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
+
+namespace PayoutHub.Infrastructure;
+
+public sealed class SlowQueryInterceptor(ILogger<SlowQueryInterceptor> logger) : DbCommandInterceptor
+{
+    private static readonly TimeSpan Threshold = TimeSpan.FromMilliseconds(500);
+
+    public override ValueTask<DbDataReader> ReaderExecutedAsync(
+        DbCommand command,
+        CommandExecutedEventData eventData,
+        DbDataReader result,
+        CancellationToken cancellationToken = default)
+    {
+        if (eventData.Duration > Threshold)
+        {
+            logger.LogWarning("Slow query ({ElapsedMs} ms): {Sql}",
+                eventData.Duration.TotalMilliseconds, command.CommandText);
+        }
+
+        return base.ReaderExecutedAsync(command, eventData, result, cancellationToken);
+    }
+}
+```
+
+```csharp [Program.cs]
+builder.Services.AddSingleton<SlowQueryInterceptor>();
+builder.Services.AddDbContext<PayoutDbContext>((sp, options) => options
+    .UseSqlServer(builder.Configuration.GetConnectionString("PayoutDb"))
+    .AddInterceptors(sp.GetRequiredService<SlowQueryInterceptor>()));
+```
+
+```json [appsettings.Production.json]
+{
+  "Logging": {
+    "LogLevel": {
+      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+    }
+  }
+}
+```
+
+:::
 
 ### Trong SSMS: logical reads và actual plan {#statistics-io}
 
-Trong <T>SSMS</T>, bật **Include Actual Execution Plan** (Ctrl+M), rồi chạy:
+**Có câu SQL rồi thì chạy lại nó trong <T>SSMS</T> với số đo page và plan thật.** Bật **Include Actual Execution Plan** (Ctrl+M), rồi chạy:
 
 ```sql
 SET STATISTICS IO, TIME ON;
@@ -68,26 +131,96 @@ Tab **Messages** cho ra (số minh hoạ):
 ```
 Table 'Payouts'. Scan count 1, logical reads 62500, physical reads 0, read-ahead reads 0, ...
  SQL Server Execution Times:
-   CPU time = 1450 ms,  elapsed time = 1234 ms.
+   CPU time = 1450 ms,  elapsed time = 1523 ms.
 ```
 
 - **logical reads 62500**: đọc 62.500 page (khoảng 490 MB) từ <T>buffer pool</T>. Đây là con số bạn sẽ so trước/sau khi sửa.
 - **physical reads**: page phải đọc từ đĩa vì chưa có trong RAM. Chạy lần hai thường về 0, đó là lý do số giây lần đầu và lần sau khác nhau.
 - Tab **Execution plan** là thứ đọc ở bước 2.
 
-### Trên production: Query Store {#query-store}
+### Trên production: Query Store, hộp đen máy bay {#query-store}
 
-Không ai ngồi chạy SSMS trên production để tìm query chậm. <T>Query Store</T> tự ghi lại mọi query, plan đã dùng, thời gian và logical reads theo thời gian. Nó bật mặc định với database mới trên SQL Server 2022 và Azure SQL Database; bản cũ hơn phải bật (`ALTER DATABASE ... SET QUERY_STORE = ON`). Trong SSMS: database → **Query Store** → **Top Resource Consuming Queries**, sắp theo logical reads hoặc duration. Nó còn cho thấy một query **đổi plan** từ hôm nào (vd sau khi thống kê cập nhật), là manh mối khi "hôm qua còn nhanh".
+**<T>Query Store</T> giống hộp đen máy bay: nó ghi liên tục từng query, plan query đó dùng và số liệu chạy (thời gian, logical reads, CPU) theo từng khoảng giờ, lưu ngay trong database.** Vì đã ghi sẵn nên sau sự cố vẫn hỏi được "14h hôm qua câu nào tốn nhất", không cần tái hiện.
+
+- Có từ SQL Server 2016. Bật mặc định với database mới trên SQL Server 2022 và Azure SQL Database; bản cũ hơn phải bật: `ALTER DATABASE PayoutHub SET QUERY_STORE = ON;`.
+- SSMS: database → **Query Store** → **Top Resource Consuming Queries** (sắp theo logical reads hoặc duration: tìm câu tốn nhất) và **Regressed Queries** (câu chậm đi so với trước, thường vì **đổi plan**, vd sau khi thống kê cập nhật). Đó là manh mối cho "hôm qua còn nhanh".
+- Thấy plan cũ tốt hơn thì **Force Plan** ngay trong report để chữa cháy, rồi mới tìm nguyên nhân.
+
+### Đang chậm lúc này: Extended Events {#extended-events}
+
+**<T>Extended Events</T> bắt sự kiện ngay khi nó xảy ra (vd mỗi câu chạy quá 1 giây) với chi phí thấp; nó thay cho SQL Profiler, vốn đã deprecated và nặng tới mức làm chậm chính server production.** Query Store trả lời "đã xảy ra gì", Extended Events trả lời "đang xảy ra gì, câu nào, từ app nào".
+
+```sql
+CREATE EVENT SESSION SlowQueries ON SERVER
+ADD EVENT sqlserver.rpc_completed       (WHERE duration > 1000000),   -- micro giây: > 1 s; EF gửi câu có tham số dạng RPC (sp_executesql)
+ADD EVENT sqlserver.sql_batch_completed (WHERE duration > 1000000)    -- câu không tham số
+ADD TARGET package0.event_file (SET filename = N'SlowQueries.xel');
+
+ALTER EVENT SESSION SlowQueries ON SERVER STATE = START;
+```
+
+Xem kết quả trong SSMS: **Management** → **Extended Events** → **Sessions** → `SlowQueries` → **Watch Live Data**.
 
 ::: info PostgreSQL
-`EXPLAIN (ANALYZE, BUFFERS) SELECT ...` chạy query và in plan kèm thời gian thật và số buffer (`shared hit` = trong RAM, `read` = từ đĩa), tương đương actual plan + STATISTICS IO. Trên production dùng extension `pg_stat_statements` thay cho Query Store.
+`EXPLAIN (ANALYZE, BUFFERS) SELECT ...` chạy query và in plan kèm thời gian thật và số buffer (`shared hit` = trong RAM, `read` = từ đĩa), tương đương actual plan + STATISTICS IO. Trên production dùng extension `pg_stat_statements` thay cho Query Store, và `log_min_duration_statement` để log câu chậm.
 :::
 
 ## 3. Bước 2: đọc execution plan {#read-plan}
 
-**<T>Execution plan</T> là một cây operator; dữ liệu đi từ lá (đọc bảng, đọc index) lên gốc (`SELECT`).** SSMS vẽ gốc ở bên trái, nên đọc từ **phải sang trái**: operator bên phải nhất là chỗ dữ liệu được đọc ra, mỗi mũi tên là dòng chảy sang operator kế tiếp.
+**<T>Execution plan</T> là một cây operator; dữ liệu đi từ lá (đọc bảng, đọc index) lên gốc (`SELECT`).** SSMS vẽ gốc ở bên trái, nên đọc từ **phải sang trái**. Giá của một plan chủ yếu là số page nó đọc, nên cờ đỏ chung của mọi plan xấu là **đọc hàng triệu dòng để trả về vài dòng**.
 
 ### Cách đọc: mũi tên dày và cost cao {#plan-direction}
+
+**Độ dày mũi tên tỉ lệ với số dòng chảy qua nó, nên chỗ đáng ngờ là nơi một mũi tên dày đi vào và một mũi tên mảnh đi ra.** Ví dụ: trang đầu của màn hình finance chỉ cần 50 payout `Pending` cũ nhất, `SELECT TOP (50) * FROM Payouts WHERE Status = 'Pending' ORDER BY CreatedAt`.
+
+<div class="fig">
+<svg viewBox="0 0 720 372" role="img" aria-label="Trước và sau khi có index cho TOP 50 payout Pending: trước, Clustered Index Scan đọc 5 triệu dòng, mũi tên dày 20.000 dòng vào Sort, 62.500 logical reads; sau, Index Seek 50 dòng và Key Lookup 50 lần vào Nested Loops, khoảng 150 logical reads">
+<text x="20" y="22" font-size="13" font-weight="600" class="badT">Trước: chưa có index</text>
+<rect class="box" x="20" y="48" width="96" height="54" rx="6"/>
+<text x="68" y="80" font-size="13" font-weight="600" text-anchor="middle">SELECT</text>
+<rect class="boxBad" x="236" y="40" width="146" height="70" rx="6"/>
+<text x="250" y="66" font-size="13" font-weight="600">Sort (Top N)</text>
+<text x="250" y="88" font-size="11" class="mono">ORDER BY CreatedAt</text>
+<rect class="boxBad" x="490" y="40" width="210" height="70" rx="6"/>
+<text x="504" y="66" font-size="12.5" font-weight="600">Clustered Index Scan</text>
+<text x="504" y="90" font-size="12" font-weight="700" class="badT">đọc 5.000.000 dòng</text>
+<path class="boxBad" d="M486 62 L408 62 L408 52 L386 75 L408 98 L408 88 L486 88 Z"/>
+<text x="446" y="80" font-size="11" font-weight="600" text-anchor="middle" class="badT">20.000</text>
+<line class="lnAcc" x1="232" y1="75" x2="122" y2="75" marker-end="url(#eAcc)"/>
+<text x="177" y="66" font-size="11" text-anchor="middle" class="accT">50</text>
+<rect class="boxBad" x="490" y="122" width="210" height="28" rx="6"/>
+<text x="595" y="141" font-size="12" font-weight="600" text-anchor="middle" class="badT">logical reads ≈ 62.500</text>
+<line class="lnMuted" x1="20" y1="166" x2="700" y2="166"/>
+<text x="20" y="190" font-size="13" font-weight="600" class="okT">Sau: index (Status, CreatedAt)</text>
+<rect class="box" x="20" y="232" width="96" height="54" rx="6"/>
+<text x="68" y="264" font-size="13" font-weight="600" text-anchor="middle">SELECT</text>
+<rect class="box" x="236" y="232" width="146" height="54" rx="6"/>
+<text x="309" y="264" font-size="12.5" font-weight="600" text-anchor="middle">Nested Loops</text>
+<rect class="boxOk" x="490" y="204" width="210" height="54" rx="6"/>
+<text x="504" y="226" font-size="12.5" font-weight="600">Index Seek</text>
+<text x="504" y="246" font-size="11" class="mono">IX (Status, CreatedAt)</text>
+<rect class="box" x="490" y="270" width="210" height="54" rx="6"/>
+<text x="504" y="292" font-size="12.5" font-weight="600">Key Lookup × 50</text>
+<text x="504" y="312" font-size="11" class="mono">PK_Payouts (theo Id)</text>
+<path class="lnAcc" d="M486 231 L388 252" marker-end="url(#eAcc)"/>
+<path class="lnAcc" d="M486 297 L388 268" marker-end="url(#eAcc)"/>
+<text x="440" y="232" font-size="11" text-anchor="middle" class="accT">50</text>
+<text x="440" y="300" font-size="11" text-anchor="middle" class="accT">50</text>
+<line class="lnAcc" x1="232" y1="259" x2="122" y2="259" marker-end="url(#eAcc)"/>
+<text x="177" y="250" font-size="11" text-anchor="middle" class="accT">50</text>
+<rect class="boxOk" x="20" y="300" width="210" height="28" rx="6"/>
+<text x="125" y="319" font-size="12" font-weight="600" text-anchor="middle" class="okT">logical reads ≈ 150</text>
+<line class="lnAcc" x1="690" y1="346" x2="40" y2="346" marker-end="url(#eAcc)"/>
+<text x="365" y="366" font-size="12" text-anchor="middle" class="accT">đọc từ phải sang trái: dữ liệu được đọc ở bên phải, chảy về SELECT</text>
+</svg>
+<p class="fig-caption">Cùng một câu, trước và sau khi có index (rút gọn, bỏ operator Top). Trước: đọc 5 triệu dòng, lọc còn 20.000, sắp xếp cả 20.000 chỉ để lấy 50. Sau: seek thẳng tới 50 dòng, mỗi dòng nhảy về bảng lấy các cột còn thiếu: 50 lần × khoảng 3 page.</p>
+</div>
+
+1. **Mũi tên dày nhất** và số trong operator bên phải nhất: rê chuột vào operator xem `Number of Rows Read` so với `Actual Number of Rows`. Đọc 5.000.000, trả 20.000, dùng 50: đó là cờ đỏ.
+2. **Operator có cost % cao nhất**. Cost % là con số **ước lượng** của optimizer, kể cả trong actual plan; ước lượng sai (cờ đỏ 4) thì cost % cũng sai. Mũi tên và số dòng thật mới là số đo.
+3. **Icon cảnh báo** (tam giác vàng): spill, implicit conversion, thiếu thống kê. Plan "sau" vẫn có Key Lookup, nhưng 50 lần là rẻ; nó chỉ thành vấn đề khi hàng chục nghìn lần, xem [INCLUDE](#covering).
+
+### Bốn cờ đỏ {#red-flags}
 
 <div class="fig">
 <svg viewBox="0 0 720 250" role="img" aria-label="Execution plan của query: Clustered Index Scan đọc 5 triệu dòng, Sort có cảnh báo spill, rồi SELECT; gợi ý missing index ở trên">
@@ -116,22 +249,14 @@ Không ai ngồi chạy SSMS trên production để tìm query chậm. <T>Query 
 <line class="lnAcc" x1="690" y1="204" x2="40" y2="204" marker-end="url(#eAcc)"/>
 <text x="365" y="226" font-size="12" text-anchor="middle" class="accT">đọc từ phải sang trái: dữ liệu được đọc ở bên phải, chảy về SELECT</text>
 </svg>
-<p class="fig-caption">Plan thật của query ví dụ (rút gọn). Hai ô đỏ là hai cờ đỏ: Scan đọc cả bảng, Sort tự sắp xếp và tràn xuống tempdb. Dòng "20.000 of 1.200" là số dòng thật / số dòng ước lượng.</p>
+<p class="fig-caption">Plan thật của câu không có TOP (rút gọn), đọc theo bốn cờ đỏ dưới đây. Hai ô đỏ là hai cờ đỏ: Scan đọc cả bảng, Sort tự sắp xếp và tràn xuống tempdb. Dòng "20.000 of 1.200" là số dòng thật / số dòng ước lượng.</p>
 </div>
 
-Ba thứ để nhìn, theo thứ tự:
-
-1. **Mũi tên dày nhất**: độ dày tỉ lệ với số dòng đi qua. Một mũi tên dày đi vào một operator rồi ra mũi tên mảnh là chỗ DB đọc nhiều mà dùng ít. Rê chuột vào operator để xem thêm `Number of Rows Read`: ở đây Scan **đọc** 5 triệu dòng để **trả ra** 20.000.
-2. **Operator có cost % cao nhất**: Sort 78%. Lưu ý cost % là con số **ước lượng** của optimizer, kể cả trong actual plan; nếu ước lượng sai (xem cờ đỏ 4) thì cost % cũng sai. Mũi tên và số dòng thật mới là số đo.
-3. **Icon cảnh báo** (tam giác vàng): spill, implicit conversion, thiếu thống kê.
-
-### Bốn cờ đỏ {#red-flags}
-
-**Cờ 1: Clustered Index Scan / Table Scan, nghĩa là đọc cả bảng.** Clustered index chính là bảng (dữ liệu sắp theo `Id`); "scan" nó là đọc từ đầu tới cuối. Table Scan là cùng chuyện trên bảng không có clustered index (heap). Xảy ra khi không có index nào bắt đầu bằng cột trong `WHERE`. Scan không phải lúc nào cũng xấu: bảng nhỏ, hoặc query cần phần lớn các dòng, thì scan là cách rẻ nhất. Nó là cờ đỏ khi đọc 5 triệu để lấy 20.000.
+**Cờ 1: Clustered Index Scan / Table Scan, nghĩa là đọc cả bảng.** Clustered index chính là bảng (dữ liệu sắp theo `Id`); "scan" nó là đọc từ đầu tới cuối. Table Scan là cùng chuyện trên bảng không có clustered index (heap). Xảy ra khi không có index nào bắt đầu bằng cột trong `WHERE`. Scan không phải lúc nào cũng xấu: bảng nhỏ, hoặc query cần phần lớn các dòng, thì scan là cách rẻ nhất. Nó là cờ đỏ khi đọc 5 triệu để lấy 20.000. **Index Scan** (trên index phụ) cũng là đọc từ đầu tới cuối, chỉ là trên bản sao nhỏ hơn: có index mà vẫn thấy Scan thì thường do điều kiện bọc cột trong hàm, xem [Sargable](#sargable).
 
 **Cờ 2: Sort, nghĩa là không có index nào cho sẵn thứ tự.** Dữ liệu ra khỏi Scan theo thứ tự `Id`, nên muốn `ORDER BY CreatedAt` thì phải sắp lại. Sort cần một vùng nhớ (memory grant) được cấp **trước khi chạy**, dựa trên số dòng ước lượng. Ước lượng 1.200 dòng mà thật là 20.000 thì không đủ chỗ, Sort tràn ra <T>tempdb</T> trên đĩa: đó là tam giác vàng "Operator used tempdb to spill data".
 
-**Cờ 3: Key Lookup, nghĩa là index tìm được dòng nhưng thiếu cột.** Index phụ (nonclustered) chỉ chứa các cột của nó cộng với `Id`. `SELECT *` cần thêm `Note`, `Amount`... nên với **mỗi dòng** tìm được, DB phải nhảy sang clustered index theo `Id` để lấy phần còn lại (khoảng 3 page mỗi lần). 20.000 dòng là 20.000 lần nhảy, khoảng 60.000 logical reads, ngang với đọc cả bảng. Khi đó optimizer thường bỏ luôn index và quay về Scan. Sửa ở [INCLUDE và covering](#covering).
+**Cờ 3: Key Lookup, nghĩa là index tìm được dòng nhưng thiếu cột.** Index phụ (nonclustered) chỉ chứa các cột của nó cộng với `Id`; cột nào `SELECT` cần thêm thì **mỗi dòng** phải nhảy về bảng theo `Id` (khoảng 3 page mỗi lần). 50 lần như plan "sau" ở trên là rẻ; 20.000 lần là khoảng 60.000 logical reads, ngang đọc cả bảng, nên optimizer bỏ luôn index và quay về Scan. Hình danh bạ và cách sửa ở [INCLUDE và covering](#covering).
 
 **Cờ 4: số dòng ước lượng lệch xa số dòng thật.** Optimizer chọn plan (dùng index nào, join kiểu gì, cấp bao nhiêu RAM) dựa trên **thống kê** (statistics): bảng phân bố giá trị của cột. Thống kê cũ thì ước lượng sai, plan sai theo. SSMS in dưới mỗi operator dạng `20.000 of 1.200 (1666%)`: thật 20.000, ước lượng 1.200. Thống kê tự cập nhật khi đủ nhiều dòng đổi; với bảng 5 triệu dòng, ngưỡng là khoảng 70.000 dòng (SQL Server 2016+, compatibility level 130+), nên vừa insert 18.000 payout `Pending` thì thống kê chưa kịp biết. Sửa ngay: `UPDATE STATISTICS dbo.Payouts;`. Ước lượng lệch còn có thể do <T>parameter sniffing</T>: plan được dựng cho giá trị tham số lần đầu và dùng lại cho giá trị khác hẳn.
 
@@ -149,7 +274,7 @@ Dùng nó như manh mối "cột nào đang thiếu index", rồi tự thiết k
 
 ### Index là một danh bạ đã sắp xếp {#btree}
 
-**Index là một bản sao của vài cột, được sắp theo thứ tự các cột khoá, lưu dạng cây <T>B-tree</T>.** Vì đã sắp xếp, DB không phải đọc từ đầu: nó đi từ gốc cây xuống (3–4 page với 5 triệu dòng) để tới đúng chỗ giá trị cần tìm bắt đầu (**seek**), rồi đọc tiếp tuần tự ở tầng lá. Giống danh bạ điện thoại sắp theo họ rồi tới tên: tìm họ "Nguyễn" thì mở thẳng tới chữ N, và các "Nguyễn" nằm liền nhau, **đã sắp sẵn theo tên**.
+**Index là một bản sao của vài cột, được sắp theo thứ tự các cột khoá, lưu dạng cây <T>B-tree</T>.** Vì đã sắp xếp, DB không phải đọc từ đầu: nó đi từ gốc cây xuống (3–4 page với 5 triệu dòng) để tới đúng chỗ giá trị cần tìm bắt đầu (**seek**), rồi đọc tiếp tuần tự ở tầng lá. Giống danh bạ điện thoại sắp theo họ rồi tới tên: tìm họ "Nguyễn" thì mở thẳng tới chữ N, và các "Nguyễn" nằm liền nhau, **đã sắp sẵn theo tên**. Mỗi dòng danh bạ chỉ ghi khoá và một "số trang" (`Id`) trỏ sang bảng; cột khác muốn xem thì phải lật sang bảng.
 
 Áp vào query: index sắp theo `(Status, CreatedAt)` thì toàn bộ `Pending` nằm thành **một khối liền nhau**, và trong khối đó các dòng **đã sắp theo `CreatedAt`**. Một lần seek tới đầu khối, đọc tới cuối khối, xong: hết Scan, hết Sort.
 
@@ -211,25 +336,120 @@ Nhìn cột `Id` bên trái: trong cùng `Status` và `CreatedAt`, dòng vẫn �
 
 ### Thứ tự cột: so sánh bằng trước, khoảng và sắp xếp sau {#column-order}
 
-Suy ra từ hình: **cột đứng đầu quyết định dòng khớp có nằm liền nhau hay không; chỉ khi cột trước là một giá trị cố định thì cột sau mới được sắp liên tục.** Nên:
+**Cột đứng đầu quyết định các dòng khớp có nằm liền nhau hay không; cột sau chỉ được sắp liên tục bên trong một giá trị cố định của cột trước.** Mọi quy tắc về thứ tự cột suy ra từ câu này và hình danh bạ ở trên:
 
-1. Cột so sánh **bằng** (`Status = 'Pending'`, `AffiliateId = @id`) đứng đầu. Có nhiều cột bằng thì đặt cạnh nhau, thứ tự giữa chúng ít quan trọng.
-2. Sau đó tới **một** cột dùng cho **khoảng** (`CreatedAt >= @from`) hoặc **`ORDER BY`**.
-3. Cột range đứng trước thì mọi cột sau nó không còn được sắp liên tục nữa, như bên phải hình.
+1. **Cột so sánh bằng đứng đầu** (`Status = 'Pending'`, `HotelId = @h`): tất cả dòng khớp gom thành một khối, và trong khối đó cột thứ hai đã sắp sẵn. Nên seek tới `(Pending, @from)`, đọc tới là xong, không Sort.
+2. **Cột range đứng đầu thì hỏng**: index `(CreatedAt, Status)` sắp theo ngày trước, các trạng thái xen kẽ nhau (bên phải hình), nên phải đọc cả khoảng ngày rồi lọc `Pending`. Vì vậy "bằng trước, range / `ORDER BY` sau" là hệ quả, không cần học thuộc.
+3. **Thứ tự viết trong `WHERE` không liên quan**: optimizer nhận cả biểu thức rồi tự ghép với cột của index, nên `WHERE CreatedAt >= @from AND Status = 'Pending'` dùng index `(Status, CreatedAt)` y hệt. Chỉ thứ tự cột **trong index** quyết định.
 
 | Query | Index |
 |---|---|
 | `WHERE Status = @s ORDER BY CreatedAt` | `(Status, CreatedAt)` |
 | `WHERE Status = @s AND CreatedAt >= @from ORDER BY CreatedAt` | `(Status, CreatedAt)` |
 | `WHERE AffiliateId = @a AND Status = @s ORDER BY CreatedAt DESC` | `(AffiliateId, Status, CreatedAt)`; DESC đọc ngược được, không cần index riêng |
+| `WHERE HotelId = @h AND CheckIn >= @from AND CheckIn < @to ORDER BY CheckIn` | `(HotelId, CheckIn)` |
 
 Một index `(Status, CreatedAt)` cũng phục vụ luôn query chỉ lọc `WHERE Status = @s` (dùng phần đầu của khoá), nên không cần thêm index riêng cho `(Status)`.
 
+### Sargable: đừng bọc cột trong hàm {#sargable}
+
+**Index chỉ seek được khi DB biết giá trị cần tìm nằm ở đoạn nào trong thứ tự đã sắp; bọc cột trong hàm thì thứ được so sánh là một giá trị mới mà index không chứa, nên DB phải tính nó cho từng dòng.** Điều kiện seek được gọi là <T>sargable</T>. Giả sử có index trên `CreatedAt` cho báo cáo theo năm:
+
+<div class="fig">
+<svg viewBox="0 0 720 290" role="img" aria-label="Index sắp theo CreatedAt: điều kiện khoảng seek tới 2026-01-01 và đọc liền một khối; YEAR(CreatedAt) phải tính cho từng dòng của cả index">
+<text x="20" y="22" font-size="12" font-weight="600" class="mono okT">CreatedAt &gt;= '2026-01-01' AND &lt; '2027-01-01'</text>
+<text x="20" y="42" font-size="11.5" class="muted">như tìm họ bắt đầu bằng "Ng": mở thẳng tới N</text>
+<g font-size="11" class="mono">
+<text x="60" y="70">2025-11-30</text>
+<text x="60" y="90">2025-12-31</text>
+</g>
+<rect class="boxOk" x="52" y="98" width="230" height="84" rx="4"/>
+<g font-size="11" class="mono">
+<text x="60" y="114">2026-01-01</text>
+<text x="60" y="134">2026-03-15</text>
+<text x="60" y="154" class="muted">… cả năm 2026, liền nhau</text>
+<text x="60" y="174">2026-12-31</text>
+<text x="60" y="200">2027-01-02</text>
+<text x="60" y="220">2027-02-10</text>
+</g>
+<path class="lnOk" d="M24 56 C 24 90, 30 108, 48 109" marker-end="url(#eOk)"/>
+<text x="196" y="200" font-size="11" class="okT">← dừng ở đây</text>
+<text x="20" y="252" font-size="11.5" class="okT">seek tới 2026-01-01, đọc liền một khối,</text>
+<text x="20" y="270" font-size="11.5" class="okT">gặp 2027 thì dừng</text>
+<line class="lnMuted" x1="362" y1="10" x2="362" y2="280"/>
+<text x="380" y="22" font-size="12" font-weight="600" class="mono badT">YEAR(CreatedAt) = 2026</text>
+<text x="380" y="42" font-size="11.5" class="muted">như tìm tên có chữ thứ 3 là "n": lật cả cuốn</text>
+<g font-size="11" class="mono">
+<text x="420" y="70">2025-11-30</text><text x="530" y="70" class="badT">→ 2025</text>
+<text x="420" y="90">2025-12-31</text><text x="530" y="90" class="badT">→ 2025</text>
+<text x="420" y="114">2026-01-01</text><text x="530" y="114" class="okT">→ 2026</text>
+<text x="420" y="134">2026-03-15</text><text x="530" y="134" class="okT">→ 2026</text>
+<text x="420" y="154" class="muted">…</text><text x="530" y="154" class="muted">…</text>
+<text x="420" y="174">2026-12-31</text><text x="530" y="174" class="okT">→ 2026</text>
+<text x="420" y="200">2027-01-02</text><text x="530" y="200" class="badT">→ 2027</text>
+<text x="420" y="220">2027-02-10</text><text x="530" y="220" class="badT">→ 2027</text>
+</g>
+<line class="lnBad" x1="396" y1="56" x2="396" y2="228" marker-end="url(#eBad)"/>
+<text x="610" y="134" font-size="11" class="badT">tính YEAR()</text>
+<text x="610" y="150" font-size="11" class="badT">cho từng dòng</text>
+<text x="380" y="252" font-size="11.5" class="badT">SQL không biết YEAR() giữ thứ tự:</text>
+<text x="380" y="270" font-size="11.5" class="badT">tính lại cho cả 5 triệu dòng → Scan</text>
+</svg>
+<p class="fig-caption">Cùng một index sắp theo CreatedAt, cùng kết quả. Bên trái so sánh trên cột trần nên biết khối 2026 bắt đầu và kết thúc ở đâu. Bên phải so sánh trên kết quả của YEAR(), thứ không có trong index.</p>
+</div>
+
+- **Sửa: viết lại thành khoảng nửa mở trên cột trần**, `WHERE CreatedAt >= '2026-01-01' AND CreatedAt < '2027-01-01'`. Phía EF Core cũng vậy: `p.CreatedAt.Year == 2026` được dịch thành `DATEPART(year, [p].[CreatedAt]) = 2026`, cũng không seek được; viết `p.CreatedAt >= from && p.CreatedAt < to`.
+- **Cùng họ, cùng lý do**: `LIKE 'Ng%'` seek được (biết tiền tố, như mở tới chữ N), `LIKE '%son'` thì không (EF: `StartsWith` ra `LIKE 'x%'`, `EndsWith`/`Contains` thì không seek). `ISNULL(Col, 0) = 0`, `Amount * 2 > @x` cũng là bọc cột.
+- **Implicit conversion**: cột `varchar` so với tham số `nvarchar` (kiểu mặc định EF gửi cho `string` khi không khai báo `IsUnicode(false)`) thì SQL convert **cột** sang `nvarchar`, tức là bọc cột trong hàm; plan có tam giác vàng `CONVERT_IMPLICIT`. Mức độ hỏng tuỳ collation, nhưng cách sửa luôn là khai báo đúng kiểu cột trong EF để tham số cùng kiểu.
+
 ### INCLUDE: index trả lời được cả câu hỏi (covering) {#covering}
 
-**Tầng lá của index phụ chỉ chứa các cột khoá cộng với `Id`. Cột nào query cần mà không có ở đó thì phải [Key Lookup](#red-flags) về bảng, từng dòng một.** `INCLUDE` thêm cột vào tầng lá (không sắp theo chúng, không đưa lên các tầng trên của cây), nên index chứa đủ mọi cột query cần: đó là **covering index**, không còn Key Lookup.
+**Danh bạ chỉ ghi khoá và "số trang" (`Id`); cột nào query cần mà danh bạ không có thì phải lật sang sổ chính (bảng) cho từng dòng: đó là [Key Lookup](#red-flags).** `INCLUDE` chép thêm cột vào tầng lá của index (không sắp theo chúng, không đưa lên các tầng trên của cây), nên index chứa đủ mọi cột query cần: **covering index**, hết lật.
 
-Muốn index phủ được thì query không được đòi mọi cột. `SELECT *` cần cả `Note` (chuỗi dài), nên index phủ được nó sẽ to gần bằng bảng. Màn hình list chỉ hiện 4 cột, nên chỉ lấy 4 cột:
+<div class="fig">
+<svg viewBox="0 0 720 300" role="img" aria-label="Key Lookup như lật từ danh bạ sang sổ chính cho từng dòng; INCLUDE chép thêm cột vào danh bạ nên không phải lật">
+<text x="20" y="22" font-size="13" font-weight="600" class="badT">Chưa INCLUDE: mỗi dòng lật sang sổ chính</text>
+<rect class="box" x="20" y="40" width="168" height="150" rx="6"/>
+<text x="30" y="60" font-size="11.5" font-weight="600">Danh bạ = index</text>
+<g font-size="10.5" class="mono">
+<text x="30" y="84">Pending 01-04 Id 17</text>
+<text x="30" y="108">Pending 01-05 Id 902</text>
+<text x="30" y="132">Pending 01-05 Id 4950</text>
+<text x="30" y="156" class="muted">… 50 dòng</text>
+</g>
+<text x="30" y="180" font-size="10" class="muted">chỉ có khoá + số trang (Id)</text>
+<rect class="box" x="262" y="40" width="88" height="150" rx="6"/>
+<rect class="boxAcc" x="266" y="44" width="80" height="142" rx="4" style="fill:none"/>
+<text x="306" y="60" font-size="11.5" font-weight="600" text-anchor="middle">Sổ chính</text>
+<text x="306" y="76" font-size="10" text-anchor="middle" class="muted">= bảng, đủ cột</text>
+<g class="lnMuted"><line x1="274" y1="96" x2="338" y2="96"/><line x1="274" y1="112" x2="338" y2="112"/><line x1="274" y1="128" x2="338" y2="128"/><line x1="274" y1="144" x2="338" y2="144"/><line x1="274" y1="160" x2="338" y2="160"/><line x1="274" y1="176" x2="338" y2="176"/></g>
+<path class="lnBad" d="M176 80 C 220 70, 230 92, 258 96" marker-end="url(#eBad)"/>
+<path class="lnBad" d="M184 104 C 220 112, 232 140, 258 144" marker-end="url(#eBad)"/>
+<path class="lnBad" d="M188 128 C 222 150, 236 170, 258 172" marker-end="url(#eBad)"/>
+<text x="20" y="218" font-size="12" class="okT">50 lần lật ≈ 150 page: ổn</text>
+<text x="20" y="240" font-size="12" class="badT">20.000 lần lật ≈ đọc cả sổ</text>
+<text x="20" y="262" font-size="12" class="badT">→ optimizer bỏ danh bạ, chọn Scan</text>
+<line class="lnMuted" x1="372" y1="10" x2="372" y2="286"/>
+<text x="392" y="22" font-size="13" font-weight="600" class="okT">INCLUDE: danh bạ chép sẵn cột cần</text>
+<rect class="boxOk" x="392" y="40" width="308" height="150" rx="6"/>
+<text x="402" y="60" font-size="11.5" font-weight="600">Danh bạ = index (covering)</text>
+<g font-size="10.5" class="mono">
+<text x="402" y="84">Pending 01-04 Id 17</text><text x="562" y="84" class="okT">A-8   1.200.000</text>
+<text x="402" y="108">Pending 01-05 Id 902</text><text x="562" y="108" class="okT">A-3     450.000</text>
+<text x="402" y="132">Pending 01-05 Id 4950</text><text x="562" y="132" class="okT">A-8     900.000</text>
+<text x="402" y="156" class="muted">… 50 dòng</text>
+</g>
+<text x="562" y="180" font-size="10" class="okT">AffiliateId, Amount</text>
+<text x="392" y="218" font-size="12" class="okT">không lật: Index Seek là xong, ≈ 4 page</text>
+<text x="392" y="240" font-size="12" class="muted">giá: index to hơn, mỗi lần ghi</text>
+<text x="392" y="262" font-size="12" class="muted">phải chép thêm các cột đó</text>
+</svg>
+<p class="fig-caption">Bên trái: Index Seek tìm đúng dòng nhưng mỗi dòng phải nhảy về bảng (Key Lookup). Bên phải: các cột màn hình cần đã nằm sẵn trong index.</p>
+</div>
+
+- **Số lần lật quyết định tất cả**: optimizer ước lượng số dòng; vài chục lần thì Seek + Key Lookup rẻ, vài chục nghìn lần thì Scan rẻ hơn và nó **bỏ qua index** của bạn. Đó là lý do "đã có index mà plan vẫn Scan".
+- **Muốn phủ được thì query không được đòi mọi cột**: `SELECT *` cần cả `Note` (chuỗi dài), index phủ được nó sẽ to gần bằng bảng. Màn hình list chỉ hiện 4 cột, nên chỉ lấy 4 cột.
+- **Giá**: index to hơn (đĩa, RAM), và mỗi INSERT / UPDATE các cột INCLUDE phải ghi thêm vào index. Chỉ INCLUDE cột query nóng thật sự cần.
 
 ```sql
 CREATE NONCLUSTERED INDEX IX_Payouts_Status_CreatedAt
@@ -307,8 +527,8 @@ Chạy lại với `SET STATISTICS IO ON` sau mỗi thay đổi, so **logical re
 | 0 | Chưa có index | Clustered Index Scan + Sort | ~62.500 |
 | 1 | Index `(Status)`, vẫn `SELECT *` | Seek + Key Lookup × 20.000 + Sort; optimizer thường bỏ index, quay về Scan | ~60.000 |
 | 2 | Index `(Status, CreatedAt)`, vẫn `SELECT *` | Seek + Key Lookup, **hết Sort** | ~60.000 |
-| 3 | Thêm `INCLUDE (AffiliateId, Amount)`, chỉ lấy 4 cột | Index Seek, hết Lookup | ~120 |
-| 4 | Thêm `TOP 50` / keyset | Index Seek, dừng sau 50 dòng | ~4 |
+| 3 | Thêm `TOP 50` (trang đầu), vẫn `SELECT *` | Seek + Key Lookup × 50 (hình [plan trước/sau](#plan-direction)) | ~150 |
+| 4 | Thêm `INCLUDE (AffiliateId, Amount)`, chỉ lấy 4 cột | Index Seek, hết Lookup, dừng sau 50 dòng (không `TOP` thì ~120) | ~4 |
 
 Hai nấc 1 và 2 cho thấy vì sao "đã thêm index mà không nhanh hơn": index đúng thứ tự nhưng chưa phủ cột, Key Lookup ăn hết phần lợi. Logical reads không giảm thì quay lại đọc plan, đừng đoán.
 
@@ -379,11 +599,18 @@ WHERE s.database_id = DB_ID() AND s.object_id = OBJECT_ID('dbo.Payouts');
 ### Một query chậm trên production. Bạn điều tra thế nào? <Badge type="warning" text="gần như chắc chắn bị hỏi" /> {#slow-query}
 
 ::: tip Trả lời nhanh
-Đo trước, sửa sau. Tìm query chậm (Query Store, log `Executed DbCommand`), chạy lại đúng câu SQL đó với `SET STATISTICS IO, TIME ON` và actual execution plan. Đọc plan từ phải sang trái, tìm mũi tên dày và bốn cờ đỏ: Scan cả bảng, Sort, Key Lookup, số dòng ước lượng lệch thật. Sửa bằng index đúng thứ tự cột, INCLUDE cột cần, bỏ `SELECT *`, hoặc cập nhật thống kê. Đo lại bằng logical reads. Xem [Đo](#measure), [Đọc plan](#read-plan), [Sửa](#fix).
+Đo trước, không đoán. Tìm câu chậm ở chỗ đã ghi sẵn: Query Store (Top Resource Consuming, Regressed Queries), log `Executed DbCommand` của EF hoặc interceptor log câu quá N ms, Extended Events nếu đang chậm lúc này. Chạy lại đúng câu SQL đó với `SET STATISTICS IO, TIME ON` và actual plan. Đọc plan phải sang trái, tìm chỗ đọc triệu dòng để trả vài dòng: Scan, Sort, Key Lookup nhiều, ước lượng lệch thật. Sửa bằng index đúng thứ tự cột, INCLUDE, điều kiện sargable, cập nhật thống kê. Đo lại bằng logical reads. Xem [Đo](#measure), [Đọc plan](#read-plan), [Sửa](#fix).
 :::
 
 ::: details Câu trả lời mẫu (English)
-I measure before I change anything. First I find which query is slow, from Query Store in production or from the EF Core command log, which shows the SQL and its duration. Then I run that exact SQL in SSMS with `SET STATISTICS IO, TIME ON` and the actual execution plan. I care most about logical reads, because seconds depend on whether the pages are already cached. I read the plan from right to left and look for the thickest arrows and four red flags: a clustered index scan that reads the whole table, a sort because no index provides the order, key lookups because the index doesn't cover the columns, and a big gap between estimated and actual rows, which usually means stale statistics. For example, on our payouts table, a query for pending payouts ordered by creation date scanned 5 million rows and sorted 20,000. A composite index on status and created date, with the displayed columns included, turned it into a single index seek with no sort, and logical reads went from about 62,000 to about a hundred. Then I check that the write cost of the new index is acceptable.
+Ý để nói, không phải văn để thuộc:
+
+- Measure, don't guess. Find the query where it's already recorded: Query Store (top resource consuming, regressed queries), the EF Core command log or a slow-query interceptor, Extended Events if it's slow right now.
+- Re-run that exact SQL with `SET STATISTICS IO, TIME ON` and the actual plan. Compare logical reads, not seconds: seconds depend on the cache.
+- Read the plan right to left. Red flag: reading millions of rows to return a few. Scan, sort, thousands of key lookups, estimated vs actual rows far apart.
+- Fix: composite index in the right column order, INCLUDE the needed columns, sargable predicates, update statistics.
+- Example: top 50 pending payouts. Scan of 5M rows plus sort, 62,500 reads. Index on `(Status, CreatedAt)`: one seek, about 150 reads.
+- Re-measure, and check the write cost of the new index.
 :::
 
 ::: warning Bẫy & follow-up
@@ -393,7 +620,7 @@ Không nên tạo nguyên văn: nó không xét `ORDER BY`, hay nhét mọi cộ
 
 **"Thêm index rồi mà vẫn chậm?"**
 
-Xem lại plan: có thể còn Key Lookup cho từng dòng (index chưa phủ cột), optimizer bỏ index vì quá nhiều lookup, filtered index không khớp vì query dùng tham số, hoặc thống kê cũ. Xem [Đo lại](#re-measure).
+Xem lại plan: có thể còn Key Lookup cho từng dòng (index chưa phủ cột), optimizer bỏ index vì quá nhiều lookup, điều kiện bọc cột trong hàm hoặc lệch kiểu nên không seek được ([Sargable](#sargable)), filtered index không khớp vì query dùng tham số, hoặc thống kê cũ. Xem [Đo lại](#re-measure).
 
 **"Lúc nhanh lúc chậm với cùng một query?"**
 
@@ -407,7 +634,13 @@ Index ghép `(Status, CreatedAt)`: cột so sánh bằng đứng trước, cột
 :::
 
 ::: details Câu trả lời mẫu (English)
-A composite index on `(Status, CreatedAt)`. An index is a sorted copy of its key columns, so with status first, all pending rows sit together, and within that block they're already sorted by `CreatedAt`. The engine seeks to the first pending row and reads forward, with no full scan and no sort. The rule is equality columns first, then the range or sort column. If I put `CreatedAt` first, pending rows would be scattered across the whole index. To avoid key lookups, I include the columns the screen needs, like amount and affiliate id, and I stop selecting star so the index can cover the query. If pending is a small fraction of the table, a filtered index with `WHERE Status = 'Pending'` is much smaller, but the query has to use the literal value, not a parameter. For paging I use `TOP` with keyset pagination on `CreatedAt` and `Id` instead of a deep `OFFSET`.
+Ý để nói, không phải văn để thuộc:
+
+- `(Status, CreatedAt)`: equality column first, range or sort column second.
+- Why: an index is a sorted copy, like a phone book. All pending rows sit together, already ordered by `CreatedAt`. One seek, read forward, no sort.
+- Reversed, `(CreatedAt, Status)`: pending rows are scattered across dates, so it reads the whole range and filters.
+- The order of conditions in `WHERE` doesn't matter, the optimizer matches them to the index. Only the index key order matters.
+- INCLUDE the displayed columns and stop `SELECT *`, otherwise every row needs a key lookup. Filtered index if pending is a small slice; keyset instead of deep `OFFSET`.
 :::
 
 ::: warning Bẫy & follow-up
@@ -419,9 +652,43 @@ Không cần Sort nhưng `Pending` rải khắp index, phải quét gần hết 
 
 Hết Sort nhưng vẫn phải quét tìm `Pending`, và `Id` không phải `CreatedAt` khi có import/backfill: đổi nghĩa query. Xem [ORDER BY Id](#order-by-id).
 
+**"Viết `WHERE CreatedAt >= @from AND Status = 'Pending'` (đảo vế) thì còn dùng index không?"**
+
+Còn. Optimizer tự ghép điều kiện với cột của index; chỉ thứ tự cột trong index quan trọng. Xem [Thứ tự cột](#column-order).
+
 **"Index riêng trên `Status` và riêng trên `CreatedAt` có thay được không?"**
 
 Không tốt bằng: mỗi index chỉ giải một nửa (tìm hoặc sắp xếp), optimizer thường chỉ dùng một rồi Sort hoặc Lookup phần còn lại.
+:::
+
+### Vì sao `WHERE YEAR(CheckIn) = 2026` chậm? {#sargable-question}
+
+::: tip Trả lời nhanh
+Index sắp theo `CheckIn`, không theo `YEAR(CheckIn)`. Bọc cột trong hàm thì thứ được so sánh là giá trị mới, SQL phải tính cho từng dòng và không biết hàm có giữ thứ tự không, nên không seek được: thành Scan. Sửa: khoảng nửa mở trên cột trần, `CheckIn >= '2026-01-01' AND CheckIn < '2027-01-01'`. Cùng họ: `LIKE '%son'`, implicit conversion, `b.CheckIn.Year == 2026` trong EF. Xem [Sargable](#sargable).
+:::
+
+::: details Câu trả lời mẫu (English)
+Ý để nói, không phải văn để thuộc:
+
+- The index is sorted by `CheckIn`, not by `YEAR(CheckIn)`.
+- A function on the column produces a new value. SQL has to compute it for every row and doesn't assume the function keeps the order, so it scans instead of seeking.
+- Phone book: names starting with "Ng" is fast; names whose third letter is "n" means reading the whole book.
+- Fix: a half-open range on the bare column, `CheckIn >= '2026-01-01' AND CheckIn < '2027-01-01'`.
+- Same family: `LIKE '%son'`, `ISNULL(col, ...)`, nvarchar parameter against a varchar column. In EF, `.Year == 2026` becomes `DATEPART`, same problem.
+:::
+
+::: warning Bẫy & follow-up
+**"Sao không viết `BETWEEN '2026-01-01' AND '2026-12-31'`?"**
+
+Với cột `datetime`, `'2026-12-31'` là 00:00 ngày 31/12, nên bỏ sót mọi booking trong ngày đó. Khoảng nửa mở `>= ... <` đúng với mọi kiểu ngày giờ.
+
+**"`CAST(CheckIn AS date) = @d` cũng là bọc hàm, có Scan không?"**
+
+SQL Server có ngoại lệ riêng cho `CAST(... AS date)` trên cột `datetime`: vẫn seek được. Đừng dựa vào ngoại lệ đó để suy ra các hàm khác; mặc định coi hàm trên cột là mất seek.
+
+**"Tạo computed column `YEAR(CheckIn)` rồi index nó được không?"**
+
+Được, index trên computed column seek được đúng biểu thức đó. Nhưng đó là thêm một index phải ghi ở mọi INSERT; viết lại điều kiện thành khoảng thì miễn phí. Xem [Giá của index](#index-cost).
 :::
 
 ### Sao không index hết các cột cho nhanh? {#too-many-indexes}
@@ -480,4 +747,12 @@ Không: biến thành tham số SQL, plan phải đúng với mọi giá trị n
 
 ::: details 6. Index (Status) và index (Status, CreatedAt) cùng tồn tại. Nên làm gì?
 Xoá `(Status)`: index sau dùng được phần đầu khoá cho mọi query chỉ lọc `Status`, còn index trước chỉ làm chậm ghi.
+:::
+
+::: details 7. Có index (CreatedAt), query EF viết p.CreatedAt.Year == 2026. Plan ra Seek hay Scan? Tại sao?
+Scan: EF dịch thành `DATEPART(year, CreatedAt) = 2026`, giá trị phải tính cho từng dòng và không có trong index. Viết `p.CreatedAt >= from && p.CreatedAt < to` để so trên cột trần.
+:::
+
+::: details 8. Plan "sau" có Key Lookup × 50. Có cần thêm INCLUDE không? Nếu query trả 30.000 dòng thì sao?
+50 lần lật khoảng 150 page, chấp nhận được. 30.000 lần thì optimizer sẽ chọn Scan và bỏ index; lúc đó mới cần INCLUDE và bỏ `SELECT *`.
 :::

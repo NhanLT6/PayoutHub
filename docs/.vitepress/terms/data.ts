@@ -154,6 +154,26 @@ const terms: Record<string, TermDef> = {
     def: 'Một điều kiện lọc lại bao nhiêu phần trăm bảng. Cột ít giá trị khác nhau (`Status`) có selectivity thấp nên index một mình yếu, nhưng vẫn tốt khi làm cột đầu của index ghép.',
     link: '/data/sql-performance#index-cost',
   },
+  sargable: {
+    title: 'Sargable',
+    full: 'Search ARGument ABLE',
+    group: data,
+    def: 'Điều kiện mà index seek được: so sánh trên **cột trần** (`CreatedAt >= @from`). Bọc cột trong hàm (`YEAR(CreatedAt) = 2026`), `LIKE \'%son\'` hay implicit conversion thì SQL phải tính lại cho từng dòng, thành Scan.',
+    link: '/data/sql-performance#sargable',
+  },
+  'extended events': {
+    title: 'Extended Events',
+    full: 'XEvents',
+    group: data,
+    def: 'Cơ chế bắt sự kiện nhẹ của SQL Server (vd mọi câu chạy quá 1 giây), thay cho SQL Profiler đã deprecated và nặng trên production. Dùng để bắt chuyện **đang xảy ra**; Query Store dùng để xem lịch sử.',
+    link: '/data/sql-performance#extended-events',
+  },
+  'dbcommandinterceptor': {
+    title: 'DbCommandInterceptor',
+    group: data,
+    def: 'Class của EF Core để chen vào trước/sau mỗi lần chạy một `DbCommand`. Hay dùng để log riêng các câu chạy quá N ms. Đăng ký bằng `AddInterceptors(...)`.',
+    link: '/data/sql-performance#ef-log',
+  },
 }
 
 export default terms

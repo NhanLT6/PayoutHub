@@ -171,6 +171,7 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Một query chậm trên production. Bạn điều tra thế nào?](/data/sql-performance#slow-query)
 - [`WHERE Status = 'Pending' ORDER BY CreatedAt`: tạo index gì?](/data/sql-performance#index-where-order-by)
 - [Sao không index hết các cột cho nhanh?](/data/sql-performance#too-many-indexes)
+- [Vì sao `WHERE YEAR(CheckIn) = 2026` chậm?](/data/sql-performance#sargable-question)
 
 ## Kiến trúc phân tán
 
