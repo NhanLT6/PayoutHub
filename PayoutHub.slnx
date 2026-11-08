@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Overlap.cs" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/PayoutHub.Api/PayoutHub.Api.csproj" />
     <Project Path="src/PayoutHub.Core/PayoutHub.Core.csproj" />
