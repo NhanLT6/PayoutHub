@@ -148,3 +148,15 @@ Mẫu:
   - Status code: 202 Accepted (đã nói 203). Static HttpClient không nhận DNS đổi.
 - **Quiz:** `.Result` 6, WhenAll 5, scope trong singleton 8, Options 8, N+1 0, record 9, AsNoTracking 9, concurrency 5, HttpClient 7, status code 8.
 - **Tiếp theo:** trả lời câu thiết kế HRS (flight delay 6h → tự rebook: dữ liệu vào, chia phần, sync hay message, API khách sạn lỗi, khi nào cần operator), rồi SOLID, SQL, testing, Azure/K8s, chuẩn bị nói, mock cuối, live coding bài 2 nếu còn giờ.
+
+## 2026-11-08 → 09 · Ôn HRS ngày 3 và buổi phỏng vấn kỹ thuật
+- **Đã làm:** thiết kế kiểu HRS (rebook khi delay/huỷ chuyến, reporting + multi-tenant), viết lại các mục hay sai theo kiểu suy luận ([async](/runtime/async#async-exceptions), [N+1](/data/ef-core#n-plus-one), [concurrency](/data/ef-core#concurrency), [status code](/aspnet-core/rest-api#status-rule), [at-least-once](/architecture/messaging#at-least-once), [thứ tự bước saga](/architecture/messaging#step-order)), nguyên lý "UI đơ" ở [async-flow](/runtime/async-flow#flow), viết lại [SQL chậm và index](/data/sql-performance). Chuẩn bị nói: dự án CF, case Slack/Teams (SyncAll, trade-off), AI workflow.
+- **Chỗ yếu:**
+  - Thiết kế: định "huỷ hết rồi đặt lại" (đúng là impact analysis, giữ cái mới trước khi nhả cái cũ); báo cáo lệch số thì đoán do request lỗi (đúng là event trùng → idempotent consumer).
+  - SQL: chưa biết Query Store / log EF; thứ tự cột index chưa suy ra được; nghĩ đảo thứ tự WHERE làm hỏng index; chưa biết sargable.
+  - Async: hiểu state machine nhưng chưa trả lời được "trong vài giây đó UI có đơ không" (UI đơ chỉ khi thread vẽ UI bị chặn; async server = sức chứa).
+- **Phỏng vấn HRS (09/11), Nhan tự đánh giá gần như fail.** Câu bị hỏi mà chưa trả lời tốt:
+  - Luồng từ thao tác UI tới DB, và cấu trúc project (họ muốn xem có hiểu architecture: các layer, chiều phụ thuộc).
+  - Luồng xác thực/phân quyền với access token + refresh token: quên.
+  - AI: team họ làm kiểu automate gần hết (giống superpowers: TDD, nhiều vòng agent, người chỉ quyết định); không ai hỏi tới WorkCtx.
+- **Tiếp theo:** ôn lại [JWT và refresh token](/aspnet-core/authentication-jwt), luyện câu "cấu trúc project" bằng chính PayoutHub (Api → Infrastructure → Core), và câu chuyện AI theo hướng "vòng lặp tự động + test làm hàng rào".
