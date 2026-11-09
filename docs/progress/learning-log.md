@@ -159,4 +159,7 @@ Mẫu:
   - Luồng từ thao tác UI tới DB, và cấu trúc project (họ muốn xem có hiểu architecture: các layer, chiều phụ thuộc).
   - Luồng xác thực/phân quyền với access token + refresh token: quên.
   - AI: team họ làm kiểu automate gần hết (giống superpowers: TDD, nhiều vòng agent, người chỉ quyết định); không ai hỏi tới WorkCtx.
+  - Câu hỏi về WorkCtx: làm sao biết thật sự tiết kiệm token khi chỉ bỏ phần test; sao không quét project một lần thay vì quét theo từng ticket. (Gợi ý: đo trên cùng nhóm ticket, so chi phí trên mỗi thay đổi được chấp nhận; kết hợp bản đồ bền + ghi thêm theo ticket + prompt caching.)
+  - Team Lead hỏi chung chung: "có làm việc vượt sức hay vượt trách nhiệm không?". (Gợi ý: có, phân tích yêu cầu thay vai trò BA, rồi đóng gói thành WorkCtx; mình đề xuất, PO/lead quyết; quá tải thì báo sớm.)
+- **Bài học cho lần ôn sau:** luyện phần nói (dự án, case khó, behavioral) ngay từ ngày đầu, gom chi tiết thật trước; không bỏ mock cuối; luôn có câu "cấu trúc project", luồng xác thực có refresh token, cách làm việc với AI theo hướng tự động hoá.
 - **Tiếp theo:** ôn lại [JWT và refresh token](/aspnet-core/authentication-jwt), luyện câu "cấu trúc project" bằng chính PayoutHub (Api → Infrastructure → Core), và câu chuyện AI theo hướng "vòng lặp tự động + test làm hàng rào".
