@@ -473,35 +473,37 @@ Web Forms chạy theo các **event của `HttpApplication`**: mỗi request đi 
 <text x="160" y="22" font-size="13" font-weight="600">Web Forms · event của HttpApplication</text>
 <text x="450" y="22" font-size="13" font-weight="600">ASP.NET Core · middleware</text>
 <g font-size="11.5" class="muted"><text x="10" y="62">dựng danh tính</text><text x="10" y="126">nạp role</text><text x="10" y="190">biết page/action</text><text x="10" y="204">nào chưa?</text><text x="10" y="254">luật theo</text><text x="10" y="268">page/action</text><text x="10" y="318">luật trên</text><text x="10" y="332">nút, object</text><text x="10" y="390">thiếu quyền</text></g>
-<rect class="box" x="160" y="36" width="270" height="46" rx="8"/><text x="172" y="56" font-size="12" font-weight="600" class="mono">AuthenticateRequest</text><text x="172" y="73" font-size="11">FormsAuthenticationModule: cookie .ASPXAUTH</text>
-<rect class="box" x="160" y="100" width="270" height="46" rx="8"/><text x="172" y="120" font-size="12" font-weight="600" class="mono">PostAuthenticateRequest</text><text x="172" y="137" font-size="11">RoleManager, hoặc code trong Global.asax</text>
-<rect class="boxBad" x="160" y="164" width="270" height="46" rx="8"/><text x="172" y="184" font-size="12" font-weight="600" class="mono">AuthorizeRequest</text><text x="172" y="201" font-size="11"><tspan class="badT" font-weight="600">chỉ biết URL</tspan>: UrlAuthorization (web.config)</text>
-<rect class="boxAcc" x="160" y="228" width="270" height="46" rx="8"/><text x="172" y="248" font-size="12" font-weight="600" class="mono">PreRequestHandlerExecute</text><text x="172" y="265" font-size="11">đã biết page: HttpModule tự viết đọc attribute</text>
-<rect class="box" x="160" y="292" width="270" height="46" rx="8"/><text x="172" y="312" font-size="12" font-weight="600" class="mono">btnApprove_Click</text><text x="172" y="329" font-size="11">PermissionService.CanApprove(User, payout)</text>
-<rect class="boxBad" x="160" y="364" width="270" height="40" rx="8"/><text x="172" y="389" font-size="11.5">401 → <tspan font-weight="600" class="badT">redirect về trang login</tspan></text>
+<a href="#wf-identity" style="text-decoration:none"><rect class="box" x="160" y="36" width="270" height="46" rx="8"/><text x="172" y="56" font-size="12" font-weight="600" class="mono">AuthenticateRequest</text><text x="172" y="73" font-size="11">FormsAuthenticationModule: cookie .ASPXAUTH</text></a>
+<a href="#wf-identity" style="text-decoration:none"><rect class="box" x="160" y="100" width="270" height="46" rx="8"/><text x="172" y="120" font-size="12" font-weight="600" class="mono">PostAuthenticateRequest</text><text x="172" y="137" font-size="11">RoleManager, hoặc code trong Global.asax</text></a>
+<a href="#wf-webconfig" style="text-decoration:none"><rect class="boxBad" x="160" y="164" width="270" height="46" rx="8"/><text x="172" y="184" font-size="12" font-weight="600" class="mono">AuthorizeRequest</text><text x="172" y="201" font-size="11"><tspan class="badT" font-weight="600">chỉ biết URL</tspan>: UrlAuthorization (web.config)</text></a>
+<a href="#wf-module" style="text-decoration:none"><rect class="boxAcc" x="160" y="228" width="270" height="46" rx="8"/><text x="172" y="248" font-size="12" font-weight="600" class="mono">PreRequestHandlerExecute</text><text x="172" y="265" font-size="11">đã biết page: HttpModule tự viết đọc attribute</text></a>
+<a href="#wf-service" style="text-decoration:none"><rect class="box" x="160" y="292" width="270" height="46" rx="8"/><text x="172" y="312" font-size="12" font-weight="600" class="mono">btnApprove_Click</text><text x="172" y="329" font-size="11">PermissionService.CanApprove(User, payout)</text></a>
+<a href="#webforms-pipeline" style="text-decoration:none"><rect class="boxBad" x="160" y="364" width="270" height="40" rx="8"/><text x="172" y="389" font-size="11.5">401 → <tspan font-weight="600" class="badT">redirect về trang login</tspan></text></a>
 <g class="ln"><line x1="295" y1="82" x2="295" y2="96" marker-end="url(#zInk)"/><line x1="295" y1="146" x2="295" y2="160" marker-end="url(#zInk)"/><line x1="295" y1="210" x2="295" y2="224" marker-end="url(#zInk)"/><line x1="295" y1="274" x2="295" y2="288" marker-end="url(#zInk)"/></g>
-<rect class="box" x="450" y="36" width="260" height="46" rx="8"/><text x="462" y="56" font-size="12" font-weight="600" class="mono">UseAuthentication</text><text x="462" y="73" font-size="11">Cookie hoặc JwtBearer → HttpContext.User</text>
-<rect class="box" x="450" y="100" width="260" height="46" rx="8"/><text x="462" y="120" font-size="12" font-weight="600" class="mono">IClaimsTransformation</text><text x="462" y="137" font-size="11">thêm role/permission từ DB</text>
-<rect class="boxOk" x="450" y="164" width="260" height="46" rx="8"/><text x="462" y="184" font-size="12" font-weight="600" class="mono">UseRouting (đứng đầu)</text><text x="462" y="201" font-size="11"><tspan class="okT" font-weight="600">đã biết endpoint</tspan> trước khi kiểm quyền</text>
-<rect class="boxAcc" x="450" y="228" width="260" height="46" rx="8"/><text x="462" y="248" font-size="12" font-weight="600" class="mono">UseAuthorization</text><text x="462" y="265" font-size="11">đọc [Authorize(Policy)] của action, có sẵn</text>
-<rect class="box" x="450" y="292" width="260" height="46" rx="8"/><text x="462" y="312" font-size="12" font-weight="600" class="mono">action Approve</text><text x="462" y="329" font-size="11">AuthorizeAsync(User, payout, requirement)</text>
-<rect class="boxOk" x="450" y="364" width="260" height="40" rx="8"/><text x="462" y="389" font-size="11.5">Challenge 401 · <tspan font-weight="600" class="okT">Forbid 403</tspan></text>
+<a :href="$withBase('/aspnet-core/authentication-jwt#per-request')" style="text-decoration:none"><rect class="box" x="450" y="36" width="260" height="46" rx="8"/><text x="462" y="56" font-size="12" font-weight="600" class="mono">UseAuthentication</text><text x="462" y="73" font-size="11">Cookie hoặc JwtBearer → HttpContext.User</text></a>
+<a href="#trade-offs" style="text-decoration:none"><rect class="box" x="450" y="100" width="260" height="46" rx="8"/><text x="462" y="120" font-size="12" font-weight="600" class="mono">IClaimsTransformation</text><text x="462" y="137" font-size="11">thêm role/permission từ DB</text></a>
+<a href="#step-1" style="text-decoration:none"><rect class="boxOk" x="450" y="164" width="260" height="46" rx="8"/><text x="462" y="184" font-size="12" font-weight="600" class="mono">UseRouting (đứng đầu)</text><text x="462" y="201" font-size="11"><tspan class="okT" font-weight="600">đã biết endpoint</tspan> trước khi kiểm quyền</text></a>
+<a href="#flow" style="text-decoration:none"><rect class="boxAcc" x="450" y="228" width="260" height="46" rx="8"/><text x="462" y="248" font-size="12" font-weight="600" class="mono">UseAuthorization</text><text x="462" y="265" font-size="11">đọc [Authorize(Policy)] của action, có sẵn</text></a>
+<a href="#resource-based" style="text-decoration:none"><rect class="box" x="450" y="292" width="260" height="46" rx="8"/><text x="462" y="312" font-size="12" font-weight="600" class="mono">action Approve</text><text x="462" y="329" font-size="11">AuthorizeAsync(User, payout, requirement)</text></a>
+<a href="#step-5" style="text-decoration:none"><rect class="boxOk" x="450" y="364" width="260" height="40" rx="8"/><text x="462" y="389" font-size="11.5">Challenge 401 · <tspan font-weight="600" class="okT">Forbid 403</tspan></text></a>
 <g class="ln"><line x1="580" y1="82" x2="580" y2="96" marker-end="url(#zInk)"/><line x1="580" y1="146" x2="580" y2="160" marker-end="url(#zInk)"/><line x1="580" y1="210" x2="580" y2="224" marker-end="url(#zInk)"/><line x1="580" y1="274" x2="580" y2="288" marker-end="url(#zInk)"/></g>
 </svg>
-<p class="fig-caption">Mỗi hàng là cùng một việc ở hai framework. Ô viền xanh dương là chỗ đặt luật theo page/action. Tự hỏi: vì sao web.config chỉ phân quyền được theo folder, còn <code>[Authorize]</code> gắn được lên từng action?</p>
+<p class="fig-caption">Mỗi hàng là cùng một việc ở hai framework; bấm vào ô để tới code của bước đó. Ô viền xanh dương là chỗ đặt luật theo page/action. Tự hỏi: vì sao web.config chỉ phân quyền được theo folder, còn <code>[Authorize]</code> gắn được lên từng action?</p>
 </div>
 
 Từ thứ tự hai pipeline suy ra ba khác biệt:
 
 - **Vì `AuthorizeRequest` chạy trước `MapRequestHandler`, `UrlAuthorizationModule` chưa biết page nào sẽ chạy**, chỉ biết URL. Nên luật trong web.config là luật theo folder hoặc file. Core gọi routing trước nên `UseAuthorization` đọc được `[Authorize]` của chính action.
-- **Muốn gắn luật lên page ở Web Forms phải đợi tới `PreRequestHandlerExecute`**, lúc `Context.Handler` đã là object page. Framework không có sẵn bước này: phải tự viết một `IHttpModule` ([cách 3](#webforms-right) bên dưới). Ở Core, bước này chính là `UseAuthorization`.
+- **Muốn gắn luật lên page ở Web Forms phải đợi tới `PreRequestHandlerExecute`**, lúc `Context.Handler` đã là object page. Framework không có sẵn bước này: phải tự viết một `IHttpModule` ([cách 3](#wf-module) bên dưới). Ở Core, bước này chính là `UseAuthorization`.
 - **Web Forms mặc định không phân biệt 401 và 403.** `UrlAuthorizationModule` từ chối thì trả 401, rồi `FormsAuthenticationModule` đổi **mọi** 401 thành redirect về `loginUrl`. Nên user Finance đã đăng nhập mà mở trang Admin cũng bị đá về trang login. Core tách hai đường: *challenge* (chưa đăng nhập: cookie auth redirect về `LoginPath`, JWT trả 401) và *forbid* (thiếu quyền: cookie auth redirect về `AccessDeniedPath`, JWT trả 403).
 
 ### Web Forms làm đúng: bốn chỗ đặt luật {#webforms-right}
 
 **Nguyên tắc giống hệt Core: luật nằm một chỗ, được kiểm trước khi code của page chạy, và mặc định là chặn.** Ví dụ là một app back-office có trang `Payouts/Approve.aspx` với nút Approve.
 
-**1. Danh tính và role: dựng một lần mỗi request.** `FormsAuthenticationModule` giải mã cookie `.ASPXAUTH` ở `AuthenticateRequest` rồi gán `User`. Role nạp ở event ngay sau đó: bật `<roleManager>` với một `RoleProvider`, hoặc tự viết trong `Global.asax`. Từ đây mọi chỗ dùng `User.IsInRole` mà không tự đọc DB.
+#### 1. Danh tính và role: dựng một lần mỗi request {#wf-identity}
+
+`FormsAuthenticationModule` giải mã cookie `.ASPXAUTH` ở `AuthenticateRequest` rồi gán `User`. Role nạp ở event ngay sau đó: bật `<roleManager>` với một `RoleProvider`, hoặc tự viết trong `Global.asax`. Từ đây mọi chỗ dùng `User.IsInRole` mà không tự đọc DB.
 
 ```csharp
 // Global.asax.cs (giả sử RoleCache đọc role từ DB và cache lại)
@@ -513,7 +515,9 @@ protected void Application_PostAuthenticateRequest(object sender, EventArgs e)
 }
 ```
 
-**2. Mặc định chặn, rồi mở theo folder: web.config.** `UrlAuthorizationModule` đọc các luật từ trên xuống, **khớp luật đầu tiên là dừng**, nên `allow` phải đứng trước `deny users="*"`. `?` là người chưa đăng nhập, `*` là tất cả.
+#### 2. Mặc định chặn, rồi mở theo folder: web.config {#wf-webconfig}
+
+`UrlAuthorizationModule` đọc các luật từ trên xuống, **khớp luật đầu tiên là dừng**, nên `allow` phải đứng trước `deny users="*"`. `?` là người chưa đăng nhập, `*` là tất cả.
 
 ```xml
 <!-- web.config gốc: chưa đăng nhập thì không vào đâu (giống FallbackPolicy) -->
@@ -537,7 +541,9 @@ protected void Application_PostAuthenticateRequest(object sender, EventArgs e)
 </location>
 ```
 
-**3. Luật gắn lên từng page: attribute + `IHttpModule`.** Muốn luật nhỏ hơn folder (trang Approve cần quyền khác trang List cùng folder) thì gắn attribute lên class page và viết một module đọc nó ở `PreRequestHandlerExecute`. Đây chính là "endpoint metadata + middleware" của Core, tự làm bằng tay.
+#### 3. Luật gắn lên từng page: attribute + `IHttpModule` {#wf-module}
+
+Muốn luật nhỏ hơn folder (trang Approve cần quyền khác trang List cùng folder) thì gắn attribute lên class page và viết một module đọc nó ở `PreRequestHandlerExecute`. Đây chính là "endpoint metadata + middleware" của Core, tự làm bằng tay.
 
 ::: code-group
 
@@ -605,7 +611,9 @@ namespace BackOffice.Payouts
 
 :::
 
-**4. Luật trên nút và trên object: một `PermissionService`.** Chỉ service này biết role nào có permission nào (bảng role → permission trong DB). Page hỏi service để ẩn nút, và click handler hỏi **lại** trước khi làm, vì ẩn nút chỉ là giao diện: bảo mật nằm ở chỗ server kiểm khi nhận lệnh.
+#### 4. Luật trên nút và trên object: một `PermissionService` {#wf-service}
+
+Chỉ service này biết role nào có permission nào (bảng role → permission trong DB). Page hỏi service để ẩn nút, và click handler hỏi **lại** trước khi làm, vì ẩn nút chỉ là giao diện: bảo mật nằm ở chỗ server kiểm khi nhận lệnh.
 
 ::: code-group
 
@@ -814,7 +822,7 @@ Gom luật trước, đổi framework sau. Kiểm kê page × permission; trong 
 ::: warning Bẫy & follow-up
 **"Ẩn nút theo role là đủ chưa?"** Chưa: click handler hoặc API vẫn phải kiểm, ẩn nút chỉ là giao diện.
 
-**"Web Forms trả 403 thế nào?"** Mặc định không: UrlAuthorization trả 401 và Forms auth đổi thành redirect login. Muốn 403 thật thì tự set trong module, như [cách 3](#webforms-right).
+**"Web Forms trả 403 thế nào?"** Mặc định không: UrlAuthorization trả 401 và Forms auth đổi thành redirect login. Muốn 403 thật thì tự set trong module, như [cách 3](#wf-module).
 :::
 
 ## Tự kiểm tra {#self-check}
