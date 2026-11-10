@@ -173,6 +173,12 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Sao không index hết các cột cho nhanh?](/data/sql-performance#too-many-indexes)
 - [Vì sao `WHERE YEAR(CheckIn) = 2026` chậm?](/data/sql-performance#sargable-question)
 
+### [LINQ to SQL vs EF Core](/data/linq-to-sql#interview)
+
+- ["Hệ thống bạn dùng ORM gì?" Giới thiệu LINQ to SQL cho người chưa nghe tên](/data/linq-to-sql#what-is-linq-to-sql)
+- [LINQ to SQL khác EF Core thế nào?](/data/linq-to-sql#linq-to-sql-vs-ef-core)
+- [Migrate từ LINQ to SQL sang EF Core cần chú ý gì?](/data/linq-to-sql#migrate-linq-to-sql)
+
 ## Kiến trúc phân tán
 
 ### [Microservices](/architecture/microservices#interview)

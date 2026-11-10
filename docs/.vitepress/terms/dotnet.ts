@@ -196,8 +196,21 @@ const terms: Record<string, TermDef> = {
     title: 'LINQ',
     full: 'Language Integrated Query',
     group: data,
-    def: 'Cú pháp truy vấn ngay trong C# (`Where`, `Select`, `GroupBy`...) dùng được cho collection trong memory (LINQ to Objects) lẫn database qua [[EF Core]].',
+    def: 'Cú pháp truy vấn ngay trong C# (`Where`, `Select`, `GroupBy`...) dùng được cho collection trong memory (LINQ to Objects) lẫn database qua [[EF Core]] hay [[LINQ to SQL]].',
     link: '/dotnet/collections-linq',
+  },
+  'linq to sql': {
+    title: 'LINQ to SQL',
+    full: 'System.Data.Linq',
+    group: data,
+    def: 'ORM đầu tiên của Microsoft (.NET 3.5, 2007), ra trước Entity Framework một năm. `DataContext` + `Table<T>` dịch LINQ thành SQL, chỉ SQL Server, database-first bằng file `.dbml`, không async. Không có trên .NET Core.',
+    link: '/data/linq-to-sql',
+  },
+  sqlmetal: {
+    title: 'SqlMetal',
+    group: data,
+    def: 'Tool dòng lệnh của [[LINQ to SQL]]: đọc schema SQL Server rồi sinh file `.dbml` hoặc code C# (`DataContext` + entity có attribute mapping). Bản GUI là O/R Designer trong Visual Studio.',
+    link: '/data/linq-to-sql#dbml',
   },
   ef6: {
     title: 'EF6',

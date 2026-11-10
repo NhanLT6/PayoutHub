@@ -244,6 +244,16 @@ const groups: Group[] = [
           { text: 'Quá nhiều index', link: '/data/sql-performance#too-many-indexes' },
         ],
       },
+      {
+        text: 'LINQ to SQL vs EF Core',
+        desc: 'ORM trước EF: .dbml, DataContext, lazy loading bật sẵn, concurrency kiểm mọi cột, và chỗ vỡ khi lên EF Core.',
+        link: '/data/linq-to-sql',
+        q: [
+          { text: 'Giới thiệu trong 10 giây', link: '/data/linq-to-sql#what-is-linq-to-sql' },
+          { text: 'Khác EF Core', link: '/data/linq-to-sql#linq-to-sql-vs-ef-core' },
+          { text: 'Migrate', link: '/data/linq-to-sql#migrate-linq-to-sql' },
+        ],
+      },
     ],
   },
   {
