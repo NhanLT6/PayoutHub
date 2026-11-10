@@ -383,7 +383,7 @@ Mã trả về theo bản nháp IETF `draft-ietf-httpapi-idempotency-key-header`
 
 #### Code {#idempotency-key-code}
 
-Giả sử `Payout` (entity ở [trang EF Core](/data/ef-core#problem)) có thêm `Period` và factory `Payout.Create`. Policy `"CanApprovePayout"` đăng ký trong `Program.cs` như ở [trang JWT](/aspnet-core/authentication-jwt#per-request-code); ngoài `DbContext` không cần đăng ký gì thêm.
+Giả sử `Payout` (entity ở [trang EF Core](/data/ef-core#problem)) có thêm `Period` và factory `Payout.Create`. Policy `"CanApprovePayout"` đăng ký trong `Program.cs` như ở [trang Authorization](/aspnet-core/authorization#requirements); ngoài `DbContext` không cần đăng ký gì thêm.
 
 ::: code-group
 

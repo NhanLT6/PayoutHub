@@ -251,7 +251,7 @@ const terms: Record<string, TermDef> = {
     group: security,
     def: 'Trả lời câu "**bạn là ai**". Thiếu hoặc sai danh tính thì trả **401 Unauthorized** (tên gọi lịch sử, thực ra nghĩa là "chưa xác thực").',
     blocks: 'giả danh',
-    link: '/aspnet-core/api-security#step-7',
+    link: '/aspnet-core/authentication-jwt#per-request',
   },
   token: {
     title: 'Token',
@@ -360,7 +360,7 @@ const terms: Record<string, TermDef> = {
     group: security,
     def: 'Trả lời câu "**bạn được làm gì**". Đã biết là ai nhưng không đủ quyền thì trả **403 Forbidden**.',
     blocks: 'vượt quyền',
-    link: '/aspnet-core/api-security#step-8',
+    link: '/aspnet-core/authorization#flow',
   },
   role: {
     title: 'Role',
@@ -376,7 +376,8 @@ const terms: Record<string, TermDef> = {
   policy: {
     title: 'Policy',
     group: security,
-    def: 'Một luật có tên, gom các điều kiện lại (role, claim, rule tuỳ ý). Controller chỉ ghi tên policy; đổi luật thì sửa một chỗ.',
+    def: 'Một luật có tên, là danh sách **requirement** (role, claim, rule tuỳ ý do handler kiểm). Controller chỉ ghi tên policy; đổi luật thì sửa một chỗ. `[Authorize(Roles = ...)]` cũng là một policy không tên.',
+    link: '/aspnet-core/authorization#requirements',
   },
   'least privilege': {
     title: 'Least privilege',

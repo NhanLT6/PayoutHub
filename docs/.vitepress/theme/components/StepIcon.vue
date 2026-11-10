@@ -513,6 +513,95 @@ defineProps<{ name: string }>()
       <text class="t xs tb warn" x="108" y="70" text-anchor="middle">alert</text>
       <text class="t xs" x="4" y="84">who · what · when · no token</text>
     </g>
+
+    <!-- authz 1. Routing chọn endpoint, endpoint mang metadata [Authorize] -->
+    <g v-else-if="name === 'tag'">
+      <rect class="frame" x="6" y="6" width="120" height="18" rx="3" />
+      <text class="t xs mono" x="66" y="18" text-anchor="middle">POST /payouts/42/approve</text>
+      <path class="arrow" d="M39 24 V34" />
+      <path class="head" d="M35 34 l4 6 l4 -6 z" />
+      <rect class="box-ok" x="4" y="42" width="66" height="20" rx="3" />
+      <text class="t xs tb ok" x="37" y="55" text-anchor="middle">Approve()</text>
+      <path class="ln" d="M70 52 H74" />
+      <path class="box-acc" d="M74 42 h48 l6 10 l-6 10 h-48 z" />
+      <text class="t xs acc" x="99" y="55" text-anchor="middle">[Authorize]</text>
+      <text class="t xs" x="66" y="80" text-anchor="middle">endpoint + metadata</text>
+    </g>
+
+    <!-- authz 2. Token hợp lệ thành ClaimsPrincipal trên HttpContext.User -->
+    <g v-else-if="name === 'principal'">
+      <rect class="box-acc" x="4" y="26" width="10" height="14" rx="2" />
+      <rect class="box-ok" x="15" y="26" width="16" height="14" rx="2" />
+      <rect class="box-warn" x="32" y="26" width="10" height="14" rx="2" />
+      <text class="t xs" x="23" y="52" text-anchor="middle">JWT ✓</text>
+      <path class="arrow" d="M46 33 H58" />
+      <path class="head" d="M58 29 l6 4 l-6 4 z" />
+      <rect class="card" x="64" y="6" width="66" height="60" rx="4" />
+      <circle class="person" cx="80" cy="20" r="6" />
+      <path class="person-ln" d="M71 36 a9 7 0 0 1 18 0" />
+      <text class="t xs mono" x="92" y="23">sub=42</text>
+      <text class="t xs mono" x="66" y="50">role=Finance</text>
+      <text class="t xs mono" x="66" y="60">tenant=A</text>
+      <text class="t xs tb acc" x="66" y="82" text-anchor="middle">HttpContext.User</text>
+    </g>
+
+    <!-- authz 3. Gom mọi [Authorize] thành một policy; không có gì thì Fallback -->
+    <g v-else-if="name === 'combine'">
+      <path class="box-acc" d="M4 6 h40 l5 8 l-5 8 h-40 z" />
+      <text class="t xs acc" x="24" y="17" text-anchor="middle">class</text>
+      <path class="box-acc" d="M4 28 h40 l5 8 l-5 8 h-40 z" />
+      <text class="t xs acc" x="24" y="39" text-anchor="middle">action</text>
+      <path class="arrow" d="M50 14 L64 22" />
+      <path class="arrow" d="M50 36 L64 28" />
+      <rect class="box-ok" x="66" y="8" width="62" height="34" rx="4" />
+      <text class="t xs tb ok" x="97" y="21" text-anchor="middle">1 policy</text>
+      <text class="t xs" x="97" y="34" text-anchor="middle">R1 AND R2</text>
+      <rect class="box dash" x="4" y="52" width="52" height="16" rx="3" />
+      <text class="t xs" x="30" y="63" text-anchor="middle">no tag</text>
+      <path class="arrow dash" d="M56 60 H68" />
+      <path class="head" d="M68 56 l6 4 l-6 4 z" />
+      <text class="t xs tb bad" x="78" y="63">Fallback?</text>
+      <text class="t xs" x="66" y="84" text-anchor="middle">[AllowAnonymous] → skip</text>
+    </g>
+
+    <!-- authz 4. Mỗi requirement cần ít nhất một handler Succeed; một Fail() là thua -->
+    <g v-else-if="name === 'handlers'">
+      <text class="t xs" x="60" y="12" text-anchor="middle">H1</text>
+      <text class="t xs" x="88" y="12" text-anchor="middle">H2</text>
+      <rect class="box" x="48" y="18" width="24" height="14" rx="2" />
+      <path class="ok-ln" d="M55 25 l3 3 l6 -6" />
+      <rect class="box" x="76" y="18" width="24" height="14" rx="2" />
+      <text class="t xs" x="88" y="28" text-anchor="middle">–</text>
+      <text class="t xs" x="4" y="28">R1 role</text>
+      <text class="t s tb ok" x="116" y="29" text-anchor="middle">✓</text>
+      <rect class="box" x="48" y="38" width="24" height="14" rx="2" />
+      <text class="t xs" x="60" y="48" text-anchor="middle">–</text>
+      <rect class="box" x="76" y="38" width="24" height="14" rx="2" />
+      <path class="ok-ln" d="M83 45 l3 3 l6 -6" />
+      <text class="t xs" x="4" y="48">R2 active</text>
+      <text class="t s tb ok" x="116" y="49" text-anchor="middle">✓</text>
+      <line class="ln" x1="4" y1="58" x2="128" y2="58" />
+      <text class="t xs tb ok" x="66" y="70" text-anchor="middle">all R ✓ + no Fail → pass</text>
+      <text class="t xs tb bad" x="66" y="84" text-anchor="middle">one Fail() → 403</text>
+    </g>
+
+    <!-- authz 5. Kết quả: chưa có user → 401, có user nhưng không đủ → 403, thoả → next -->
+    <g v-else-if="name === 'verdict'">
+      <circle class="box-acc" cx="66" cy="16" r="10" />
+      <text class="t s tb acc" x="66" y="19" text-anchor="middle">?</text>
+      <path class="arrow" d="M58 23 L26 44" />
+      <path class="arrow" d="M66 26 V44" />
+      <path class="arrow" d="M74 23 L106 44" />
+      <rect class="box-bad" x="2" y="46" width="40" height="20" rx="3" />
+      <text class="t s tb bad" x="22" y="60" text-anchor="middle">401</text>
+      <rect class="box-bad" x="46" y="46" width="40" height="20" rx="3" />
+      <text class="t s tb bad" x="66" y="60" text-anchor="middle">403</text>
+      <rect class="box-ok" x="90" y="46" width="40" height="20" rx="3" />
+      <text class="t s tb ok" x="110" y="60" text-anchor="middle">next()</text>
+      <text class="t xs" x="22" y="80" text-anchor="middle">no user</text>
+      <text class="t xs" x="66" y="80" text-anchor="middle">user, no</text>
+      <text class="t xs" x="110" y="80" text-anchor="middle">pass</text>
+    </g>
   </svg>
 </template>
 

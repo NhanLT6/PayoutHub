@@ -184,19 +184,28 @@ const groups: Group[] = [
         desc: 'Một request đi qua TLS, WAF, gateway, JWT, policy, IDOR, SQL injection, Key Vault. OWASP API Top 10, PII/PHI.',
         link: '/aspnet-core/api-security',
         q: [
-          { text: 'AuthN vs AuthZ', link: '/aspnet-core/api-security#authn-vs-authz' },
           { text: 'IDOR', link: '/aspnet-core/api-security#idor' },
           { text: 'Checklist', link: '/aspnet-core/api-security#secure-api-checklist' },
         ],
       },
       {
-        text: 'Đăng nhập và JWT',
-        desc: 'JWT chặn gì, tự phát hành hay dùng Entra ID, private/public key, access và refresh token, xử lý khi hết hạn.',
+        text: 'Authentication: JWT',
+        desc: 'Bạn là ai: JWT chặn gì, tự phát hành hay Entra ID, mỗi request từ Bearer token tới HttpContext.User, access/refresh token, lưu token, CSRF.',
         link: '/aspnet-core/authentication-jwt',
         q: [
           { text: 'JWT bị trộm', link: '/aspnet-core/authentication-jwt#stolen-token-question' },
           { text: 'Access vs refresh', link: '/aspnet-core/authentication-jwt#access-vs-refresh' },
           { text: 'Login tới [Authorize]', link: '/aspnet-core/authentication-jwt#login-to-authorize' },
+        ],
+      },
+      {
+        text: 'Authorization',
+        desc: 'Bạn được làm gì: policy = requirement + handler, 401 hay 403, nhiều [Authorize] là AND, resource-based (maker-checker), FallbackPolicy.',
+        link: '/aspnet-core/authorization',
+        q: [
+          { text: 'AuthN vs AuthZ', link: '/aspnet-core/authorization#authn-vs-authz' },
+          { text: 'Resource-based', link: '/aspnet-core/authorization#resource-based-question' },
+          { text: 'AND hay OR', link: '/aspnet-core/authorization#multiple-authorize' },
         ],
       },
       {

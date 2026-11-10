@@ -95,7 +95,7 @@ Request phải qua nhiều lớp trước khi tới code, mỗi lớp chặn m�
 - **Kernel và listen:** khi app khởi động, Kestrel **bind + listen** trên port (vd 5000). Kết nối tới một port không ai listen bị kernel từ chối ngay → **connection refused**. Bị firewall chặn thì gói thường bị bỏ im lặng → **timeout**. Phân biệt được hai lỗi này giúp debug: refused = app chưa chạy hoặc sai port; timeout = bị chặn trên đường.
 - **Reverse proxy** (nginx, YARP, Azure Application Gateway...) đứng trước Kestrel, nhận HTTPS từ internet rồi chuyển vào. **WAF** hiểu HTTP: soi URL, header, body tìm pattern <T>SQLi</T>, <T>XSS</T>. Bắt được kiểu tấn công phổ biến, **không thay được** validation trong code.
 - **Kestrel:** giải mã TLS nếu không có proxy làm thay. `KestrelServerLimits` có `MaxRequestBodySize` (mặc định khoảng 28,6 MB), `MaxConcurrentConnections`, `RequestHeadersTimeout`... để chống request khổng lồ hoặc client cố tình gửi thật chậm.
-- **AuthN / AuthZ:** `UseAuthentication` đọc JWT để biết user là ai (thiếu hoặc sai → **401**). `UseAuthorization` + `[Authorize(Roles = "Finance")]` quyết định có được làm không (không đủ quyền → **403**).
+- **AuthN / AuthZ:** `UseAuthentication` đọc JWT để biết user là ai (thiếu hoặc sai → **401**). `UseAuthorization` + `[Authorize(Roles = "Finance")]` quyết định có được làm không (không đủ quyền → **403**). Xem [Authorization](/aspnet-core/authorization#flow).
 - **Validation:** `[ApiController]` tự trả **400** khi model không hợp lệ; rule nghiệp vụ (payout đã Approved thì không approve lại) nằm trong domain. Mọi thứ client gửi lên (id, số tiền, status) đều có thể đã bị sửa.
 :::
 

@@ -135,7 +135,7 @@ Gần như không. Khi có lỗi, `UseExceptionHandler("/error")` chạy lại p
 
 **UseAuthentication**: đọc token/cookie, trả lời "bạn là ai", gán `HttpContext.User`.
 
-**UseAuthorization**: dựa vào User và policy của endpoint, trả lời "bạn được làm gì". Phải đứng sau Authentication và sau Routing.
+**UseAuthorization**: dựa vào User và policy của endpoint, trả lời "bạn được làm gì". Phải đứng sau Authentication và sau Routing. Chi tiết hai bước: [Authentication: mỗi request](/aspnet-core/authentication-jwt#per-request), [Authorization: luồng một request](/aspnet-core/authorization#flow).
 
 **UseRateLimiter**: cổng soát vé (<T>rate limiting</T>), giới hạn số request trong một khoảng thời gian. Đặt càng ngoài thì từ chối càng rẻ, nhưng càng biết ít về người gọi.
 

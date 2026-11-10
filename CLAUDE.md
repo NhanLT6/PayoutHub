@@ -95,8 +95,10 @@ docs/
                             hiện có:
                               dotnet/       framework-vs-core, oop-fundamentals, csharp-types, solid-patterns, modern-csharp, collections-linq
                               runtime/      memory, async
-                              aspnet-core/  dependency-injection, options-pattern, logging, middleware,
-                                            exception-handling, result-pattern, health-checks, questions
+                              aspnet-core/  dependency-injection, options-pattern, logging, middleware, filters,
+                                            exception-handling, result-pattern, health-checks, rest-api,
+                                            api-security (bức tranh cả request), authentication-jwt (bạn là ai),
+                                            authorization (bạn được làm gì), questions
   reference/                index.md (mục lục câu hỏi), glossary.md
   progress/                 plan.md, learning-log.md
   public/                   ảnh, file tĩnh (chỉ tạo khi cần)

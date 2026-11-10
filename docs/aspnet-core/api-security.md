@@ -217,26 +217,10 @@ CORS **bảo vệ user**, không bảo vệ server: nếu chị Lan lỡ mở `e
 
 Token là một <T>JWT</T> gồm 3 phần `header.payload.signature`. Signature được tính từ header + payload bằng khoá của bên phát hành, nên không ai **tự chế** hay **sửa** được token. Nhưng ai **cầm** token cũng dùng được, nên "bạn là ai" thật sự được trả lời lúc **đăng nhập** (password + <T>MFA</T>), còn token chỉ mang kết quả đó theo mỗi request.
 
-Chị Lan đăng nhập ở <T k="entra id">Microsoft Entra ID</T>, Entra ID ký token bằng private key. PayoutHub tự tải public key của Entra ID và kiểm mỗi request: chữ ký đúng, `iss` đúng, `aud` đúng là PayoutHub, chưa quá `exp`.
+Chị Lan đăng nhập ở <T k="entra id">Microsoft Entra ID</T>, Entra ID ký token bằng private key. Ở mỗi request, middleware `UseAuthentication` (handler JwtBearer) tự kiểm bằng public key của Entra ID: chữ ký đúng, `iss` đúng, `aud` đúng là PayoutHub, chưa quá `exp`. Đúng thì dựng `HttpContext.User`; sai thì để `User` ẩn danh, chưa trả 401 ở đây. Access token sống ngắn vì không thu hồi được; hết hạn thì client đổi ngầm bằng <T>refresh token</T>.
 
-```csharp
-// cần package Microsoft.AspNetCore.Authentication.JwtBearer (M3)
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
-    {
-        // IdP cấp token; API tải public key từ đây để kiểm chữ ký
-        o.Authority = "https://login.microsoftonline.com/<tenant-id>/v2.0";
-        // token phải dành cho đúng API này (claim aud)
-        o.Audience = "api://payouthub";
-    });
-
-app.UseAuthentication();
-```
-
-**Expiry**: access token sống ngắn (15–60 phút) vì không thu hồi được. Hết hạn thì client dùng <T>refresh token</T> đổi token mới ngầm, user không phải đăng nhập lại.
-
-::: tip Đọc chi tiết: [Đăng nhập và JWT](/aspnet-core/authentication-jwt)
-[JWT chặn được gì](/aspnet-core/authentication-jwt#what-jwt-blocks) · [Server tự phát hành hay dùng Entra ID](/aspnet-core/authentication-jwt#issuing) · [Mỗi request: từ token tới policy](/aspnet-core/authentication-jwt#per-request) · [Access, refresh, ID token](/aspnet-core/authentication-jwt#token-types) · [Hết hạn thì xử lý thế nào](/aspnet-core/authentication-jwt#expiry) · [Token bị trộm thì sao](/aspnet-core/authentication-jwt#stolen-token)
+::: tip Đọc chi tiết: [Authentication: đăng nhập và JWT](/aspnet-core/authentication-jwt)
+[JWT chặn được gì](/aspnet-core/authentication-jwt#what-jwt-blocks) · [Server tự phát hành hay dùng Entra ID](/aspnet-core/authentication-jwt#issuing) · [Mỗi request: từ token tới `HttpContext.User`](/aspnet-core/authentication-jwt#per-request) · [Access, refresh, ID token](/aspnet-core/authentication-jwt#token-types) · [Hết hạn thì xử lý thế nào](/aspnet-core/authentication-jwt#expiry) · [Token bị trộm thì sao](/aspnet-core/authentication-jwt#stolen-token)
 :::
 
 </FlowStep>
@@ -246,23 +230,15 @@ app.UseAuthentication();
 <T>Authorization</T> trả lời câu "**bạn được làm gì**". Đã biết là ai nhưng không đủ quyền thì trả **403 Forbidden**. Quyền thường gom theo <T>role</T> (vd `Finance`, `Ops`), phân quyền theo role gọi là <T>RBAC</T>, và các điều kiện được gói thành một <T>policy</T> có tên: controller chỉ ghi tên policy, đổi luật thì sửa một chỗ.
 
 ```csharp
-builder.Services.AddAuthorization(o =>
-    o.AddPolicy("CanApprovePayout", p => p.RequireRole("Finance")));
-
-app.UseAuthorization();   // sau UseAuthentication
-
-// Controller
-[Authorize(Policy = "CanApprovePayout")]
+[Authorize(Policy = "CanApprovePayout")]   // policy "CanApprovePayout" = RequireRole("Finance")
 [HttpPost("{id:int}/approve")]
 public async Task<IActionResult> Approve(int id, CancellationToken ct)
 ```
 
-User role `Ops` gọi endpoint này → **403**. Không có token → **401**. Thứ tự middleware sai (`UseAuthorization` trước `UseAuthentication`) → user chưa được nhận diện, mọi request bị chặn. Xem [Middleware: thứ tự](/aspnet-core/middleware#middleware).
+User role `Ops` gọi endpoint này → **403**. Không có token → **401**. **401** nghĩa là "chưa biết bạn là ai" (lấy token mới là hết), **403** là "biết bạn là ai nhưng không cho" (gửi lại cùng token vẫn 403). Cùng tinh thần là <T>least privilege</T>: mỗi user, service, DB account chỉ có đúng quyền cần ([bước 11](#step-11)).
 
-Cùng tinh thần đó là <T>least privilege</T>: mỗi user, service, DB account chỉ có đúng quyền cần. Gặp lại ở [bước 11](#step-11).
-
-::: info Dễ nhầm
-**AuthN ≠ AuthZ.** Authentication = kiểm tra căn cước ở cửa toà nhà. Authorization = thẻ của bạn mở được phòng nào. **401** = "tôi không biết bạn là ai"; **403** = "tôi biết bạn là ai, nhưng bạn không được làm việc này". Gửi lại cùng token cho 403 thì vẫn 403; đăng nhập lại cho 401 thì có thể hết lỗi.
+::: tip Đọc chi tiết: [Authorization](/aspnet-core/authorization)
+[Luồng một request qua authorization](/aspnet-core/authorization#flow) · [Requirement và handler](/aspnet-core/authorization#requirements) · [Nhiều `[Authorize]`: AND hay OR](/aspnet-core/authorization#and-or) · [Deny by default](/aspnet-core/authorization#deny-by-default)
 :::
 
 </FlowStep>
@@ -295,9 +271,9 @@ Payout? payout = await db.Payouts.SingleOrDefaultAsync(
 if (payout is null) return NotFound();
 ```
 
-Rule nghiệp vụ cũng là object-level authorization: **maker-checker** (người tạo payout không được tự duyệt payout đó) cần so `payout.CreatedBy` với user hiện tại. Logic phức tạp hơn thì dùng **resource-based authorization**: `IAuthorizationService.AuthorizeAsync(User, payout, "CanApprovePayout")` với một `AuthorizationHandler` nhận cả user lẫn object.
+Rule nghiệp vụ cũng là object-level authorization: **maker-checker** (người tạo payout không được tự duyệt payout đó) cần so `payout.CreatedBy` với user hiện tại, bằng **resource-based authorization**. Code đầy đủ: [Authorization: resource-based](/aspnet-core/authorization#resource-based).
 
-::: info Dễ nhầm
+::: warning Bẫy
 **Role đúng không có nghĩa là được đụng mọi object.** `[Authorize(Roles = "Finance")]` chỉ trả lời "Finance có được approve không"; nó **không** biết payout 43 thuộc ai. Kiểm tra theo role là **function-level**, kiểm tra theo object là **object-level**: cần cả hai.
 
 Trả **404** thay vì 403 cho object của người khác để không tiết lộ "id 43 có tồn tại". Id dạng GUID khó đoán hơn số tăng dần, nhưng **không thay thế** việc kiểm tra quyền.
@@ -543,35 +519,7 @@ Những yêu cầu chạm vào code backend hằng ngày:
 
 Mỗi câu: trả lời nhanh bằng tiếng Việt để nắm ý, rồi một câu trả lời mẫu bằng tiếng Anh để nói khi phỏng vấn.
 
-### Authentication và authorization khác nhau thế nào? <Badge type="warning" text="hay bị hỏi" /> {#authn-vs-authz}
-
-::: tip Trả lời nhanh
-Authentication = **bạn là ai** (kiểm tra token, sai → 401). Authorization = **bạn được làm gì** (role, policy, quyền trên object, không đủ → 403). Authentication luôn chạy trước. Ở PayoutHub: JWT từ Entra ID cho biết là chị Lan; policy `CanApprovePayout` cho biết Finance được approve; query lọc theo tenant cho biết payout 42 đúng là của công ty chị.
-:::
-
-::: details Sample answer (English)
-Authentication answers "who are you?": the API validates the JWT's signature, issuer, audience and expiry, and if that fails it returns 401. Authorization answers "what are you allowed to do?": once we know the user, a policy like `CanApprovePayout` checks the Finance role, and if it fails we return 403. In ASP.NET Core that is `UseAuthentication` before `UseAuthorization`, with `[Authorize(Policy = ...)]` on the endpoint. I also separate function-level authorization, can this role call approve at all, from object-level authorization, is this specific payout in the caller's tenant, because a correct role check alone still leaves you open to IDOR.
-:::
-
-::: warning Bẫy & follow-up
-**"401 hay 403 khi token hết hạn?"** 401: danh tính không còn hợp lệ, client phải lấy token mới. **"Khi nào trả 404 thay vì 403?"** Khi object thuộc người khác, để không tiết lộ là nó tồn tại.
-:::
-
-### JWT là gì? Có an toàn để chứa dữ liệu nhạy cảm không? {#jwt}
-
-Chi tiết: [Đăng nhập và JWT](/aspnet-core/authentication-jwt).
-
-::: tip Trả lời nhanh
-JWT = `header.payload.signature`. Payload là JSON chứa claim, chỉ **Base64Url encode**, ai cũng đọc được; signature chống **sửa**, không chống **đọc**. Nên: không để dữ liệu nhạy cảm trong claim, token sống ngắn vì không thu hồi được, API phải validate chữ ký, `iss`, `aud`, `exp`.
-:::
-
-::: details Sample answer (English)
-A JWT is a self-contained token with three Base64Url parts: a header with the signing algorithm, a payload with claims like `sub`, `role`, `aud` and `exp`, and a signature. The identity provider, for example Entra ID, signs it with its private key, and our API validates it with the public key from the authority's metadata, so we don't need a database lookup per request. The key point is that it is signed, not encrypted: anyone holding the token can read the payload, so I never put PII in claims. Because a JWT can't be revoked once issued, access tokens are short-lived and refreshed with a refresh token, and in the API I validate issuer, audience, lifetime and signature, which `AddJwtBearer` does when Authority and Audience are configured.
-:::
-
-::: warning Bẫy & follow-up
-**"Logout với JWT làm thế nào?"** Xoá token phía client; muốn chặn ngay ở server thì cần token ngắn hạn, thu hồi refresh token, hoặc blacklist (mất lợi ích stateless). **"`alg: none`?"** Thư viện phải từ chối token không ký; luôn chỉ định thuật toán được chấp nhận.
-:::
+Câu [AuthN vs AuthZ](/aspnet-core/authorization#authn-vs-authz) nằm ở trang Authorization, câu [JWT là gì](/aspnet-core/authentication-jwt#jwt) nằm ở trang Authentication.
 
 ### IDOR / BOLA là gì? Bạn chặn thế nào? <Badge type="warning" text="hay bị hỏi" /> {#idor}
 

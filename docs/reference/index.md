@@ -124,21 +124,28 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 
 ### [Bảo mật API](/aspnet-core/api-security#interview)
 
-- [Authentication và authorization khác nhau thế nào?](/aspnet-core/api-security#authn-vs-authz)
-- [JWT là gì? Có an toàn để chứa dữ liệu nhạy cảm không?](/aspnet-core/api-security#jwt)
 - [IDOR / BOLA là gì? Bạn chặn thế nào?](/aspnet-core/api-security#idor)
 - [CORS có bảo vệ API không?](/aspnet-core/api-security#cors)
 - [SQL injection xảy ra thế nào và chặn ra sao?](/aspnet-core/api-security#sql-injection)
 - [Thiết kế một API an toàn: checklist của bạn?](/aspnet-core/api-security#secure-api-checklist)
 
-### [Đăng nhập và JWT](/aspnet-core/authentication-jwt#interview)
+### [Authentication: đăng nhập và JWT](/aspnet-core/authentication-jwt#interview)
 
+- [JWT là gì? Có an toàn để chứa dữ liệu nhạy cảm không?](/aspnet-core/authentication-jwt#jwt)
 - [Đi từ lúc login tới lúc `[Authorize]` cho qua: chuyện gì xảy ra?](/aspnet-core/authentication-jwt#login-to-authorize)
 - [JWT bị trộm thì sao?](/aspnet-core/authentication-jwt#stolen-token-question)
 - [Access token và refresh token khác nhau thế nào? Hết hạn thì sao?](/aspnet-core/authentication-jwt#access-vs-refresh)
 - [Vì sao dùng RS256 thay vì HS256 khi có nhiều service?](/aspnet-core/authentication-jwt#rs256-vs-hs256)
 - [CSRF là gì? Chặn thế nào?](/aspnet-core/authentication-jwt#csrf-question)
 - [SPA nên lưu token ở đâu?](/aspnet-core/authentication-jwt#token-storage-question)
+
+### [Authorization: policy, requirement, resource](/aspnet-core/authorization#interview)
+
+- [Authentication và authorization khác nhau thế nào?](/aspnet-core/authorization#authn-vs-authz)
+- [Role-based, claims-based và policy-based authorization khác nhau thế nào?](/aspnet-core/authorization#role-vs-policy)
+- [Hai `[Authorize]` trên một action là AND hay OR?](/aspnet-core/authorization#multiple-authorize)
+- [Làm sao chặn "chỉ duyệt payout của công ty mình, không tự duyệt payout mình tạo"?](/aspnet-core/authorization#resource-based-question)
+- [Làm sao bảo đảm không endpoint nào quên `[Authorize]`?](/aspnet-core/authorization#deny-by-default-question)
 
 ### [REST API: status code và idempotency](/aspnet-core/rest-api#interview)
 
