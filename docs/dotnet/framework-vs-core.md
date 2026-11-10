@@ -23,7 +23,7 @@ CV của bạn là Web Forms 4.8, nên interviewer sẽ thử xem bạn còn b�
 | `HttpContext.Current` (static) | `HttpContext` được truyền vào; `IHttpContextAccessor` khi thật sự cần |
 | Page lifecycle, ViewState, postback, server controls | Không có tương đương. Gần nhất về mô hình là Razor Pages; hoặc API + React/Vue |
 | Session in-proc mặc định | Phải bật `AddSession()`, lưu qua `IDistributedCache`, chỉ lưu byte/string |
-| Forms Authentication | Cookie authentication / ASP.NET Core Identity / JWT |
+| Forms Authentication, `<authorization>` trong web.config | Cookie authentication / ASP.NET Core Identity / JWT; `[Authorize(Policy)]` + FallbackPolicy ([map chi tiết](/aspnet-core/authorization#webforms-to-core)) |
 | `System.Web.Caching.Cache` | `IMemoryCache`, `IDistributedCache`, `HybridCache` (.NET 9) |
 | Unity / Autofac / tự `new` | <T>DI</T> container dựng sẵn |
 | log4net / NLog trực tiếp | `ILogger<T>` (log4net/Serilog chỉ còn là provider phía sau) |

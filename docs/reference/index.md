@@ -146,6 +146,7 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Hai `[Authorize]` trên một action là AND hay OR?](/aspnet-core/authorization#multiple-authorize)
 - [Làm sao chặn "chỉ duyệt payout của công ty mình, không tự duyệt payout mình tạo"?](/aspnet-core/authorization#resource-based-question)
 - [Làm sao bảo đảm không endpoint nào quên `[Authorize]`?](/aspnet-core/authorization#deny-by-default-question)
+- [App Web Forms phân quyền bằng `if` rải khắp page. Bạn migrate sang .NET Core thế nào?](/aspnet-core/authorization#webforms-authz-migration)
 
 ### [REST API: status code và idempotency](/aspnet-core/rest-api#interview)
 
