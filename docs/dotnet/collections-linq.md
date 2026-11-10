@@ -70,7 +70,7 @@ var b = db.Payouts.AsEnumerable().Where(p => p.Amount > 100).ToList();
 :::
 
 ::: details Ở dự án thật
-Bạn đang dùng LINQ to SQL nên khái niệm này quen: cũng là `IQueryable` dịch sang SQL. Lỗi hay gặp khi review code là có một bước `.ToList()` hoặc `AsEnumerable()` đặt quá sớm, sau đó mới `Where`/`Take`. Chạy dev với dữ liệu nhỏ không sao, lên production với hàng triệu dòng thì chậm.
+Bạn đang dùng [LINQ to SQL](/data/linq-to-sql) nên khái niệm này quen: `Table<T>` cũng là `IQueryable` dịch sang SQL. Lỗi hay gặp khi review code là có một bước `.ToList()` hoặc `AsEnumerable()` đặt quá sớm, sau đó mới `Where`/`Take`. Chạy dev với dữ liệu nhỏ không sao, lên production với hàng triệu dòng thì chậm.
 :::
 
 ::: warning Bẫy & follow-up

@@ -58,6 +58,7 @@ export const sidebar: DefaultTheme.Sidebar = [
     items: [
       { text: 'EF Core: query, tracking, concurrency', link: '/data/ef-core' },
       { text: 'SQL chậm và index', link: '/data/sql-performance' },
+      { text: 'LINQ to SQL vs EF Core', link: '/data/linq-to-sql' },
     ],
   },
   {
