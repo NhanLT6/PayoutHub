@@ -116,7 +116,7 @@ Mẫu:
 - **Tiếp theo:** bắt đầu M2 (entity, `Money`, `DbContext` + migration). Đầu phiên: hỏi nhanh "convention middleware cần `PayoutDbContext` thì inject ở đâu, vì sao?".
 
 ## 2026-11-02 · Ôn phỏng vấn, buổi 2 (Migration, EF Core/SQL, REST)
-- **Đã làm:** quiz 10 câu, Nhan trả lời bằng tiếng Anh. Viết vào docs: phần migration trong [Framework vs .NET](/dotnet/framework-vs-core#migration-strategy) (strangler, YARP + System.Web adapters, schema qua EF, bẫy Postgres, kiểm tra data, cutover); nhóm mới **Data**: [EF Core](/data/ef-core), [SQL chậm](/data/sql-performance); trang [REST API](/aspnet-core/rest-api) và luồng mỗi request trong [JWT](/aspnet-core/authentication-jwt).
+- **Đã làm:** quiz 10 câu, Nhân trả lời bằng tiếng Anh. Viết vào docs: phần migration trong [Framework vs .NET](/dotnet/framework-vs-core#migration-strategy) (strangler, YARP + System.Web adapters, schema qua EF, bẫy Postgres, kiểm tra data, cutover); nhóm mới **Data**: [EF Core](/data/ef-core), [SQL chậm](/data/sql-performance); trang [REST API](/aspnet-core/rest-api) và luồng mỗi request trong [JWT](/aspnet-core/authentication-jwt).
 - **Chỗ yếu:**
   - Kể chuyện migration DB khi được hỏi Framework → Core mà không nói rõ ranh giới; kiểm tra data chỉ bằng count + lấy mẫu ngẫu nhiên; chưa biết cutover khi DB đang chạy.
   - Nghĩ eager loading gây N+1 (ngược: lazy loading / query trong vòng lặp gây ra, `Include`/`Select` là cách sửa).
@@ -129,16 +129,16 @@ Mẫu:
 - **Quiz:** Q1 câu chuyện migration 6, Q2 chuyển + kiểm tra data 5, Q3 strangler 4, Q4 N+1 3, Q5 tracking 6, Q6 concurrency 6, Q7 index 4, Q8 idempotency 3, Q9 status code 4, Q10 JWT 4.
 - **Tiếp theo:** đọc lại các trang trên, rồi buổi 3 (microservices, Service Bus, resilience). Đầu buổi: hỏi lại Q4 N+1 và Q8 idempotency.
 
-## 2026-11-06 · Ôn phỏng vấn HRS, ngày 1 (microservices, messaging, DDD, live coding)
+## 2026-11-06 · Ôn phỏng vấn, ngày 1 (microservices, messaging, DDD, live coding)
 - **Đã làm:** khảo sát rồi dạy microservices (khi nào tách, ranh giới, sync hay async, cascading failure), messaging (peek-lock, retry, DLQ, at-least-once, idempotent consumer, queue/topic, outbox, saga), DDD từ đầu (entity, value object, aggregate, domain event, bounded context). Nhóm docs mới **Kiến trúc phân tán**: [Microservices](/architecture/microservices), [Messaging](/architecture/messaging), [DDD](/architecture/ddd), mỗi trang một bản đồ kể một luồng. Live coding bài 1: tìm các cặp booking trùng đêm của cùng crew.
 - **Chỗ yếu:**
   - Microservices: lý do tách chỉ nêu scale và lỗi cô lập (thiếu deploy độc lập, khi nào không nên tách); chưa biết bounded context để chia ranh giới; nghĩ message là gửi rồi nhận true/false.
   - Messaging: dùng MSMQ nhưng lỗi chỉ try/catch + email (mất message), chưa xử lý trùng, chưa gặp dual write.
   - DDD: đặt luật "một crew không trùng đêm" vào Allotment; aggregate chỉ giữ được luật trên dữ liệu bên trong nó.
   - Live coding: chỉ so hai booking kề nhau, điều kiện trùng một chiều, không sort; chưa biết cách nêu Big-O và chọn test case.
-- **Tiếp theo:** live coding bài 2 (nói to Big-O và test case bằng tiếng Anh), rồi C#/.NET, thiết kế bài toán HRS, SOLID, SQL, testing, Azure/K8s, chuẩn bị nói, mock cuối.
+- **Tiếp theo:** live coding bài 2 (nói to Big-O và test case bằng tiếng Anh), rồi C#/.NET, bài thiết kế theo miền, SOLID, SQL, testing, Azure/K8s, chuẩn bị nói, mock cuối.
 
-## 2026-11-07 · Ôn phỏng vấn HRS, ngày 2–3 (kiến trúc, OOP, C#/.NET)
+## 2026-11-07 · Ôn phỏng vấn, ngày 2–3 (kiến trúc, OOP, C#/.NET)
 - **Đã làm:** ngày 2 viết docs: ranh giới service trong [Microservices](/architecture/microservices), trang mới [Tooling](/architecture/tooling) (Kafka vs RabbitMQ, MassTransit, Service Bus emulator), [Rich entity](/data/ef-core#rich-entity), tách OOP thành [OOP](/dotnet/oop-fundamentals), [Kiểu C#](/dotnet/csharp-types), [SOLID & pattern](/dotnet/solid-patterns). Ngày 3: dời live coding xuống cuối (ưu tiên lý thuyết), khảo sát 10 câu C#/.NET.
 - **Chỗ yếu:**
   - `await Task.WhenAll` ném exception **đầu tiên**, không phải AggregateException (sai lần thứ hai).
@@ -147,15 +147,15 @@ Mẫu:
   - Concurrency: `DbUpdateConcurrencyException`, `WHERE RowVersion = @gốc`, trả 409/412 (đã nói 503); version lấy từ client.
   - Status code: 202 Accepted (đã nói 203). Static HttpClient không nhận DNS đổi.
 - **Quiz:** `.Result` 6, WhenAll 5, scope trong singleton 8, Options 8, N+1 0, record 9, AsNoTracking 9, concurrency 5, HttpClient 7, status code 8.
-- **Tiếp theo:** trả lời câu thiết kế HRS (flight delay 6h → tự rebook: dữ liệu vào, chia phần, sync hay message, API khách sạn lỗi, khi nào cần operator), rồi SOLID, SQL, testing, Azure/K8s, chuẩn bị nói, mock cuối, live coding bài 2 nếu còn giờ.
+- **Tiếp theo:** trả lời câu thiết kế (flight delay 6h → tự rebook: dữ liệu vào, chia phần, sync hay message, API khách sạn lỗi, khi nào cần operator), rồi SOLID, SQL, testing, Azure/K8s, chuẩn bị nói, mock cuối, live coding bài 2 nếu còn giờ.
 
-## 2026-11-08 → 09 · Ôn HRS ngày 3 và buổi phỏng vấn kỹ thuật
-- **Đã làm:** thiết kế kiểu HRS (rebook khi delay/huỷ chuyến, reporting + multi-tenant), viết lại các mục hay sai theo kiểu suy luận ([async](/runtime/async#async-exceptions), [N+1](/data/ef-core#n-plus-one), [concurrency](/data/ef-core#concurrency), [status code](/aspnet-core/rest-api#status-rule), [at-least-once](/architecture/messaging#at-least-once), [thứ tự bước saga](/architecture/messaging#step-order)), nguyên lý "UI đơ" ở [async-flow](/runtime/async-flow#flow), viết lại [SQL chậm và index](/data/sql-performance). Chuẩn bị nói: dự án CF, case Slack/Teams (SyncAll, trade-off), AI workflow.
+## 2026-11-08 → 09 · Ôn phỏng vấn ngày 3 và buổi phỏng vấn kỹ thuật
+- **Đã làm:** bài thiết kế (rebook khi delay/huỷ chuyến, reporting + multi-tenant), viết lại các mục hay sai theo kiểu suy luận ([async](/runtime/async#async-exceptions), [N+1](/data/ef-core#n-plus-one), [concurrency](/data/ef-core#concurrency), [status code](/aspnet-core/rest-api#status-rule), [at-least-once](/architecture/messaging#at-least-once), [thứ tự bước saga](/architecture/messaging#step-order)), nguyên lý "UI đơ" ở [async-flow](/runtime/async-flow#flow), viết lại [SQL chậm và index](/data/sql-performance). Chuẩn bị nói: dự án CF, case Slack/Teams (SyncAll, trade-off), AI workflow.
 - **Chỗ yếu:**
   - Thiết kế: định "huỷ hết rồi đặt lại" (đúng là impact analysis, giữ cái mới trước khi nhả cái cũ); báo cáo lệch số thì đoán do request lỗi (đúng là event trùng → idempotent consumer).
   - SQL: chưa biết Query Store / log EF; thứ tự cột index chưa suy ra được; nghĩ đảo thứ tự WHERE làm hỏng index; chưa biết sargable.
   - Async: hiểu state machine nhưng chưa trả lời được "trong vài giây đó UI có đơ không" (UI đơ chỉ khi thread vẽ UI bị chặn; async server = sức chứa).
-- **Phỏng vấn HRS (09/11), Nhan tự đánh giá gần như fail.** Câu bị hỏi mà chưa trả lời tốt:
+- **Phỏng vấn (09/11), Nhân tự đánh giá gần như fail.** Câu bị hỏi mà chưa trả lời tốt:
   - Luồng từ thao tác UI tới DB, và cấu trúc project (họ muốn xem có hiểu architecture: các layer, chiều phụ thuộc).
   - Luồng xác thực/phân quyền với access token + refresh token: quên.
   - AI: team họ làm kiểu automate gần hết (giống superpowers: TDD, nhiều vòng agent, người chỉ quyết định); không ai hỏi tới WorkCtx.

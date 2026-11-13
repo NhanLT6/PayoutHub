@@ -11,12 +11,12 @@ Phạm vi:
 
 Cách làm:
 0. Lấy chất liệu từ mục `## Câu hỏi phỏng vấn {#interview}` của các trang chủ đề trong `docs/<nhóm>/` (và `<nhóm>/questions.md`), mục lục ở `docs/reference/index.md`, cộng với milestone tương ứng trong `docs/progress/plan.md`.
-1. Hỏi Nhan muốn phỏng vấn bằng tiếng Anh hay tiếng Việt.
+1. Hỏi Nhân muốn phỏng vấn bằng tiếng Anh hay tiếng Việt.
 2. Hỏi **từng câu một**. Trộn ba loại câu:
    - Câu trả bài, ví dụ "Scoped khác Singleton thế nào?"
    - Câu tình huống, ví dụ "Hai Finance cùng bấm duyệt một payout thì sao?"
    - Câu về chính code trong repo, ví dụ "Vì sao bạn chọn rowversion thay vì lock?"
-3. Mỗi chủ đề hỏi tiếp ít nhất 2 câu đào sâu dựa trên câu trả lời, như interviewer thật. Không gợi ý trong lúc hỏi. Nếu Nhan bí, cho Nhan nói "pass" rồi chuyển câu.
+3. Mỗi chủ đề hỏi tiếp ít nhất 2 câu đào sâu dựa trên câu trả lời, như interviewer thật. Không gợi ý trong lúc hỏi. Nếu Nhân bí, cho Nhân nói "pass" rồi chuyển câu.
 4. Kết thúc, nhận xét theo 4 tiêu chí:
    - Đúng về kỹ thuật
    - Độ sâu

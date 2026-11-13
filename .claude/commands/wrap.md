@@ -16,4 +16,4 @@ Kết thúc phiên học.
    "Chỗ yếu" phải là điều cụ thể quan sát được trong phiên này. Ví dụ đúng: "chưa giải thích được vì sao worker cần scope riêng". Ví dụ sai: "cần ôn async".
 2. Tick các mục đã xong trong `docs/progress/plan.md`.
 3. Nếu có ý tưởng ngoài scope phát sinh trong phiên, thêm vào mục "Parking lot" của `docs/progress/plan.md`.
-4. Trả lời Nhan bằng 2–3 dòng tóm tắt và việc đầu tiên cho phiên sau.
+4. Trả lời Nhân bằng 2–3 dòng tóm tắt và việc đầu tiên cho phiên sau.

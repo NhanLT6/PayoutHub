@@ -573,5 +573,5 @@ On the code side, I'd use the strangler approach: a new ASP.NET Core app in fron
 3. Nếu session của app Web Forms chứa một `DataTable`, chuyện gì xảy ra khi bật remote app session? Phải sửa gì trước?
 4. Sau khi copy data, lần insert đầu tiên báo `duplicate key value violates unique constraint "pk_orders"`. Vì sao, và sửa bằng câu SQL nào?
 5. Count và `SUM(amount)` khớp hết, nhưng report doanh thu theo tháng vẫn lệch giữa hai DB. Hai nguyên nhân có thể là gì, và tầng kiểm tra nào bắt được?
-6. Login bằng `Nhan@Example.com` chạy trên SQL Server nhưng thất bại trên Postgres, không có lỗi nào. Vì sao, và ba cách chữa khác nhau ở đâu?
+6. Login bằng `Nhân@Example.com` chạy trên SQL Server nhưng thất bại trên Postgres, không có lỗi nào. Vì sao, và ba cách chữa khác nhau ở đâu?
 7. Vì sao CDC an toàn hơn dual write, dù cả hai đều "giữ hai DB đồng bộ"?
