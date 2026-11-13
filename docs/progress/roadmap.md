@@ -32,12 +32,13 @@ Nhân muốn có kiến thức thật, không học lý thuyết để trả bà
 | Vị trí nhắm tới | Senior Full-stack hoặc Product Engineer (.NET + React/Vue). Chưa từng lead team, không trình bày như lead |
 | Frontend | Ôn ở mức cơ bản, **ưu tiên thấp**, để cuối cùng sau khi xong backend ([chặng 7](#stage-7)). Nhân đã dùng cả React và Vue, thích Vue hơn; phỏng vấn ở Việt Nam hiếm khi hỏi sâu. Quyết định frontend cũ được dùng làm **câu chuyện** (xem [kho chuyện](#stories)) |
 | CI/CD | Học thật ở [chặng 4](#stage-4): hay bị hỏi và Nhân cần cho dự án cá nhân. Trước giờ Nhân nhờ AI làm rồi kiểm tra kết quả, nên lần này tự đọc và tự viết. Doppler (quản lý secret cho nhiều dự án cá nhân) làm khi còn thời gian |
-| Microservices | **Mức cơ bản** ([chặng 5](#stage-5)). JD ít ghi nhưng phỏng vấn đôi lúc hỏi, nên không bỏ qua, cũng không đi sâu |
+| Microservices | Vẫn học ([chặng 5](#stage-5)): JD ít ghi nhưng phỏng vấn đôi lúc hỏi. Khái niệm và trade-off học đầy đủ; **công cụ giới thiệu ở mức cơ bản** |
 | DDD và spec-driven | Không có buổi riêng. DDD (cho dev) nói qua ở buổi 1.3 và 5.1; spec-driven development (cho AI) nói qua ở buổi 3.4 |
 | Tiếng Anh | Không luyện nói trong buổi học. Buổi học dùng tiếng Việt. Cuối buổi chỉ cần **3–5 ý chính bằng tiếng Anh** để Nhân bám vào khi nói |
 | Hai project | **Talksum** là bài toán thật để lập luận và áp dụng. **PayoutHub** là chỗ gõ C#. Chi tiết ở [mục 4](#projects) |
 | Azure | Nhân có tài khoản. Học bằng cách tự deploy, ở [chặng 4](#stage-4) |
-| Docker, Kubernetes, Angular | Để sau cùng, chỉ làm khi một JD cụ thể cần |
+| Docker, Kubernetes | Giới thiệu ở mức cơ bản trong buổi 5.4. Đi sâu chỉ khi một JD cụ thể cần |
+| Angular | Chỉ làm khi một JD cụ thể cần |
 
 **Trọng số từ 32 JD đã lưu** (InterviewTracker đếm, chi tiết trong Google Doc "Ghi chú phỏng vấn"):
 
@@ -107,7 +108,7 @@ Mọi JD đều là .NET, và người phỏng vấn hỏi bằng C#. Mỗi ý h
 
 Hiện trạng (13/11/2026): M1 xong. M2 có entity (`Affiliate`, `Conversion`, `Merchant`, `Money`) và cấu hình `DbContext`. Chưa có controller nghiệp vụ, chưa có test, `FakeBank` mới là khung.
 
-Lộ trình này **không đi theo thứ tự M2 → M8 nữa**. Các mục trong [Plan](/progress/plan) được gọi ra theo từng buổi, đúng lúc nó minh hoạ cho điều đang học. Mục nào không được buổi nào gọi thì để sau. M8 (Docker, Kubernetes) để sau cùng.
+Lộ trình này **không đi theo thứ tự M2 → M8 nữa**. Các mục trong [Plan](/progress/plan) được gọi ra theo từng buổi, đúng lúc nó minh hoạ cho điều đang học. Mục nào không được buổi nào gọi thì để sau. Riêng M8 chỉ lấy phần đầu (Dockerfile, docker compose) cho buổi 5.4; phần Kubernetes để sau cùng.
 
 Cặp `PayoutHub.Api` và `FakeBank` là **hai service thật gọi nhau qua mạng**. Đây là chỗ Nhân có kinh nghiệm tay về hệ phân tán mà không cần giả vờ đã làm microservices.
 
@@ -131,7 +132,7 @@ Mỗi buổi gắn với ít nhất một chuyện dưới đây, để điều 
 
 ## 6. Các chặng {#stages}
 
-Thứ tự là thứ tự ưu tiên. **Ưu tiên 1** (chặng 0 đến 2, 11 buổi) là phần cả hai nhóm JD đều cần và là chỗ nhận xét phỏng vấn gần đây nêu ra. **Ưu tiên 2** là chặng 3 (test, AI), chặng 4 (CI/CD, Azure) và chặng 5 (hệ phân tán ở mức cơ bản), 11 buổi. **Ưu tiên 3** là chặng 6 (system design). **Cuối cùng** là chặng 7 (frontend cơ bản) và buổi Doppler tuỳ chọn. Tổng 27 buổi; với 5 buổi mỗi tuần là khoảng 5 đến 6 tuần, ưu tiên 1 xong trong hơn 2 tuần.
+Thứ tự là thứ tự ưu tiên. **Ưu tiên 1** (chặng 0 đến 2, 11 buổi) là phần cả hai nhóm JD đều cần và là chỗ nhận xét phỏng vấn gần đây nêu ra. **Ưu tiên 2** là chặng 3 (test, AI), chặng 4 (CI/CD, Azure) và chặng 5 (hệ phân tán và microservices), 12 buổi. **Ưu tiên 3** là chặng 6 (system design). **Cuối cùng** là chặng 7 (frontend cơ bản) và buổi Doppler tuỳ chọn. Tổng 28 buổi; với 5 buổi mỗi tuần là khoảng 5 đến 6 tuần, ưu tiên 1 xong trong hơn 2 tuần.
 
 Mỗi buổi ghi: **câu đích** (thứ Nhân phải tự trả lời được khi hết buổi), chỗ đọc trong Talksum, lab trên PayoutHub, chuyện thật, và trang trên site.
 
@@ -294,11 +295,11 @@ Trang còn thiếu, model viết sau buổi tương ứng: nhóm `delivery/` g�
   - Model đọc tài liệu Doppler hiện hành trước buổi (gói miễn phí, cách tích hợp với GitHub Actions và Cloudflare), không nói theo trí nhớ.
   - Áp dụng: thử trên một dự án cá nhân nhỏ. Đưa Talksum sang Doppler là quyết định riêng, theo [mục 8](#checkpoints).
 
-### Chặng 5: Hệ phân tán ở mức cơ bản (3 buổi) {#stage-5}
+### Chặng 5: Hệ phân tán và microservices (4 buổi) {#stage-5}
 
 Nguyên lý xuyên suốt: **qua mạng thì mọi lời gọi có thể chậm, mất, hoặc tới hai lần, và hai phía không cùng sống chết.** Microservices là một cách trả giá đó để đổi lấy việc deploy và scale độc lập. Phần lớn dự án không cần trả.
 
-**Độ sâu: cơ bản.** JD đúng hướng ít ghi microservices, nhưng vào phỏng vấn đôi lúc vẫn bị hỏi. Đích của chặng là trả lời được câu hỏi khái niệm và trade-off bằng lập luận của mình, không phải vận hành được microservices. Outbox, saga, service discovery, API gateway: mỗi thứ chỉ cần nói được nó chữa vấn đề gì trong một hai câu; các trang [Microservices](/architecture/microservices) và [Messaging](/architecture/messaging) đã có sẵn để đọc lại. Không làm Kubernetes.
+**Độ sâu:** JD đúng hướng ít ghi microservices, nhưng vào phỏng vấn đôi lúc vẫn bị hỏi. Vì vậy **khái niệm và trade-off học đầy đủ** (tách hay không, gọi đồng bộ hay message, lỗi lan truyền, at-least-once, outbox, saga), còn **công cụ chỉ giới thiệu ở mức cơ bản** (Docker, Kubernetes, message broker, API gateway): biết nó là gì, chữa vấn đề gì, chạy thử một lần, không đi sâu vận hành. Nhân chưa từng dùng Docker và Kubernetes, nên buổi công cụ bắt đầu từ đầu.
 
 Về việc Nhân chưa làm microservices: không giấu, không giả. Lập trường cần có khi hết chặng: "Tôi chưa vận hành microservices ở production. Tôi biết nó chữa vấn đề gì và giá của nó, tôi đã tự làm hai service gọi nhau có retry, idempotency và webhook, và với các dự án tôi từng làm thì monolith chia module là lựa chọn đúng, vì những lý do sau."
 
@@ -316,13 +317,20 @@ Về việc Nhân chưa làm microservices: không giấu, không giả. Lập t
   - Lab (M4 trong Plan): typed `HttpClient` gọi `FakeBank` với resilience handler (timeout, retry, circuit breaker), `CancellationToken` đi xuyên các tầng. Bật độ trễ và tỷ lệ lỗi của `FakeBank` để thấy từng cơ chế hoạt động.
   - Trang: [Microservices](/architecture/microservices) (mục cascading failure). Trang còn thiếu: resilience.
 
-- [ ] **Buổi 5.3. Việc không cần trả lời ngay: message. Kiểm tra chặng 5.**
+- [ ] **Buổi 5.3. Việc không cần trả lời ngay: message.**
   - Câu đích: "Khi nào dùng message thay cho gọi trực tiếp? At-least-once kéo theo những gì?"
   - Chuyện: MSMQ ở CF chỉ log lỗi. Nhân viết ra: message hỏng hiện đi đâu, mất gì, và sẽ đề xuất gì (retry có giới hạn, dead-letter, consumer idempotent).
   - Talksum: hàng đợi offline phía client là một hàng đợi thật. Nó xử lý gửi lại và trùng thế nào?
-  - Lab (M5 trong Plan): `FakeBank` gọi webhook về PayoutHub; verify chữ ký HMAC; lưu id event đã xử lý với unique index. Không làm outbox và saga bằng code; chỉ hỏi lại ở mức "nó chữa gì".
+  - Lab (M5 trong Plan): `FakeBank` gọi webhook về PayoutHub; verify chữ ký HMAC; lưu id event đã xử lý với unique index. Outbox và saga: học cơ chế và thứ tự bước bằng hình trên trang Messaging; chỉ cài outbox bằng code nếu còn giờ.
+  - Trang: [Messaging](/architecture/messaging).
+
+- [ ] **Buổi 5.4. Công cụ ở mức cơ bản. Kiểm tra chặng 5.**
+  - Câu đích: "Container khác gì chạy thẳng trên máy? Kubernetes làm thay mình việc gì? Service Bus, RabbitMQ, Kafka khác nhau ở đâu? API gateway đứng ở chỗ nào?" Mỗi câu trả lời trong một hai câu, kèm "khi nào chưa cần".
+  - Lab: viết `Dockerfile` cho `PayoutHub.Api` và `FakeBank`, chạy cả hai cùng SQL Server bằng `docker compose` (phần đầu của M8 trong Plan). Model viết sẵn khung vì đây là cấu hình; Nhân đọc, giải thích từng dòng và tự sửa một chỗ (đổi port, thêm biến môi trường). Hai service gọi nhau bằng tên service thay cho `localhost`: đó là service discovery ở dạng đơn giản nhất.
+  - Kubernetes: chỉ đọc hình và gọi tên pod, deployment, service; không cài. Message broker: so sánh trên trang Tooling, không cài.
+  - Talksum: Cloudflare Workers là lựa chọn ngược lại, không tự quản container. Nhân nêu cái giá của mỗi bên.
   - **Kiểm tra chặng (30 phút cuối):** bài thiết kế "gọi một cổng thanh toán bên ngoài hay timeout", Nhân tự dẫn.
-  - Trang: [Messaging](/architecture/messaging), [Tooling](/architecture/tooling).
+  - Trang: [Tooling](/architecture/tooling); bổ sung mục container và Kubernetes cơ bản vào đó.
 
 ### Chặng 6: System design và tổng hợp (3 buổi, rồi lặp lại) {#stage-6}
 
@@ -377,7 +385,6 @@ Model chạy buổi tự quyết mọi thứ trong phạm vi một buổi. Dừn
 ## 9. Thứ đã cố ý để ngoài {#out}
 
 - Frontend chuyên sâu, Angular, luyện nói tiếng Anh: lý do ở [mục 2](#facts). Frontend cơ bản nằm ở [chặng 7](#stage-7).
-- Docker, Kubernetes (M8 trong Plan): nhóm JD đúng hướng gần như không hỏi. Chỉ làm khi một JD cụ thể cần.
-- Microservices chuyên sâu (tự cài outbox, saga, service mesh): chặng 5 chỉ dừng ở mức cơ bản.
+- Docker và Kubernetes chuyên sâu (cài cluster, phần còn lại của M8 trong Plan), service mesh: buổi 5.4 chỉ giới thiệu công cụ ở mức cơ bản. Đi sâu khi một JD cụ thể cần.
 - Aspire, GraphQL, Kafka chi tiết: chỉ khi một JD cụ thể cần.
 - DDD đầy đủ (aggregate lớn, event sourcing, CQRS tách kho dữ liệu): chỉ nói qua ở buổi liên quan, tới mức nhận ra khi nào nó đáng.
