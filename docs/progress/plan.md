@@ -1,7 +1,11 @@
 <!--suppress LanguageDetectionInspection -->
 # Kế hoạch PayoutHub
 
-Ngân sách: khoảng 4,5 tuần, tối đa khoảng 3 giờ mỗi ngày, có thể ngắt quãng.
+::: warning Thứ tự học đã đổi (13/11/2026)
+Thứ tự học giờ nằm ở [Lộ trình cốt lõi](/progress/roadmap). Trang này còn là **checklist code của PayoutHub**: mỗi buổi trong lộ trình gọi ra đúng mục M nó cần, không đi tuần tự M2 → M8 nữa. Mỗi buổi 2 giờ, dừng cứng. M8 để sau cùng.
+:::
+
+Ngân sách ban đầu (đã thay): khoảng 4,5 tuần, tối đa khoảng 3 giờ mỗi ngày, có thể ngắt quãng.
 Mỗi milestone kết thúc bằng `/mock Mx` (10–15 phút), rồi `/wrap`.
 
 **Cách đọc:** mỗi bước có dòng `→` giải thích làm gì và vì sao. Lab là phần **cố tình làm sai** để thấy lỗi tận mắt, vì đó là chất liệu tốt nhất để kể khi phỏng vấn. "Ôn" là link tới các câu phỏng vấn (xem [Mục lục câu hỏi](/reference/)).
@@ -37,6 +41,10 @@ Mỗi milestone kết thúc bằng `/mock Mx` (10–15 phút), rồi `/wrap`.
 Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; M8 bỏ bước Kubernetes, chỉ làm Docker compose và học phần khái niệm microservices. Không cắt M3 và M4, vì đây là phần quan trọng nhất cho phỏng vấn.
 
 ## Ôn theo 2 job: PhoenixDX và ASW (từ 28/10/2026) {#job-plan}
+
+::: warning Đã thay
+PhoenixDX dừng ngày 13/11/2026. Mục này chỉ còn để tham khảo; thứ tự hiện hành ở [Lộ trình cốt lõi](/progress/roadmap).
+:::
 
 Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần chắc chắn bị hỏi trước**, sau đó tới microservices (gap của PhoenixDX), Angular để cuối (gap của ASW). Các milestone PayoutHub bên dưới giữ nguyên, giờ dùng làm **nguồn ví dụ code** khi cần, không còn đi theo thứ tự milestone.
 

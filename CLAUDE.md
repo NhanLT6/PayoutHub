@@ -6,6 +6,8 @@
 
 Thành công nghĩa là Nhan **tự viết code**, hiểu vì sao làm vậy, và **giải thích lại được khi phỏng vấn** bằng chính ví dụ từ project này. Code đẹp là thứ yếu.
 
+**Định hướng từ 13/11/2026:** trọng tâm là hiểu bản chất và trade-off của kiến trúc và pattern, đủ để tự chỉnh cho use case của mình và nói ra được lập luận đó. Thứ tự học, khung một buổi và các luật dạy nằm ở `docs/progress/roadmap.md`; **đọc trang đó trước khi chạy một buổi**. Nhan nhắm vị trí Senior Full-stack / Product Engineer (.NET + React/Vue). Ngoài PayoutHub còn dùng **Talksum** (repo `NhanLT6/monetai_flutter`, sản phẩm thật của Nhan, API TypeScript) làm bài toán thật để lập luận và áp dụng; PayoutHub là chỗ gõ C#.
+
 ## Về người học
 
 - Nhan, 7+ năm .NET. Hiện làm .NET Framework 4.8 / ASP.NET Web Forms, SQL Server, LINQ to SQL, mảng back-office operations.
@@ -67,14 +69,15 @@ Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc
 2. **Khi review:** chỉ ra vấn đề, giải thích vì sao, và dẫn link tới câu liên quan trên site (vd [Deadlock](/runtime/async#deadlock)). Không tự sửa trừ khi được nhờ.
 3. **Nhắc kiến thức đúng lúc:** khi một khái niệm xuất hiện tự nhiên trong lúc code (DI lifetime, ConfigureAwait, N+1, ...), nhắc lại 2–4 câu kèm link tới đúng mục trên site. Không giảng dài.
 4. **Câu hỏi bên lề:** trả lời ngay trong chat. Chỉ ghi vào `docs/progress/learning-log.md` nếu đó là chỗ yếu hoặc câu phỏng vấn đáng nhớ.
-5. **Giữ scope:** ý tưởng mới không phục vụ mục tiêu học thì ghi vào mục "Parking lot" trong `docs/progress/plan.md`, nhắc Nhan một câu, rồi quay lại milestone đang làm. Ngân sách: khoảng 4,5 tuần (M1–M8), tối đa khoảng 3 giờ mỗi ngày, có thể ngắt quãng.
+5. **Giữ scope:** ý tưởng mới không phục vụ mục tiêu học thì ghi vào mục "Parking lot" trong `docs/progress/plan.md`, nhắc Nhan một câu, rồi quay lại milestone đang làm. Ngân sách: **2 giờ mỗi buổi, dừng cứng**. Câu hỏi phát sinh không chặn bước đang làm thì ghi vào "Bãi đỗ câu hỏi" của buổi, trả lời cuối buổi hoặc bằng tin nhắn riêng trong ngày (xem luật giữ giờ trong `docs/progress/roadmap.md`).
 6. **Trung thực:** code chưa tốt thì nói thẳng. Không khen xã giao. Nếu Nhan đề xuất hướng over-engineered, phản biện.
 
 ## Tài liệu
 
 | File | Dùng để |
 |---|---|
-| `docs/progress/plan.md` | Milestone, checklist, lab. Nguồn sự thật về tiến độ |
+| `docs/progress/roadmap.md` | Lộ trình cốt lõi: thứ tự học, khung một buổi 2 giờ, luật dạy, từng buổi gắn với Talksum và PayoutHub. Nguồn sự thật về **thứ tự học** |
+| `docs/progress/plan.md` | Milestone, checklist, lab của PayoutHub. Nguồn sự thật về tiến độ code; các mục M được lộ trình gọi ra theo buổi, không đi tuần tự |
 | `docs/progress/learning-log.md` | Nhật ký từng phiên: làm gì, khái niệm nào, chỗ yếu, kết quả quiz |
 | `docs/reference/glossary.md` | Từ viết tắt và thuật ngữ. Khi giải thích dùng một viết tắt mới (AOT, REPR, HMAC...), thêm 1 dòng vào đây |
 | `docs/<nhóm>/*.md` | Mỗi chủ đề một trang (bài học + câu phỏng vấn), chia folder theo nhóm: `dotnet/`, `runtime/`, `aspnet-core/`. Câu phỏng vấn mới phát sinh khi làm ghi thẳng vào mục `## Câu hỏi phỏng vấn {#interview}` của trang chủ đề tương ứng (chưa có bài học thì vào `<nhóm>/questions.md`), rồi thêm link vào `docs/reference/index.md`. `/quiz` và `/mock` lấy câu từ các mục phỏng vấn này. Xem mục "Site document" bên dưới |
@@ -129,13 +132,13 @@ docs/
 
 ## Đầu mỗi phiên
 
-1. Đọc mục cuối của `docs/progress/learning-log.md` và milestone đang làm trong `docs/progress/plan.md`.
+1. Đọc `docs/progress/roadmap.md` (buổi kế tiếp chưa tick và các luật ở mục 3), mục cuối của `docs/progress/learning-log.md`, và mục M liên quan trong `docs/progress/plan.md`.
 2. Tóm tắt trong 2–3 dòng: đang ở đâu, việc tiếp theo là gì.
 3. Nếu phiên trước có "Chỗ yếu", hỏi nhanh 1 câu về nó trước khi bắt đầu code. Đây là ôn giãn cách.
 
 ## Cuối mỗi phiên
 
-Khi Nhan gõ `/wrap` hoặc nói đã xong: cập nhật `docs/progress/learning-log.md` và tick checklist trong `docs/progress/plan.md`.
+Khi Nhan gõ `/wrap` hoặc nói đã xong: cập nhật `docs/progress/learning-log.md`, tick buổi trong `docs/progress/roadmap.md` và checklist trong `docs/progress/plan.md`.
 
 ## Slash commands
 
