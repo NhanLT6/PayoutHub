@@ -220,6 +220,16 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 
 - [Kafka và RabbitMQ khác nhau thế nào? Khi nào chọn cái nào?](/architecture/tooling#kafka-vs-rabbitmq-q)
 
+## Web & sản phẩm
+
+### [SEO](/web/seo#interview)
+
+- [App Vue/React (SPA) có làm SEO được không?](/web/seo#spa-seo)
+- [robots.txt và noindex khác nhau thế nào?](/web/seo#robots-vs-noindex)
+- [301 và 302 khác nhau thế nào, khi nào dùng cái nào?](/web/seo#redirect-301-302)
+- [Canonical dùng khi nào?](/web/seo#canonical-when)
+- [AI Overview làm click giảm. Với tư cách developer bạn làm gì?](/web/seo#seo-ai-era)
+
 ## Chưa viết
 
 AuthN/AuthZ · Testing · Migration Framework → .NET · Kiến trúc mức senior · Question bank

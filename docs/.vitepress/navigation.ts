@@ -73,6 +73,11 @@ export const sidebar: DefaultTheme.Sidebar = [
     ],
   },
   {
+    text: '6 · Web & sản phẩm',
+    collapsed: false,
+    items: [{ text: 'SEO: từ crawl tới AI trích dẫn', link: '/web/seo' }],
+  },
+  {
     text: 'Tra cứu',
     items: [
       { text: 'Mục lục câu hỏi', link: '/reference/' },

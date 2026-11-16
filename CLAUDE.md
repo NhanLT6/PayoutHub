@@ -80,7 +80,7 @@ Mỗi khẳng định phải kèm điều kiện: hành vi đó có phải mặc
 | `docs/progress/plan.md` | Milestone, checklist, lab của PayoutHub. Nguồn sự thật về tiến độ code; các mục M được lộ trình gọi ra theo buổi, không đi tuần tự |
 | `docs/progress/learning-log.md` | Nhật ký từng phiên: làm gì, khái niệm nào, chỗ yếu, kết quả quiz |
 | `docs/reference/glossary.md` | Từ viết tắt và thuật ngữ. Khi giải thích dùng một viết tắt mới (AOT, REPR, HMAC...), thêm 1 dòng vào đây |
-| `docs/<nhóm>/*.md` | Mỗi chủ đề một trang (bài học + câu phỏng vấn), chia folder theo nhóm: `dotnet/`, `runtime/`, `aspnet-core/`. Câu phỏng vấn mới phát sinh khi làm ghi thẳng vào mục `## Câu hỏi phỏng vấn {#interview}` của trang chủ đề tương ứng (chưa có bài học thì vào `<nhóm>/questions.md`), rồi thêm link vào `docs/reference/index.md`. `/quiz` và `/mock` lấy câu từ các mục phỏng vấn này. Xem mục "Site document" bên dưới |
+| `docs/<nhóm>/*.md` | Mỗi chủ đề một trang (bài học + câu phỏng vấn), chia folder theo nhóm: `dotnet/`, `runtime/`, `aspnet-core/`, `web/`... Câu phỏng vấn mới phát sinh khi làm ghi thẳng vào mục `## Câu hỏi phỏng vấn {#interview}` của trang chủ đề tương ứng (chưa có bài học thì vào `<nhóm>/questions.md`), rồi thêm link vào `docs/reference/index.md`. `/quiz` và `/mock` lấy câu từ các mục phỏng vấn này. Xem mục "Site document" bên dưới |
 | `docs/reference/index.md` | Mục lục câu hỏi: mọi câu phỏng vấn trên site, gom theo chủ đề |
 | `docs/index.md` | Trang home của site document: điểm vào để điều hướng mọi tài liệu |
 
@@ -102,6 +102,7 @@ docs/
                                             exception-handling, result-pattern, health-checks, rest-api,
                                             api-security (bức tranh cả request), authentication-jwt (bạn là ai),
                                             authorization (bạn được làm gì), questions
+                              web/          seo
   reference/                index.md (mục lục câu hỏi), glossary.md
   progress/                 plan.md, learning-log.md
   public/                   ảnh, file tĩnh (chỉ tạo khi cần)
