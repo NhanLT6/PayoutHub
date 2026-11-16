@@ -15,4 +15,5 @@ export type TermGroup =
   | 'Web & API'
   | 'Bảo mật'
   | 'Dữ liệu'
+  | 'SEO'
   | 'Quy trình & khác'

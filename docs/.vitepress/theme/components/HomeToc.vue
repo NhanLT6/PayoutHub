@@ -311,6 +311,22 @@ const groups: Group[] = [
     ],
   },
   {
+    title: 'Web & sản phẩm',
+    hint: 'Để sản phẩm được tìm thấy',
+    pages: [
+      {
+        text: 'SEO',
+        desc: 'Crawl, render, index, rank; search intent, backlink, SPA và SSR, redirect, đo bằng GSC/GA4, được AI trích dẫn.',
+        link: '/web/seo',
+        q: [
+          { text: 'SPA có SEO được?', link: '/web/seo#spa-seo' },
+          { text: 'robots.txt vs noindex', link: '/web/seo#robots-vs-noindex' },
+          { text: 'SEO thời AI', link: '/web/seo#seo-ai-era' },
+        ],
+      },
+    ],
+  },
+  {
     title: 'Hệ thống',
     hint: 'Container, Kubernetes',
     soon: { text: 'Sắp học ở M8', link: '/progress/plan#m8' },
