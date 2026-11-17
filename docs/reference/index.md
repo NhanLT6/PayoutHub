@@ -187,6 +187,11 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [LINQ to SQL khác EF Core thế nào?](/data/linq-to-sql#linq-to-sql-vs-ef-core)
 - [Migrate từ LINQ to SQL sang EF Core cần chú ý gì?](/data/linq-to-sql#migrate-linq-to-sql)
 
+### [Semantic layer](/data/semantic-layer#interview)
+
+- [Query thống kê trả số lớn hơn thực tế sau khi thêm JOIN. Vì sao?](/data/semantic-layer#inflated-count)
+- [Cho LLM trả lời câu hỏi thống kê: có để nó viết SQL không?](/data/semantic-layer#llm-text-to-sql)
+
 ## Kiến trúc phân tán
 
 ### [Microservices](/architecture/microservices#interview)
@@ -220,6 +225,11 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 
 - [Kafka và RabbitMQ khác nhau thế nào? Khi nào chọn cái nào?](/architecture/tooling#kafka-vs-rabbitmq-q)
 
+### [Hệ thống legacy nhiều host](/architecture/legacy-system#interview)
+
+- [Hệ thống của bạn có điểm yếu kiến trúc nào, và bạn sẽ cải thiện gì trước?](/architecture/legacy-system#legacy-weaknesses)
+- [Migrate một hệ thống WebForms nhiều host lên .NET 10: bắt đầu từ đâu?](/architecture/legacy-system#legacy-migration-start)
+
 ## Web & sản phẩm
 
 ### [SEO](/web/seo#interview)
@@ -229,6 +239,28 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [301 và 302 khác nhau thế nào, khi nào dùng cái nào?](/web/seo#redirect-301-302)
 - [Canonical dùng khi nào?](/web/seo#canonical-when)
 - [AI Overview làm click giảm. Với tư cách developer bạn làm gì?](/web/seo#seo-ai-era)
+
+### [Tracking pixel](/web/tracking-pixel#interview)
+
+- [Tracking pixel hoạt động thế nào, và vì sao nó kém chính xác dần?](/web/tracking-pixel#how-pixel-works)
+
+## Tích hợp hệ thống ngoài
+
+### [Notification tương tác: Slack, Teams](/integrations/interactive-notifications#interview)
+
+- [Endpoint nhận webhook từ bên thứ ba cần làm gì?](/integrations/interactive-notifications#webhook-endpoint)
+- [Bạn gặp 429 khi gọi API bên ngoài. Xử lý thế nào?](/integrations/interactive-notifications#handle-429)
+
+### [Đồng bộ sang CRM](/integrations/crm-sync#interview)
+
+- [Đồng bộ dữ liệu sang một hệ thống bên ngoài, bạn thiết kế thế nào?](/integrations/crm-sync#design-sync)
+
+## AI trong app
+
+### [Thiết kế tool cho LLM](/ai/llm-tools#interview)
+
+- [Thêm function calling cho chatbot: làm sao để an toàn?](/ai/llm-tools#secure-tools)
+- [Model gọi tool với tham số sai. App nên làm gì?](/ai/llm-tools#bad-arguments)
 
 ## Chưa viết
 

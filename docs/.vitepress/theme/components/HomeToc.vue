@@ -263,6 +263,15 @@ const groups: Group[] = [
           { text: 'Migrate', link: '/data/linq-to-sql#migrate-linq-to-sql' },
         ],
       },
+      {
+        text: 'Semantic layer',
+        desc: 'Sinh SQL thống kê từ request có cấu trúc: grain, fan trap, EXISTS thay JOIN, registry + compiler, golden test.',
+        link: '/data/semantic-layer',
+        q: [
+          { text: 'Đếm phồng sau JOIN', link: '/data/semantic-layer#inflated-count' },
+          { text: 'LLM viết SQL?', link: '/data/semantic-layer#llm-text-to-sql' },
+        ],
+      },
     ],
   },
   {
@@ -308,6 +317,15 @@ const groups: Group[] = [
           { text: 'Service Bus ở local', link: '/architecture/tooling#service-bus-local' },
         ],
       },
+      {
+        text: 'Hệ thống legacy',
+        desc: 'WebForms nhiều host, shared library, MSMQ mất message, BinaryFormatter, gia cố tại chỗ, migrate từng thành phần.',
+        link: '/architecture/legacy-system',
+        q: [
+          { text: 'Điểm yếu, sửa gì trước', link: '/architecture/legacy-system#legacy-weaknesses' },
+          { text: 'Migrate bắt đầu từ đâu', link: '/architecture/legacy-system#legacy-migration-start' },
+        ],
+      },
     ],
   },
   {
@@ -322,6 +340,48 @@ const groups: Group[] = [
           { text: 'SPA có SEO được?', link: '/web/seo#spa-seo' },
           { text: 'robots.txt vs noindex', link: '/web/seo#robots-vs-noindex' },
           { text: 'SEO thời AI', link: '/web/seo#seo-ai-era' },
+        ],
+      },
+      {
+        text: 'Tracking pixel',
+        desc: 'Click redirect, pixel và cookie bên thứ ba, postback, chọn ai được ghi công, chữ ký và khử trùng.',
+        link: '/web/tracking-pixel',
+        q: [{ text: 'Pixel hoạt động thế nào', link: '/web/tracking-pixel#how-pixel-works' }],
+      },
+    ],
+  },
+  {
+    title: 'Tích hợp hệ thống ngoài',
+    hint: 'Slack, Teams, CRM: webhook, queue, rate limit',
+    pages: [
+      {
+        text: 'Notification tương tác',
+        desc: 'Gửi tin có nút, lưu channel + ts, verify chữ ký webhook, trả 200 trong 3 giây, một người sửa tin, 429, debug bot Teams.',
+        link: '/integrations/interactive-notifications',
+        q: [
+          { text: 'Endpoint nhận webhook', link: '/integrations/interactive-notifications#webhook-endpoint' },
+          { text: 'Xử lý 429', link: '/integrations/interactive-notifications#handle-429' },
+        ],
+      },
+      {
+        text: 'Đồng bộ sang CRM',
+        desc: 'Lưu nội bộ trước, queue mang ID, giữ ID bên kia, đọc body lỗi, dropdown thiếu option, sai thứ tự, nhiều đường ghi.',
+        link: '/integrations/crm-sync',
+        q: [{ text: 'Thiết kế đồng bộ', link: '/integrations/crm-sync#design-sync' }],
+      },
+    ],
+  },
+  {
+    title: 'AI trong app',
+    hint: 'Function calling an toàn',
+    pages: [
+      {
+        text: 'Thiết kế tool cho LLM',
+        desc: 'Vòng lặp tool có trần, scope do server gán, schema chặt, lỗi là dữ liệu, description, prompt injection, eval.',
+        link: '/ai/llm-tools',
+        q: [
+          { text: 'Tool an toàn', link: '/ai/llm-tools#secure-tools' },
+          { text: 'Tham số sai', link: '/ai/llm-tools#bad-arguments' },
         ],
       },
     ],
@@ -482,7 +542,7 @@ a.title:hover,
 }
 /* Cả card bấm được: link tiêu đề phủ lên toàn card; chip nằm trên lớp phủ nên vẫn dẫn tới mục riêng */
 a.title::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   z-index: 1;

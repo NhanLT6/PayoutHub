@@ -171,6 +171,8 @@ Migrate thật thường là **hai bài toán chồng lên nhau**: chuyển code
 Không <T>big-bang</T>. Chuyển dần theo <T>strangler fig</T>: dựng một app ASP.NET Core mới đứng trước (reverse proxy bằng <T>YARP</T>); route nào đã chuyển thì vào app mới, còn lại proxy về app cũ; <T>System.Web adapters</T> chia session/auth giữa hai app. Thứ tự: thư viện dùng chung sang <T k="net standard">.NET Standard 2.0</T> / multi-target trước, rồi data access (<T>EF6</T> → <T>EF Core</T>), rồi từng nhóm endpoint. Nếu đổi luôn DB: schema sinh bằng EF Core migrations, data kiểm 3 tầng (count → aggregate → diff query), cutover bằng cửa sổ downtime hoặc <T>CDC</T>, luôn giữ DB cũ để rollback.
 :::
 
+Áp vào một hệ thống cụ thể nhiều host (WebForms, Web API 2, MSMQ, Windows Service, shared library), chọn công nghệ cho từng thành phần và thứ tự các pha: [Hệ thống legacy nhiều host](/architecture/legacy-system#migrate).
+
 ### 1. Vì sao strangler fig, không big-bang {#why-strangler}
 
 Rủi ro của một lần release tỉ lệ với lượng thay đổi **chưa từng chạy trên production**. Big-bang dồn toàn bộ thay đổi vào một release, nên nó gánh ba cái đau cùng lúc:

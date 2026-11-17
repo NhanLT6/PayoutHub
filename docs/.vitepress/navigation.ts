@@ -60,6 +60,7 @@ export const sidebar: DefaultTheme.Sidebar = [
       { text: 'EF Core: query, tracking, concurrency', link: '/data/ef-core' },
       { text: 'SQL chậm và index', link: '/data/sql-performance' },
       { text: 'LINQ to SQL vs EF Core', link: '/data/linq-to-sql' },
+      { text: 'Semantic layer: sinh SQL thống kê', link: '/data/semantic-layer' },
     ],
   },
   {
@@ -70,12 +71,34 @@ export const sidebar: DefaultTheme.Sidebar = [
       { text: 'Messaging: queue, outbox, saga', link: '/architecture/messaging' },
       { text: 'DDD', link: '/architecture/ddd' },
       { text: 'Công cụ: broker, thư viện', link: '/architecture/tooling' },
+      { text: 'Hệ thống legacy nhiều host', link: '/architecture/legacy-system' },
     ],
   },
   {
     text: '6 · Web & sản phẩm',
     collapsed: false,
-    items: [{ text: 'SEO: từ crawl tới AI trích dẫn', link: '/web/seo' }],
+    items: [
+      { text: 'SEO: từ crawl tới AI trích dẫn', link: '/web/seo' },
+      { text: 'Tracking và tracking pixel', link: '/web/tracking-pixel' },
+    ],
+  },
+  {
+    text: '7 · Tích hợp hệ thống ngoài',
+    collapsed: false,
+    items: [
+      { text: 'Notification tương tác: Slack, Teams', link: '/integrations/interactive-notifications' },
+      { text: 'Đồng bộ sang CRM qua queue', link: '/integrations/crm-sync' },
+    ],
+  },
+  {
+    text: '8 · AI trong app',
+    collapsed: false,
+    items: [{ text: 'Thiết kế tool cho LLM', link: '/ai/llm-tools' }],
+  },
+  {
+    text: 'Legacy',
+    collapsed: true,
+    items: [{ text: 'Hướng dẫn cũ: Teams bot', link: '/legacy/' }],
   },
   {
     text: 'Tra cứu',

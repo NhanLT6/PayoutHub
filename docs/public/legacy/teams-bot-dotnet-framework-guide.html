@@ -1,0 +1,2575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teams Bot Complete Guide — .NET Framework</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #14171f;
+      --surface: #1b1f2b;
+      --surface2: #222638;
+      --border: #252a38;
+      --accent: #4fc3f7;
+      --accent2: #7c83f5;
+      --accent3: #56e39f;
+      --warn: #f6a623;
+      --danger: #f05c5c;
+      --text: #d8dde8;
+      --text-muted: #6b7591;
+      --text-dim: #8b93a8;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.75; }
+
+    /* ── Layout ── */
+    .layout { display: grid; grid-template-columns: 256px 1fr; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .sidebar-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .sidebar-header .eyebrow { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; }
+    .sidebar-header h1 { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-top: 4px; }
+    .nav-group { padding: 0 10px 6px; }
+    .nav-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: .1em; text-transform: uppercase; padding: 8px 8px 3px; }
+    .nav-a {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 9px; border-radius: 5px;
+      color: var(--text-dim); text-decoration: none; font-size: 12.5px;
+      transition: all .15s; border: 1px solid transparent; cursor: pointer;
+    }
+    .nav-a:hover { background: var(--surface2); color: var(--text); }
+    .nav-a.active { background: rgba(79,195,247,.1); color: var(--accent); border-color: rgba(79,195,247,.2); }
+    .nav-a .ni { font-size: 13px; opacity: .8; }
+
+    /* ── Main content ── */
+    main { padding: 44px 60px; max-width: 860px; }
+
+    /* ── Sections ── */
+    .section { margin-bottom: 60px; scroll-margin-top: 20px; }
+    .eyebrow-tag {
+      font-family: var(--mono); font-size: 10px; color: var(--accent);
+      letter-spacing: .15em; text-transform: uppercase; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .eyebrow-tag::after { content: ''; width: 28px; height: 1px; background: var(--accent); opacity: .4; }
+    h2 { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 14px; letter-spacing: -.2px; }
+    h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 22px 0 8px; display: flex; align-items: center; gap: 8px; }
+    h3 .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+    p { color: var(--text-dim); margin-bottom: 10px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 20px; margin: 8px 0 12px; }
+    li { color: var(--text-dim); font-size: 13px; margin-bottom: 4px; }
+    li strong { color: var(--text); font-weight: 500; }
+    p code, li code, td code {
+      background: rgba(79,195,247,.1); color: var(--accent);
+      padding: 1px 6px; border-radius: 3px; font-family: var(--mono); font-size: 12px;
+    }
+    hr { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: 7px; padding: 12px 14px; margin: 14px 0;
+      border-left: 3px solid; display: flex; gap: 11px; align-items: flex-start;
+    }
+    .callout .ci { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .callout .cb { flex: 1; }
+    .callout .cb strong { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
+    .callout .cb p { margin: 0; font-size: 13px; }
+    .callout.info { background: rgba(79,195,247,.07); border-color: var(--accent); }
+    .callout.info .cb strong { color: var(--accent); }
+    .callout.warn { background: rgba(246,166,35,.07); border-color: var(--warn); }
+    .callout.warn .cb strong { color: var(--warn); }
+    .callout.tip { background: rgba(86,227,159,.07); border-color: var(--accent3); }
+    .callout.tip .cb strong { color: var(--accent3); }
+    .callout.danger { background: rgba(240,92,92,.07); border-color: var(--danger); }
+    .callout.danger .cb strong { color: var(--danger); }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+    th { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--border); }
+    td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+    td:first-child { color: var(--text); font-weight: 500; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Code tabs ── */
+    .code-block { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .code-tabs { display: flex; background: #10131b; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    .code-tab {
+      padding: 8px 16px; font-family: var(--mono); font-size: 11px; font-weight: 500;
+      color: var(--text-muted); cursor: pointer; border-right: 1px solid var(--border);
+      transition: all .15s; letter-spacing: .03em;
+      background: transparent; border-top: none; border-left: none; border-bottom: 2px solid transparent;
+    }
+    .code-tab:hover { color: var(--text); }
+    .code-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(79,195,247,.05); }
+    .code-pane { display: none; }
+    .code-pane.active { display: block; }
+    pre {
+      background: #0e1119; padding: 18px 20px;
+      overflow-x: auto; margin: 0; position: relative;
+    }
+    code { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; }
+    .lang-badge {
+      position: absolute; top: 8px; right: 12px;
+      font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+
+    /* ── Scrollbars (dark theme) ── */
+    pre::-webkit-scrollbar,
+    .sidebar::-webkit-scrollbar,
+    .code-tabs::-webkit-scrollbar        { width: 8px; height: 6px; }
+    pre::-webkit-scrollbar-track,
+    .sidebar::-webkit-scrollbar-track,
+    .code-tabs::-webkit-scrollbar-track  { background: rgba(255,255,255,.03); border-radius: 4px; }
+    pre::-webkit-scrollbar-thumb,
+    .sidebar::-webkit-scrollbar-thumb,
+    .code-tabs::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 4px; }
+    pre::-webkit-scrollbar-thumb:hover,
+    .sidebar::-webkit-scrollbar-thumb:hover,
+    .code-tabs::-webkit-scrollbar-thumb:hover { background: rgba(79,195,247,.35); }
+    pre::-webkit-scrollbar-button,
+    .sidebar::-webkit-scrollbar-button,
+    .code-tabs::-webkit-scrollbar-button { display: none; }
+
+    /* Syntax colors */
+    .kw { color: #c792ea; }
+    .str { color: #c3e88d; }
+    .num { color: #f78c6c; }
+    .cmt { color: #4a5568; font-style: italic; }
+    .typ { color: #80cbc4; }
+    .fn { color: #82aaff; }
+    .attr { color: #ffcb6b; }
+    .punct { color: #89ddff; }
+    .bool { color: #ff9cac; }
+
+    /* ── Flow diagram ── */
+    .flow { margin: 20px 0; }
+    .flow-step { display: flex; gap: 16px; }
+    .flow-col { display: flex; flex-direction: column; align-items: center; width: 38px; flex-shrink: 0; }
+    .flow-num {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; font-weight: 600; flex-shrink: 0;
+    }
+    .flow-line { width: 1px; flex: 1; min-height: 18px; background: var(--border); margin: 3px 0; }
+    .flow-step:last-child .flow-line { display: none; }
+    .flow-body { padding: 4px 0 22px; flex: 1; }
+    .flow-body h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .flow-body p { font-size: 12.5px; color: var(--text-dim); margin-bottom: 4px; }
+    .badge {
+      display: inline-block; font-family: var(--mono); font-size: 10px;
+      padding: 2px 7px; border-radius: 3px; margin-right: 4px; margin-top: 4px;
+      font-weight: 500; letter-spacing: .04em;
+    }
+    .b-teams { background: rgba(124,131,245,.15); color: var(--accent2); border: 1px solid rgba(124,131,245,.25); }
+    .b-azure { background: rgba(79,195,247,.12); color: var(--accent); border: 1px solid rgba(79,195,247,.2); }
+    .b-bot { background: rgba(86,227,159,.1); color: var(--accent3); border: 1px solid rgba(86,227,159,.2); }
+    .b-warn { background: rgba(246,166,35,.1); color: var(--warn); border: 1px solid rgba(246,166,35,.2); }
+
+    /* ── Architecture diagram ── */
+    .arch-diagram {
+      background: #0e1119; border: 1px solid var(--border); border-radius: 8px;
+      padding: 24px; margin: 16px 0; overflow-x: auto;
+    }
+    .arch-row { display: flex; align-items: center; justify-content: center; gap: 0; margin: 8px 0; flex-wrap: nowrap; }
+    .arch-box {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
+      padding: 10px 14px; text-align: center; flex-shrink: 0; min-width: 110px;
+    }
+    .arch-box .ab-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    .arch-box .ab-label { font-size: 11px; font-weight: 600; color: var(--text); display: block; }
+    .arch-box .ab-sub { font-size: 10px; color: var(--text-muted); font-family: var(--mono); display: block; margin-top: 2px; }
+    .arch-arrow {
+      display: flex; flex-direction: column; align-items: center; padding: 0 8px; flex-shrink: 0;
+    }
+    .arch-arrow .aa-line {
+      height: 1px; background: var(--border); position: relative; width: 52px;
+      display: flex; align-items: center;
+    }
+    .arch-arrow .aa-line::after {
+      content: '▶'; position: absolute; right: -6px; font-size: 9px; color: var(--text-muted);
+    }
+    .arch-arrow .aa-label { font-size: 10px; color: var(--text-muted); font-family: var(--mono); margin-bottom: 4px; white-space: nowrap; }
+    .arch-arrow .aa-label2 { font-size: 10px; color: var(--text-muted); font-family: var(--mono); margin-top: 4px; white-space: nowrap; }
+
+    /* ── Highlight bar ── */
+    .hbar {
+      background: linear-gradient(90deg, rgba(79,195,247,.08), transparent);
+      border-left: 3px solid var(--accent); padding: 10px 14px;
+      border-radius: 0 6px 6px 0; margin: 12px 0; font-size: 13px; color: var(--text);
+    }
+
+    /* ── Step cards (auth setup) ── */
+    .step-list { margin: 16px 0; }
+    .step-item {
+      display: flex; gap: 14px; padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-num {
+      font-family: var(--mono); font-size: 11px; font-weight: 600;
+      color: var(--accent); background: rgba(79,195,247,.1);
+      border: 1px solid rgba(79,195,247,.2); border-radius: 5px;
+      padding: 3px 8px; flex-shrink: 0; height: fit-content; margin-top: 2px;
+    }
+    .step-content h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .step-content p { font-size: 13px; margin: 0; }
+
+    /* ── Pkg badge ── */
+    .pkg {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 9px 13px; margin: 6px 4px 6px 0;
+      font-family: var(--mono); font-size: 12px;
+    }
+    .pkg .pn { color: var(--accent); }
+    .pkg .pv { color: var(--accent3); }
+    .pkg .ps { color: var(--text-muted); }
+
+    /* ── Response option cards ── */
+    .response-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+    .rc {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 7px; padding: 13px 15px;
+    }
+    .rc .rct { font-family: var(--mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
+    .rc .rcn { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .rc p { font-size: 12px; margin: 0; }
+
+    /* ── Section link pills ── */
+    .link-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 18px; }
+    .lp {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(79,195,247,.06); border: 1px solid rgba(79,195,247,.18);
+      color: var(--text-dim); border-radius: 20px;
+      padding: 3px 11px 3px 8px; font-family: var(--mono); font-size: 11px;
+      text-decoration: none; transition: all .15s; white-space: nowrap; line-height: 1.6;
+    }
+    .lp:hover { background: rgba(79,195,247,.14); color: var(--accent); text-decoration: none; border-color: rgba(79,195,247,.35); }
+    .lp .li { font-size: 10px; opacity: .6; }
+  </style>
+</head>
+<body>
+<div style="margin:16px;padding:14px 18px;border:2px solid #b45309;background:#fffbeb;color:#1c1917;border-radius:8px;font:14px/1.55 system-ui,Segoe UI,sans-serif">
+<strong>LEGACY. Đọc trước khi dùng.</strong><br>
+Hướng dẫn này viết cho bot Teams chạy trên .NET Framework (Web API controller, đặt cạnh app WebForms), dùng các gói thế hệ Bot Builder v3 như <code>Microsoft.Bot.Connector.Teams</code>. Microsoft đã kết thúc hỗ trợ Bot Framework SDK ngày 31/12/2025 và archive repo. Kiểm tra lần cuối: tháng 11/2026.<br><br>
+<strong>Khi viết doc mới, bắt đầu từ:</strong>
+<ul style="margin:6px 0 0 18px;padding:0">
+<li><strong>Teams SDK</strong>: framework dành riêng cho agent trong Teams. Theo tài liệu Microsoft có gói tương thích để giữ handler Bot Framework cũ và chỉ đổi adapter.</li>
+<li><strong>Microsoft 365 Agents SDK</strong>: agent đa kênh. Phía C# yêu cầu .NET 8 trở lên. Tài liệu migration chỉ hỗ trợ hosting bằng ASP.NET Core, các stack ASP.NET Web API cũ không còn dùng được, và serialization chuyển từ Newtonsoft sang System.Text.Json.</li>
+</ul>
+<p style="margin:8px 0 0">Hệ quả với app WebForms/.NET Framework: không thể thêm SDK mới vào chính app đó. Hướng hợp lý là tách bot thành một service ASP.NET Core riêng gọi vào app cũ qua API. Kiểm tra lại tài liệu hiện hành trước khi quyết định.</p>
+<p style="margin:8px 0 0"><strong>Còn dùng được:</strong> phần giải thích cách Teams định tuyến, manifest, Azure Bot registration, luồng task/fetch và task/submit, cập nhật message gốc. Đây là hành vi của Teams và Azure Bot Service, không phụ thuộc SDK. <strong>Không nên chép:</strong> tên class, package và code mẫu.</p>
+<p style="margin:8px 0 0">Tham khảo: <a href="https://learn.microsoft.com/en-us/microsoft-365/agents-sdk/bf-migration-guidance">Bot Framework to Agents SDK migration</a> · <a href="https://learn.microsoft.com/en-us/microsoft-365/agents-sdk/bf-migration-dotnet">.NET migration</a> · <a href="https://microsoft.github.io/teams-sdk/teams/choosing-an-sdk">Pick the right SDK for your Teams agent</a></p>
+</div>
+<div class="layout">
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="eyebrow">Complete Guide</div>
+      <h1>Teams Bot +<br>Task Module</h1>
+      <div style="margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text-muted)">.NET Framework · Bot Framework v3</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Concepts</div>
+      <a class="nav-a active" href="#how-it-works"><span class="ni">&#128506;</span> How It All Works</a>
+      <a class="nav-a" href="#packages"><span class="ni">&#128230;</span> Packages</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Setup &amp; Auth</div>
+      <a class="nav-a" href="#project-setup"><span class="ni">&#128295;</span> Project Setup</a>
+      <a class="nav-a" href="#azure-registration"><span class="ni">&#9729;&#65039;</span> Azure Bot Registration</a>
+      <a class="nav-a" href="#teams-manifest"><span class="ni">&#128203;</span> Teams App Manifest</a>
+      <a class="nav-a" href="#web-config"><span class="ni">&#9881;&#65039;</span> Web.config + App Settings</a>
+      <a class="nav-a" href="#auth-flow"><span class="ni">&#128272;</span> How Auth Works</a>
+      <a class="nav-a" href="#messages-controller"><span class="ni">&#127918;</span> MessagesController</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Task Module Flow</div>
+      <a class="nav-a" href="#conversation-context"><span class="ni">&#128190;</span> Storing Conv. Context</a>
+      <a class="nav-a" href="#send-card"><span class="ni">1&#65039;&#8419;</span> Send Trigger Card</a>
+      <a class="nav-a" href="#task-fetch"><span class="ni">2&#65039;&#8419;</span> task/fetch &#8594; Return Modal</a>
+      <a class="nav-a" href="#adaptive-card"><span class="ni">3&#65039;&#8419;</span> Adaptive Card + Validation</a>
+      <a class="nav-a" href="#task-submit"><span class="ni">4&#65039;&#8419;</span> task/submit &#8594; Read Input</a>
+      <a class="nav-a" href="#response-patterns"><span class="ni">5&#65039;&#8419;</span> Response Patterns</a>
+      <a class="nav-a" href="#update-message"><span class="ni">6&#65039;&#8419;</span> Update Original Message</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Reference</div>
+      <a class="nav-a" href="#complete-project"><span class="ni">📦</span> Complete Project</a>
+      <a class="nav-a" href="#refs"><span class="ni">&#128279;</span> All Links</a>
+    </div>
+  </nav>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="how-it-works">
+      <div class="eyebrow-tag">Big Picture</div>
+      <h2>How It All Works</h2>
+
+      <p>Before writing any code it's worth understanding the three moving parts and how they relate. You never talk to Teams directly — everything goes through <strong>Azure Bot Service</strong> as a relay.</p>
+
+      <div class="arch-diagram">
+        <div class="arch-row">
+          <div class="arch-box">
+            <span class="ab-icon">💬</span>
+            <span class="ab-label">Teams Client</span>
+            <span class="ab-sub">desktop / web</span>
+          </div>
+          <div class="arch-arrow">
+            <span class="aa-label">HTTPS POST</span>
+            <div class="aa-line"></div>
+            <span class="aa-label2">JWT signed</span>
+          </div>
+          <div class="arch-box" style="border-color:rgba(79,195,247,.4)">
+            <span class="ab-icon">☁️</span>
+            <span class="ab-label">Azure Bot Service</span>
+            <span class="ab-sub">relay + auth</span>
+          </div>
+          <div class="arch-arrow">
+            <span class="aa-label">HTTPS POST</span>
+            <div class="aa-line"></div>
+            <span class="aa-label2">JWT signed</span>
+          </div>
+          <div class="arch-box" style="border-color:rgba(86,227,159,.4)">
+            <span class="ab-icon">🖥️</span>
+            <span class="ab-label">Your Bot</span>
+            <span class="ab-sub">MessagesController</span>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-muted);font-family:var(--mono)">
+          Teams ↔ Azure Bot Service use a Teams-issued JWT · Azure Bot Service ↔ Your Bot use a Bot Framework JWT
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>What each part does</h3>
+      <table>
+        <tr><th>Part</th><th>Role</th><th>You configure it?</th></tr>
+        <tr>
+          <td>Teams Client</td>
+          <td>Renders cards, displays modals, captures user input</td>
+          <td>No — Microsoft managed</td>
+        </tr>
+        <tr>
+          <td>Azure Bot Service</td>
+          <td>Authenticates both sides; relays messages between Teams and your endpoint</td>
+          <td>Yes — register once in Azure portal, get App ID + Secret</td>
+        </tr>
+        <tr>
+          <td>Your Bot (ASP.NET)</td>
+          <td>Receives POSTs from Azure, returns card JSON or task responses</td>
+          <td>Yes — <code>MessagesController</code>, <code>Web.config</code></td>
+        </tr>
+      </table>
+
+      <h3><span class="dot"></span>The full task module lifecycle at a glance</h3>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(124,131,245,.15);color:var(--accent2);border:1px solid rgba(124,131,245,.3)">1</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>Bot posts a card with a button to Teams</h4>
+            <p>Your code calls <code>ConnectorClient.SendToConversationAsync()</code>. The card has an <code>Action.Submit</code> button with <code>msteams.type = "task/fetch"</code>.</p>
+            <span class="badge b-bot">Your Bot → Azure</span><span class="badge b-azure">Azure → Teams</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(79,195,247,.15);color:var(--accent);border:1px solid rgba(79,195,247,.3)">2</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>User clicks the button → task/fetch arrives at your bot</h4>
+            <p>Teams POSTs an <code>invoke</code> activity (<code>name = "task/fetch"</code>) to your <code>MessagesController</code>. You must respond with a <code>TaskInfo</code> JSON within <strong>5 seconds</strong>.</p>
+            <span class="badge b-teams">Teams → Azure</span><span class="badge b-azure">Azure → Your Bot</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(86,227,159,.15);color:var(--accent3);border:1px solid rgba(86,227,159,.3)">3</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>Teams displays the modal with your Adaptive Card inside</h4>
+            <p>The card you returned is rendered in a popup. Client-side validation runs on the card inputs before any submit is allowed.</p>
+            <span class="badge b-teams">Teams renders modal</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(246,166,35,.15);color:var(--warn);border:1px solid rgba(246,166,35,.3)">4</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>User submits the form → task/submit arrives at your bot</h4>
+            <p>Teams POSTs <code>name = "task/submit"</code> with all field values in <code>value.data</code>. Your bot does server-side validation and processes the data.</p>
+            <span class="badge b-teams">Teams → Azure</span><span class="badge b-azure">Azure → Your Bot</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(240,92,92,.15);color:var(--danger);border:1px solid rgba(240,92,92,.3)">5</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>Bot closes modal and updates the original card with the result</h4>
+            <p>Return <code>{}</code> (HTTP 200) to close the modal. Then call <code>UpdateActivityAsync()</code> to replace the original card in the chat with a success or failure card.</p>
+            <span class="badge b-bot">Bot updates message</span><span class="badge b-teams">Teams re-renders card</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="packages">
+      <div class="eyebrow-tag">Dependencies</div>
+      <h2>Packages</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://www.nuget.org/packages/Microsoft.Bot.Connector.Teams/0.10.0" target="_blank"><span class="li">↗</span> NuGet · Connector.Teams 0.10.0</a>
+        <a class="lp" href="https://www.nuget.org/packages/AdaptiveCards/" target="_blank"><span class="li">↗</span> NuGet · AdaptiveCards 3.1.0</a>
+      </div>
+
+      <p>Three NuGet packages. All target .NET Framework 4.5.2+ or 4.6.</p>
+
+      <div class="pkg"><span>📦</span> <span class="pn">Microsoft.Bot.Connector.Teams</span> <span class="ps">→</span> <span class="pv">0.10.0</span> <span class="ps">· Teams invoke handling, ConnectorClient</span></div>
+      <div class="pkg"><span>📦</span> <span class="pn">Microsoft.Bot.Builder</span> <span class="ps">→</span> <span class="pv">3.x</span> <span class="ps">· Bot Framework v3 SDK (pulled in as dependency)</span></div>
+      <div class="pkg"><span>📦</span> <span class="pn">AdaptiveCards</span> <span class="ps">→</span> <span class="pv">2.x / 3.x</span> <span class="ps">· Strongly-typed C# object model for cards</span></div>
+
+      <div class="callout danger">
+        <div class="ci">🚫</div>
+        <div class="cb">
+          <strong>Do NOT install Bot Framework v4 packages</strong>
+          <p><code>Microsoft.Bot.Builder</code> v4.x and <code>Microsoft.Bot.Builder.Integration.AspNet.Core</code> target .NET Standard/.NET Core only. Any MS Learn tutorial URL without <code>/resources/bot-v3/</code> in the path is written for v4 and won't apply to your Web Forms project.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="project-setup">
+      <div class="eyebrow-tag">Setup &#8212; Step 0</div>
+      <h2>Project Setup</h2>
+
+      <p>Your bot code lives inside a regular ASP.NET Web Application. The Bot Framework SDK plugs in via NuGet and a single controller. You don&#x27;t need a separate "bot project" &#8212; it integrates into whatever existing ASP.NET project you already have, or a new one.</p>
+
+      <h3><span class="dot"></span>Create the project (if starting fresh)</h3>
+      <p>In JetBrains Rider: <strong>New Solution &#8594; ASP.NET Web Application (.NET Framework)</strong>. Select the <strong>Web API</strong> template (not MVC, not Web Forms &#8212; you want the Web API pipeline). Target <strong>.NET Framework 4.6</strong> or higher.</p>
+
+      <div class="callout info">
+        <div class="ci">&#128161;</div>
+        <div class="cb">
+          <strong>Adding bot support to an existing Web Forms project</strong>
+          <p>If you&#x27;re adding bot support to your existing Web Forms project, that works fine too &#8212; just install the NuGet packages below and add the controller + route config. The Bot Framework endpoint runs as a standard Web API controller alongside your existing Web Forms pages.</p>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>Install NuGet packages</h3>
+      <p>In Rider: right-click the project &#8594; <strong>Manage NuGet Packages</strong>. Install these three:</p>
+
+      <div class="code-block">
+    <pre><code><span class="lang-badge">Package Manager Console</span><span class="cmt"># Bot Framework v3 + Teams extension (targets .NET Framework 4.6)</span>
+Install-Package Microsoft.Bot.Connector.Teams -Version 0.10.0
+
+<span class="cmt"># Strongly-typed Adaptive Card object model (targets .NET Framework 4.5.2+)</span>
+Install-Package AdaptiveCards -Version 3.1.0
+
+<span class="cmt"># JSON serialization (usually already present)</span>
+Install-Package Newtonsoft.Json</code></pre>
+      </div>
+
+      <div class="callout warn">
+        <div class="ci">&#9888;&#65039;</div>
+        <div class="cb">
+          <strong>Installing <code>Microsoft.Bot.Connector.Teams 0.10.0</code> also installs <code>Microsoft.Bot.Builder 3.x</code> as a dependency automatically</strong>
+          <p>You do <em>not</em> need to install <code>Microsoft.Bot.Builder</code> separately. If NuGet tries to install a v4.x version of any <code>Microsoft.Bot.*</code> package, cancel and install <code>Microsoft.Bot.Connector.Teams 0.10.0</code> explicitly by version &#8212; that will pull in the correct v3 dependency tree.</p>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>Add the Web API route</h3>
+      <p>The bot receives all messages at <code>/api/messages</code>. Register this route in your <code>WebApiConfig.cs</code> (or create it if your project doesn&#x27;t have one):</p>
+
+      <div class="code-block">
+    <pre><code><span class="lang-badge">C# &#8212; App_Start/WebApiConfig.cs</span><span class="kw">using</span> System.Web.Http;
+
+<span class="kw">public static class</span> <span class="typ">WebApiConfig</span>
+{
+    <span class="kw">public static void</span> <span class="fn">Register</span>(<span class="typ">HttpConfiguration</span> config)
+    {
+        <span class="cmt">// Bot Framework messages endpoint</span>
+        config.Routes.<span class="fn">MapHttpRoute</span>(
+            name:          <span class="str">"BotMessages"</span>,
+            routeTemplate: <span class="str">"api/messages"</span>,
+            defaults: <span class="kw">new</span> { controller = <span class="str">"Messages"</span> }
+        );
+
+        <span class="cmt">// Keep any existing routes below</span>
+        config.Routes.<span class="fn">MapHttpRoute</span>(
+            name:          <span class="str">"DefaultApi"</span>,
+            routeTemplate: <span class="str">"api/{controller}/{id}"</span>,
+            defaults: <span class="kw">new</span> { id = RouteParameter.Optional }
+        );
+    }
+}</code></pre>
+      </div>
+
+      <h3><span class="dot"></span>Register WebApiConfig in Global.asax</h3>
+      <p>Ensure Web API is initialized at startup. Open <code>Global.asax.cs</code> and make sure <code>WebApiConfig.Register</code> is called:</p>
+
+      <div class="code-block">
+    <pre><code><span class="lang-badge">C# &#8212; Global.asax.cs</span><span class="kw">protected void</span> <span class="fn">Application_Start</span>()
+{
+    <span class="cmt">// Register Web API routes (required for bot endpoint)</span>
+    GlobalConfiguration.<span class="fn">Configure</span>(<span class="typ">WebApiConfig</span>.Register);
+
+    <span class="cmt">// Existing registrations (keep as-is)</span>
+    AreaRegistration.<span class="fn">RegisterAllAreas</span>();
+    RouteConfig.<span class="fn">RegisterRoutes</span>(<span class="typ">RouteTable</span>.Routes);
+}</code></pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="ci">&#9989;</div>
+        <div class="cb">
+          <strong>Verify the route works</strong>
+          <p>Run the project and navigate to <code>https://localhost:44303/api/messages</code> in a browser. You should get an HTTP 405 (Method Not Allowed) response &#8212; that means the route is wired up correctly and awaiting a POST. A 404 means the route isn&#x27;t registered.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="azure-registration">
+      <div class="eyebrow-tag">Setup &#8212; Step 1</div>
+      <h2>Azure Bot Registration</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/add-authentication" target="_blank"><span class="li">↗</span> Azure Bot registration walkthrough</a>
+        <a class="lp" href="https://azure.microsoft.com/en-us/pricing/details/bot-services/" target="_blank"><span class="li">↗</span> Azure Bot pricing</a>
+        <a class="lp" href="https://aka.ms/devtunnel/download" target="_blank"><span class="li">↗</span> Dev Tunnels download</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/cli-commands" target="_blank"><span class="li">↗</span> Dev Tunnels CLI reference</a>
+      </div>
+
+      <p>Before writing any code you need to register your bot in Azure. This gives you an <strong>App ID</strong> and a <strong>Client Secret</strong> — the two credentials your bot uses to prove its identity to Azure Bot Service on every outgoing call.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-reg-general')">General / Production</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-reg-dev')">Local Dev (per developer)</button>
+        </div>
+
+        <!-- GENERAL TAB -->
+        <div class="code-pane active" id="tab-reg-general">
+          <div style="padding:20px 24px">
+            <p style="margin-bottom:16px">One shared registration used by your deployed environment (staging, production). The messaging endpoint points to your hosted server URL.</p>
+            <div class="step-list">
+              <div class="step-item">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                  <h4>Create an Azure Bot resource</h4>
+                  <p>In the Azure portal search for <strong>Azure Bot</strong> &rarr; Create. Choose <em>Single Tenant</em> for the App Type (Multi-tenant is deprecated for new registrations). This simultaneously creates a Microsoft Entra ID App Registration.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                  <h4>Record the App ID</h4>
+                  <p>After creation go to the bot's <strong>Configuration</strong> blade. Copy the <strong>Microsoft App ID</strong> &mdash; this is your <code>MicrosoftAppId</code>.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">03</div>
+                <div class="step-content">
+                  <h4>Create a Client Secret</h4>
+                  <p>Next to the App ID, click <strong>Manage</strong> to open the App Registration. Go to <strong>Certificates &amp; secrets</strong> &rarr; New client secret. Copy the value immediately (it won't be shown again). This is your <code>MicrosoftAppPassword</code>.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">04</div>
+                <div class="step-content">
+                  <h4>Set the messaging endpoint</h4>
+                  <p>Back in the bot's Configuration blade, set <strong>Messaging endpoint</strong> to your hosted server URL: <code>https://yourdomain.com/api/messages</code>.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">05</div>
+                <div class="step-content">
+                  <h4>Enable the Microsoft Teams channel</h4>
+                  <p>Go to <strong>Channels</strong> in the bot blade &rarr; click <strong>Microsoft Teams</strong> &rarr; agree to terms &rarr; Save. The bot is now allowed to receive messages from Teams.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">06</div>
+                <div class="step-content">
+                  <h4>Create a Teams App Manifest</h4>
+                  <p>Teams needs a manifest ZIP to know your bot exists. The manifest is a JSON file with your App ID and the bot's capabilities. Use <a href="https://dev.teams.microsoft.com/home" target="_blank">Teams Developer Portal</a> to generate it, then upload the ZIP to your tenant.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOCAL DEV TAB -->
+        <div class="code-pane" id="tab-reg-dev">
+          <div style="padding:20px 24px">
+
+            <div class="callout info" style="margin-top:0">
+              <div class="ci">&#128161;</div>
+              <div class="cb">
+                <strong>Why each developer needs their own registration</strong>
+                <p>Azure Bot Service has one messaging endpoint per registration. If the whole team shares one, only one tunnel URL can be active at a time &mdash; whoever last updated the endpoint "wins". The fix is simple: each developer creates their own free Azure Bot registration and sideloads their own manifest. Zero cost, fully isolated.</p>
+              </div>
+            </div>
+
+            <h3 style="margin-top:20px"><span class="dot"></span>One-time setup per developer</h3>
+            <div class="step-list">
+              <div class="step-item">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                  <h4>Create your own Azure Bot resource</h4>
+                  <p>Same as the General tab. Name it something personal so you can tell them apart &mdash; e.g. <strong>MyBot-Nhan-Dev</strong>. Choose <em>Single Tenant</em>. Takes about 2 minutes.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                  <h4>Record your App ID and create your Client Secret</h4>
+                  <p>Same steps as General tab. Store them &mdash; you'll put them in your local <code>Web.config</code> only. Never commit secrets to git; use a local override or environment variable.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">03</div>
+                <div class="step-content">
+                  <h4>Install the Dev Tunnels CLI</h4>
+                  <p>Dev Tunnels is a free Microsoft tool &mdash; a standalone CLI, not tied to Visual Studio. It works from any terminal including Rider's built-in terminal.</p>
+                  <pre style="margin-top:10px"><code><span class="lang-badge">Terminal</span>winget install Microsoft.devtunnel</code></pre>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">04</div>
+                <div class="step-content">
+                  <h4>Log in and create a persistent tunnel</h4>
+                  <p>Unlike ngrok free tier (random URL on every restart), Dev Tunnels gives you a <strong>stable named URL</strong> that survives restarts. Create it once, reuse it every day.</p>
+                  <pre style="margin-top:10px"><code><span class="lang-badge">Terminal</span><span class="cmt"># Log in once (Microsoft or GitHub account)</span>
+devtunnel user login
+
+<span class="cmt"># Create a named persistent tunnel (do this once)</span>
+devtunnel create my-bot-tunnel --allow-anonymous
+
+<span class="cmt"># Add your local port (e.g. 44303 for your IIS Express port)</span>
+devtunnel port create my-bot-tunnel -p 44303 --protocol https
+
+<span class="cmt"># Start the tunnel (run this whenever you start dev)</span>
+devtunnel host my-bot-tunnel</code></pre>
+                  <p style="margin-top:10px">The output shows your stable public URL, something like:<br><code>https://abc123def.use2.devtunnels.ms</code></p>
+                  <div class="callout info" style="margin-top:12px">
+                    <span class="ci">ℹ️</span>
+                    <div class="cb">
+                      <strong>Why <code>--allow-anonymous</code> is the right choice here</strong>
+                      <p>Dev Tunnels does support token-based access via <code>devtunnel token</code>, but Azure Bot Service has no way to pass a custom <code>X-Tunnel-Authorization</code> header on its outgoing call to your endpoint — it only sends its own Bot Framework JWT in <code>Authorization</code>. Token-based or Entra-based tunnel auth would block Azure Bot Service itself.</p>
+                      <p style="margin-top:6px"><code>--allow-anonymous</code> is safe because the real security layer is the <code>[BotAuthentication]</code> attribute on your <code>MessagesController</code>. Any request that arrives without a valid Bot Framework JWT signed with your AppId + Secret is rejected with HTTP 401 before your code runs. The tunnel is a dumb pipe — authentication is enforced at the application level. The tunnel URL is also a non-guessable random string, so it isn't publicly discoverable. This is the standard pattern used by the official Teams samples.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">05</div>
+                <div class="step-content">
+                  <h4>Set your tunnel URL as the messaging endpoint</h4>
+                  <p>In the Azure portal, go to your personal bot's <strong>Configuration</strong> blade &rarr; set <strong>Messaging endpoint</strong> to:<br><code>https://abc123def.use2.devtunnels.ms/api/messages</code><br>Because the URL is persistent, you only need to do this <strong>once</strong> &mdash; not every time you restart the tunnel.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">06</div>
+                <div class="step-content">
+                  <h4>Enable the Teams channel</h4>
+                  <p>Same as the General tab &mdash; go to Channels &rarr; Microsoft Teams &rarr; Save.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">07</div>
+                <div class="step-content">
+                  <h4>Sideload your own manifest with a distinct name</h4>
+                  <p>In Teams Developer Portal, create a manifest using <strong>your own App ID</strong>. Give the bot a name that identifies it as yours, e.g. <em>"MyBot (Nhan Dev)"</em>. Download the manifest ZIP and sideload it into Teams via <strong>Apps &rarr; Manage your apps &rarr; Upload an app</strong>. Each developer has their own named app in Teams &mdash; no conflicts.</p>
+                </div>
+              </div>
+            </div>
+
+            <h3><span class="dot"></span>Daily workflow (after first-time setup)</h3>
+            <pre><code><span class="lang-badge">Terminal</span><span class="cmt"># 1. Start the tunnel in Rider's terminal (or any terminal)</span>
+devtunnel host my-bot-tunnel
+
+<span class="cmt"># 2. Run your ASP.NET app in Rider as normal (F5 or Shift+F10)</span>
+<span class="cmt">#    The tunnel automatically forwards to your local port</span>
+
+<span class="cmt"># 3. Open Teams, open your personal sideloaded app, and test</span></code></pre>
+
+            <div class="callout tip" style="margin-top:16px">
+              <div class="ci">&#9989;</div>
+              <div class="cb">
+                <strong>Dev Tunnels vs ngrok &mdash; key difference</strong>
+                <p><strong>ngrok free tier:</strong> random new URL every restart &rarr; must update Azure endpoint daily. <strong>Dev Tunnels:</strong> persistent named URL &rarr; set Azure endpoint once and forget it. Both are free for development use. Dev Tunnels requires a Microsoft or GitHub account to log in.</p>
+              </div>
+            </div>
+
+            <div class="callout warn" style="margin-top:12px">
+              <div class="ci">&#9888;&#65039;</div>
+              <div class="cb">
+                <strong>Never commit your personal credentials to git</strong>
+                <p>Each developer's <code>Web.config</code> has different <code>MicrosoftAppId</code> and <code>MicrosoftAppPassword</code> values. Add <code>Web.config</code> to <code>.gitignore</code> and keep a <code>Web.config.example</code> with placeholder values for onboarding new team members.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="teams-manifest">
+      <div class="eyebrow-tag">Setup &#8212; Step 2</div>
+      <h2>Teams App Manifest</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://dev.teams.microsoft.com/home" target="_blank"><span class="li">↗</span> Teams Developer Portal</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema" target="_blank"><span class="li">↗</span> Manifest schema v1.11</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/teams-custom-app-policies-and-settings" target="_blank"><span class="li">↗</span> Sideloading policies</a>
+      </div>
+
+      <p>A Teams app manifest is a JSON file that tells Teams what your app can do and where your bot lives. You zip it with two icon files and either sideload it for dev testing or publish it org-wide through an admin. <strong>Each bot registration (App ID) needs its own manifest.</strong></p>
+
+      <h3><span class="dot"></span>Manifest file structure</h3>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-manifest-json')">manifest.json</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-manifest-fields')">Field reference</button>
+        </div>
+        <div class="code-pane active" id="tab-manifest-json">
+      <pre><code><span class="lang-badge">JSON &#8212; manifest.json</span><span class="punct">{</span>
+  <span class="attr">"$schema"</span><span class="punct">:</span> <span class="str">"https://developer.microsoft.com/json-schemas/teams/v1.11/MicrosoftTeams.schema.json"</span><span class="punct">,</span>
+  <span class="attr">"manifestVersion"</span><span class="punct">:</span> <span class="str">"1.11"</span><span class="punct">,</span>
+  <span class="attr">"version"</span><span class="punct">:</span> <span class="str">"1.0.0"</span><span class="punct">,</span>
+
+  <span class="cmt">// &#8212; CRITICAL: must match your Azure Bot App ID exactly &#8212;</span>
+  <span class="attr">"id"</span><span class="punct">:</span> <span class="str">"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"</span><span class="punct">,</span>
+
+  <span class="attr">"packageName"</span><span class="punct">:</span> <span class="str">"com.yourcompany.mybot"</span><span class="punct">,</span>
+
+  <span class="attr">"developer"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="attr">"name"</span><span class="punct">:</span>          <span class="str">"Your Company"</span><span class="punct">,</span>
+    <span class="attr">"websiteUrl"</span><span class="punct">:</span>    <span class="str">"https://yourcompany.com"</span><span class="punct">,</span>
+    <span class="attr">"privacyUrl"</span><span class="punct">:</span>    <span class="str">"https://yourcompany.com/privacy"</span><span class="punct">,</span>
+    <span class="attr">"termsOfUseUrl"</span><span class="punct">:</span> <span class="str">"https://yourcompany.com/terms"</span>
+  <span class="punct">}</span><span class="punct">,</span>
+
+  <span class="attr">"name"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="attr">"short"</span><span class="punct">:</span> <span class="str">"My Bot"</span><span class="punct">,</span>           <span class="cmt">// shown in Teams UI, max 30 chars</span>
+    <span class="attr">"full"</span><span class="punct">:</span>  <span class="str">"My Bot Full Name"</span>    <span class="cmt">// max 100 chars</span>
+  <span class="punct">}</span><span class="punct">,</span>
+
+  <span class="attr">"description"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="attr">"short"</span><span class="punct">:</span> <span class="str">"A short description under 80 chars"</span><span class="punct">,</span>
+    <span class="attr">"full"</span><span class="punct">:</span>  <span class="str">"Full description shown in app details, under 4000 chars."</span>
+  <span class="punct">}</span><span class="punct">,</span>
+
+  <span class="attr">"icons"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="attr">"color"</span><span class="punct">:</span>   <span class="str">"color.png"</span><span class="punct">,</span>    <span class="cmt">// 192x192 px full-color icon</span>
+    <span class="attr">"outline"</span><span class="punct">:</span> <span class="str">"outline.png"</span>   <span class="cmt">// 32x32 px transparent outline icon</span>
+  <span class="punct">}</span><span class="punct">,</span>
+
+  <span class="attr">"accentColor"</span><span class="punct">:</span> <span class="str">"#0078D4"</span><span class="punct">,</span>
+
+  <span class="attr">"bots"</span><span class="punct">:</span> <span class="punct">[</span>
+    <span class="punct">{</span>
+      <span class="cmt">// botId must also match your Azure Bot App ID</span>
+      <span class="attr">"botId"</span><span class="punct">:</span>              <span class="str">"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"</span><span class="punct">,</span>
+      <span class="attr">"scopes"</span><span class="punct">:</span>             <span class="punct">[</span><span class="str">"personal"</span><span class="punct">,</span> <span class="str">"team"</span><span class="punct">,</span> <span class="str">"groupchat"</span><span class="punct">]</span><span class="punct">,</span>
+      <span class="attr">"supportsFiles"</span><span class="punct">:</span>      <span class="bool">false</span><span class="punct">,</span>
+      <span class="attr">"isNotificationOnly"</span><span class="punct">:</span> <span class="bool">false</span>
+    <span class="punct">}</span>
+  <span class="punct">]</span><span class="punct">,</span>
+
+  <span class="attr">"permissions"</span><span class="punct">:</span> <span class="punct">[</span><span class="str">"identity"</span><span class="punct">,</span> <span class="str">"messageTeamMembers"</span><span class="punct">]</span><span class="punct">,</span>
+  <span class="attr">"validDomains"</span><span class="punct">:</span> <span class="punct">[]</span>
+<span class="punct">}</span></code></pre>
+        </div>
+        <div class="code-pane" id="tab-manifest-fields">
+          <div style="padding:4px 0">
+            <table>
+              <tr><th>Field</th><th>What it is</th><th>Notes</th></tr>
+              <tr><td><code>id</code></td><td>Your Teams app ID</td><td>Set this to your <strong>Azure Bot App ID (client ID)</strong>. This ties the manifest to your bot registration.</td></tr>
+              <tr><td><code>bots[].botId</code></td><td>The bot&#x27;s identity in Teams</td><td>Must be the <strong>same value</strong> as <code>id</code> above. Teams uses this to route messages to your bot.</td></tr>
+              <tr><td><code>bots[].scopes</code></td><td>Where the bot can be installed</td><td><code>personal</code> = 1:1 chat with bot. <code>team</code> = in a channel (bot must be @mentioned). <code>groupchat</code> = group chat.</td></tr>
+              <tr><td><code>manifestVersion</code></td><td>Schema version</td><td>Use <code>1.11</code> &#8212; stable and widely supported. Do not use <code>devPreview</code>.</td></tr>
+              <tr><td><code>version</code></td><td>Your app version</td><td>Increment this when you update the manifest, otherwise Teams may not pick up changes.</td></tr>
+              <tr><td><code>icons</code></td><td>App icons</td><td>Both files must be included in the ZIP. Quick option for testing: create simple PNGs with any image editor. Teams will reject ZIPs without both icons.</td></tr>
+              <tr><td><code>validDomains</code></td><td>Allowed iframe domains</td><td>Only needed if you use URL-based task modules (HTML pages). Leave empty for Adaptive Card modals.</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>Package the manifest ZIP</h3>
+      <p>The ZIP must contain exactly three files at the root level &#8212; no subfolders:</p>
+
+      <div class="code-block">
+    <pre><code><span class="lang-badge">ZIP structure</span>my-bot-manifest.zip
+&#9500;&#9472;&#9472; manifest.json
+&#9500;&#9472;&#9472; color.png       (192 x 192 px)
+&#9492;&#9472;&#9472; outline.png     (32 x 32 px, transparent background)</code></pre>
+      </div>
+
+      <div class="callout warn">
+        <div class="ci">&#9888;&#65039;</div>
+        <div class="cb">
+          <strong>Common packaging mistake</strong>
+          <p>If you zip a <em>folder</em> instead of the files inside it, Teams will reject the package with a cryptic error. In Windows Explorer, select all three files &#8594; right-click &#8594; Send to &#8594; Compressed folder. Do <em>not</em> zip the folder that contains them.</p>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>Create using Teams Developer Portal (recommended)</h3>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h4>Open Developer Portal</h4>
+            <p>Go to <a href="https://dev.teams.microsoft.com/home" target="_blank">dev.teams.microsoft.com</a> and sign in with your Microsoft 365 account. This is the official tool for creating and managing Teams app manifests.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h4>Create a new app</h4>
+            <p>Click <strong>+ New app</strong>. Fill in the basic info: name, description, developer info. For local dev, the URLs can be placeholder values (e.g. <code>https://yourcompany.com</code>).</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h4>Set the App ID</h4>
+            <p>In the <strong>Basic information</strong> tab, find the <strong>App ID</strong> field and paste your Azure Bot App ID (the same GUID as your <code>MicrosoftAppId</code>). This is the critical link between the manifest and your bot registration.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h4>Add a Bot capability</h4>
+            <p>Go to <strong>Configure &#8594; App features &#8594; Bot</strong>. Click <strong>Enter a bot ID</strong> and paste your Azure Bot App ID again. Select the scopes you want: <strong>Personal</strong> is the minimum for testing 1:1 with the bot.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">05</div>
+          <div class="step-content">
+            <h4>Download the app package</h4>
+            <p>Go to <strong>Publish &#8594; App package</strong>. Click <strong>Download app package</strong>. This gives you the ZIP with manifest.json + icons already included.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>Sideload for testing (developer)</h3>
+      <p>Sideloading installs the app only for you &#8212; no admin approval required, as long as your tenant admin has enabled the "Upload custom apps" setting once.</p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">A</div>
+          <div class="step-content">
+            <h4>Admin one-time setup: enable sideloading</h4>
+            <p>Your tenant admin goes to <a href="https://admin.teams.microsoft.com" target="_blank">admin.teams.microsoft.com</a> &#8594; <strong>Teams apps &#8594; Setup policies &#8594; Global (Org-wide default)</strong> &#8594; turn on <strong>Upload custom apps</strong> &#8594; Save. This takes up to 24 hours to propagate. Alternatively, the admin can create a targeted policy and assign it only to developers.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">B</div>
+          <div class="step-content">
+            <h4>Install your app in Teams</h4>
+            <p>In Teams: click <strong>Apps</strong> (bottom left) &#8594; <strong>Manage your apps</strong> &#8594; <strong>Upload an app</strong> &#8594; <strong>Upload a custom app</strong> &#8594; select your ZIP. Then choose where to add it (personal/team). Your bot is now installed and ready to receive messages.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">C</div>
+          <div class="step-content">
+            <h4>Each developer uses their own ZIP</h4>
+            <p>Since each developer has their own Azure Bot registration with a different App ID, each developer creates their own manifest pointing to their own App ID. Give it a distinct name (e.g. <em>"My Bot (Nhan Dev)"</em>) so everyone can tell their dev apps apart in Teams.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="web-config">
+      <div class="eyebrow-tag">Setup &#8212; Step 3</div>
+      <h2>Web.config + App Settings</h2>
+
+      <p>The Bot Framework SDK reads credentials from <code>appSettings</code>. Add these two keys with the values from the Azure portal.</p>
+
+      <div class="code-block">
+    <pre><code><span class="lang-badge">Web.config</span><span class="punct">&lt;</span><span class="kw">appSettings</span><span class="punct">&gt;</span>
+  <span class="punct">&lt;</span><span class="kw">add</span> <span class="attr">key</span>=<span class="str">"MicrosoftAppId"</span>       <span class="attr">value</span>=<span class="str">"YOUR_APP_ID_FROM_AZURE"</span> <span class="punct">/&gt;</span>
+  <span class="punct">&lt;</span><span class="kw">add</span> <span class="attr">key</span>=<span class="str">"MicrosoftAppPassword"</span>  <span class="attr">value</span>=<span class="str">"YOUR_CLIENT_SECRET"</span> <span class="punct">/&gt;</span>
+<span class="punct">&lt;/</span><span class="kw">appSettings</span><span class="punct">&gt;</span></code></pre>
+      </div>
+
+      <p>Also ensure your <code>WebApiConfig.cs</code> routes <code>/api/messages</code> to your controller:</p>
+
+      <div class="code-block">
+    <pre><code><span class="lang-badge">C#</span><span class="cmt">// WebApiConfig.cs</span>
+config.Routes.MapHttpRoute(
+    name:        <span class="str">"BotMessages"</span>,
+    routeTemplate: <span class="str">"api/messages"</span>,
+    defaults: <span class="kw">new</span> { controller = <span class="str">"Messages"</span> }
+);</code></pre>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="auth-flow">
+      <div class="eyebrow-tag">Setup &#8212; Step 4</div>
+      <h2>How Authentication Works</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/bot-v3/bots-overview" target="_blank"><span class="li">↗</span> Bot overview (v3 SDK)</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/add-authentication" target="_blank"><span class="li">↗</span> Azure Bot registration walkthrough</a>
+      </div>
+
+      <p>Authentication here is <em>service-to-service</em> — it's not about the Teams user logging in. It's about <strong>your bot and Azure Bot Service proving their identities to each other</strong> on every request. You don't implement any OAuth code yourself; the SDK handles it via the <code>[BotAuthentication]</code> attribute.</p>
+
+      <div class="flow" style="margin-top:20px">
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(124,131,245,.15);color:var(--accent2);border:1px solid rgba(124,131,245,.3)">A</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>Teams → Azure Bot Service (Teams verifies your app)</h4>
+            <p>When a user interacts with your bot in Teams, the Teams client sends an activity to Azure Bot Service. Teams attaches a JWT signed with Microsoft's keys. Azure Bot Service validates it.</p>
+            <span class="badge b-teams">Teams-issued JWT</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(79,195,247,.15);color:var(--accent);border:1px solid rgba(79,195,247,.3)">B</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>Azure Bot Service → Your Bot (Azure signs the forwarded request)</h4>
+            <p>Azure Bot Service forwards the activity to your <code>/api/messages</code> endpoint. It attaches its own JWT in the <code>Authorization: Bearer ...</code> header, signed using your <strong>App ID + Secret</strong>.</p>
+            <span class="badge b-azure">Bot Framework JWT</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(86,227,159,.15);color:var(--accent3);border:1px solid rgba(86,227,159,.3)">C</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>Your Bot validates the incoming JWT</h4>
+            <p>The <code>[BotAuthentication]</code> attribute (from the SDK) intercepts every request to <code>MessagesController</code>. It reads <code>MicrosoftAppId</code> and <code>MicrosoftAppPassword</code> from <code>Web.config</code>, validates the JWT, and rejects unauthenticated requests automatically.</p>
+            <span class="badge b-bot">[BotAuthentication] attribute</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col">
+            <div class="flow-num" style="background:rgba(246,166,35,.15);color:var(--warn);border:1px solid rgba(246,166,35,.3)">D</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <h4>Your Bot → Azure (your bot signs outgoing messages)</h4>
+            <p>When you call <code>ConnectorClient</code> to send messages, the SDK internally fetches a token using your <code>AppId + Password</code> via the OAuth 2.0 client credentials flow, and attaches it to the outgoing request. Azure Bot Service validates it before relaying to Teams.</p>
+            <span class="badge b-azure">OAuth 2.0 Client Credentials</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <div class="ci">✅</div>
+        <div class="cb">
+          <strong>Summary — what you actually need to do</strong>
+          <p>Add the two keys to <code>Web.config</code> and decorate your controller with <code>[BotAuthentication]</code>. The SDK does everything else. You never write token exchange code yourself.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="messages-controller">
+      <div class="eyebrow-tag">Setup &#8212; Step 5</div>
+      <h2>MessagesController &#8212; Your Bot&#x27;s Inbox</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://github.com/OfficeDev/microsoft-teams-sample-task-module-csharp" target="_blank"><span class="li">↗</span> Official C# sample (v3)</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/bot-v3/bots-overview" target="_blank"><span class="li">↗</span> Bot overview (v3 SDK)</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/bot-v3/bots-cards" target="_blank"><span class="li">↗</span> Cards &amp; actions (v3)</a>
+      </div>
+
+      <p>All communication from Azure Bot Service arrives at this single controller as HTTP POST requests. The <code>[BotAuthentication]</code> attribute validates the JWT on every request before your code runs. The <code>activity.Type</code> property tells you what kind of event it is.</p>
+
+      <div class="code-block">
+    <pre><code><span class="lang-badge">C# &#8212; Controllers/MessagesController.cs (full implementation)</span><span class="kw">using</span> System;
+<span class="kw">using</span> System.Net;
+<span class="kw">using</span> System.Net.Http;
+<span class="kw">using</span> System.Text;
+<span class="kw">using</span> System.Threading.Tasks;
+<span class="kw">using</span> System.Web.Http;
+<span class="kw">using</span> AdaptiveCards;
+<span class="kw">using</span> Microsoft.Bot.Connector;
+<span class="kw">using</span> Microsoft.Bot.Connector.Teams;
+<span class="kw">using</span> Newtonsoft.Json;
+<span class="kw">using</span> Newtonsoft.Json.Linq;
+
+[<span class="typ">BotAuthentication</span>]  <span class="cmt">// validates every incoming JWT &#8212; rejects with 401 if invalid</span>
+<span class="kw">public class</span> <span class="typ">MessagesController</span> : <span class="typ">ApiController</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IConversationStore</span> _store;
+    <span class="kw">private readonly</span> <span class="typ">BotHelper</span>          _bot;
+
+    <span class="kw">public</span> <span class="fn">MessagesController</span>(<span class="typ">IConversationStore</span> store, <span class="typ">BotHelper</span> bot)
+    {
+        _store = store;
+        _bot   = bot;
+    }
+
+    [<span class="typ">HttpPost</span>]
+    <span class="kw">public async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">Post</span>([<span class="typ">FromBody</span>] <span class="typ">Activity</span> activity)
+    {
+        <span class="kw">if</span> (activity == <span class="kw">null</span>)
+            <span class="kw">return</span> Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.BadRequest);
+
+        <span class="kw">switch</span> (activity.Type)
+        {
+            <span class="kw">case</span> ActivityTypes.Message:
+                <span class="cmt">// User typed a message to the bot in Teams chat</span>
+                <span class="kw">await</span> <span class="fn">HandleMessageAsync</span>(activity);
+                <span class="kw">break</span>;
+
+            <span class="kw">case</span> ActivityTypes.Invoke:
+                <span class="cmt">// Button click &#8212; routes to task/fetch or task/submit</span>
+                <span class="kw">return await</span> <span class="fn">HandleInvokeAsync</span>(activity);
+
+            <span class="kw">case</span> ActivityTypes.ConversationUpdate:
+                <span class="cmt">// Bot was added to a chat, or a member joined &#8212; store context here</span>
+                <span class="kw">await</span> <span class="fn">HandleConversationUpdateAsync</span>(activity);
+                <span class="kw">break</span>;
+        }
+
+        <span class="kw">return</span> Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+    }
+
+    <span class="cmt">// ── Route invoke activities ──────────────────────────────────────────────</span>
+    <span class="kw">private async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">HandleInvokeAsync</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">switch</span> (activity.Name)
+        {
+            <span class="kw">case</span> <span class="str">"task/fetch"</span>:
+                <span class="kw">return await</span> <span class="fn">HandleTaskFetchAsync</span>(activity);
+            <span class="kw">case</span> <span class="str">"task/submit"</span>:
+                <span class="kw">return await</span> <span class="fn">HandleTaskSubmitAsync</span>(activity);
+            <span class="kw">default</span>:
+                <span class="kw">return</span> Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+        }
+    }
+
+    <span class="cmt">// ── ConversationUpdate: store context so we can proactively message later ──</span>
+    <span class="kw">private async</span> <span class="typ">Task</span> <span class="fn">HandleConversationUpdateAsync</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="cmt">// Fires when the bot is first added to a conversation</span>
+        <span class="kw">if</span> (activity.MembersAdded != <span class="kw">null</span>)
+        {
+            <span class="kw">foreach</span> (<span class="kw">var</span> member <span class="kw">in</span> activity.MembersAdded)
+            {
+                <span class="kw">if</span> (member.Id == activity.Recipient.Id)
+                {
+                    <span class="cmt">// Bot was added &#8212; save serviceUrl + conversationId for proactive messaging</span>
+                    <span class="kw">await</span> _store.<span class="fn">SaveConversationAsync</span>(<span class="kw">new</span> <span class="typ">ConversationInfo</span>
+                    {
+                        ServiceUrl     = activity.ServiceUrl,
+                        ConversationId = activity.Conversation.Id,
+                        TenantId       = activity.GetTenantId()  <span class="cmt">// Teams extension method</span>
+                    });
+                }
+            }
+        }
+    }
+
+    <span class="cmt">// ── Plain message handler ─────────────────────────────────────────────────</span>
+    <span class="kw">private async</span> <span class="typ">Task</span> <span class="fn">HandleMessageAsync</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">using var</span> client = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(activity.ServiceUrl));
+        <span class="typ">Activity</span> reply = activity.<span class="fn">CreateReply</span>(<span class="str">"Hello! Use the card in this channel to interact with me."</span>);
+        <span class="kw">await</span> client.Conversations.<span class="fn">ReplyToActivityAsync</span>(reply);
+    }
+
+    <span class="cmt">// ── Full bodies for these two are in the next sections ───────────────────</span>
+    <span class="cmt">// Replace the stubs below with the complete code from Steps 2 and 4.</span>
+    <span class="kw">private async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">HandleTaskFetchAsync</span>(<span class="typ">Activity</span> activity) { <span class="cmt">/* Step 2 body */</span> <span class="kw">throw new</span> <span class="typ">NotImplementedException</span>(); }
+    <span class="kw">private async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">HandleTaskSubmitAsync</span>(<span class="typ">Activity</span> activity) { <span class="cmt">/* Step 4 body */</span> <span class="kw">throw new</span> <span class="typ">NotImplementedException</span>(); }
+    <span class="cmt">// Response helpers (Steps 4–5) also live here — they use Request which is ApiController-specific.</span>
+}</code></pre>
+      </div>
+
+      <div class="callout info">
+        <div class="ci">&#128161;</div>
+        <div class="cb">
+          <strong>What is <code>activity.GetTenantId()</code>?</strong>
+          <p>This is a Teams-specific extension method from <code>Microsoft.Bot.Connector.Teams</code>. It reads the tenant ID from the Teams channel data in the activity. You need the NuGet package installed for this method to be available.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="conversation-context">
+      <div class="eyebrow-tag">Foundation</div>
+      <h2>Storing Conversation Context</h2>
+
+      <p>Before your bot can send a card to Teams proactively, it needs two pieces of information: a <code>serviceUrl</code> (which Azure Bot Service region to use) and a <code>conversationId</code> (which chat thread to post to). Azure Bot Service fills both of these on <em>every</em> activity it sends to your controller — they live on the <code>Activity</code> object as <code>activity.ServiceUrl</code> and <code>activity.Conversation.Id</code>. The catch is that your bot only receives activities when something happens (install event, user message). You must <strong>capture and persist them to a database</strong> at that point, because there's nothing to read from when you later want to message the user out of the blue.</p>
+
+      <h3><span class="dot"></span>The three values you must store</h3>
+      <table>
+        <tr><th>Value</th><th>Where it comes from</th><th>What it&#x27;s used for</th></tr>
+        <tr>
+          <td><code>ServiceUrl</code></td>
+          <td><code>activity.ServiceUrl</code></td>
+          <td>Required to create <code>ConnectorClient</code>. Changes by tenant/region &#8212; always use the value from the activity, never hardcode it.</td>
+        </tr>
+        <tr>
+          <td><code>ConversationId</code></td>
+          <td><code>activity.Conversation.Id</code></td>
+          <td>Required to send a message to the correct chat thread.</td>
+        </tr>
+        <tr>
+          <td><code>ActivityId</code></td>
+          <td>Returned by <code>SendToConversationAsync()</code></td>
+          <td>Required to <em>update</em> a specific message later. Store this when you post the trigger card.</td>
+        </tr>
+      </table>
+
+      <h3><span class="dot"></span>Model + store interface</h3>
+
+      <div class="code-block">
+    <pre><code><span class="lang-badge">C#</span><span class="cmt">// Models/ConversationInfo.cs &#8212; stores the routing context for a user/channel</span>
+<span class="kw">public class</span> <span class="typ">ConversationInfo</span>
+{
+    <span class="kw">public string</span> UserId         { <span class="kw">get</span>; <span class="kw">set</span>; }  <span class="cmt">// activity.From.Id &#8212; lookup key in the store</span>
+    <span class="kw">public string</span> ServiceUrl     { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> ConversationId { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> TenantId       { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+
+<span class="cmt">// Models/ActivityInfo.cs &#8212; stores the identity of a specific posted message</span>
+<span class="kw">public class</span> <span class="typ">ActivityInfo</span>
+{
+    <span class="kw">public string</span> ServiceUrl     { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> ConversationId { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> ActivityId     { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+
+<span class="cmt">// IConversationStore.cs &#8212; implement this against your existing DB (SQL Server, etc.)</span>
+<span class="kw">public interface</span> <span class="typ">IConversationStore</span>
+{
+    <span class="typ">Task</span> <span class="fn">SaveConversationAsync</span>(<span class="typ">ConversationInfo</span> info);
+    <span class="typ">Task</span>&lt;<span class="typ">ConversationInfo</span>&gt; <span class="fn">GetConversationAsync</span>(<span class="kw">string</span> userId);
+
+    <span class="typ">Task</span> <span class="fn">SaveActivityInfoAsync</span>(<span class="kw">string</span> itemId, <span class="typ">ActivityInfo</span> info);
+    <span class="typ">Task</span>&lt;<span class="typ">ActivityInfo</span>&gt; <span class="fn">GetActivityInfoAsync</span>(<span class="kw">string</span> itemId);
+}</code></pre>
+      </div>
+
+      <h3><span class="dot"></span>When does the bot get context for the first time?</h3>
+
+      <p><code>activity.ServiceUrl</code> is a property on <em>every</em> <code>Activity</code> object Azure Bot Service sends to your controller — it arrives pre-filled in the HTTP POST body and the SDK deserialises it automatically. You don't fetch it or look it up; it's just there. The question is only <em>which handler you're inside</em> when you choose to save it:</p>
+
+      <div class="hbar" style="margin-bottom:14px">
+        <strong style="color:var(--text)">Both paths give you the same property:</strong> <code>activity.ServiceUrl</code><br>
+        <span style="font-size:12.5px;color:var(--text-dim)">ConversationUpdate path → inside <code>HandleConversationUpdateAsync(activity)</code> when <code>activity.MembersAdded</code> contains the bot's own ID &nbsp;·&nbsp; Message path → inside <code>HandleMessageAsync(activity)</code> on any normal user message</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-ctx-install')">From bot install (best)</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-ctx-message')">From user message</button>
+        </div>
+        <div class="code-pane active" id="tab-ctx-install">
+      <pre><code><span class="lang-badge">C# &#8212; fires when user installs the bot in Teams</span><span class="cmt">// In MessagesController.HandleConversationUpdateAsync()</span>
+<span class="kw">if</span> (activity.MembersAdded != <span class="kw">null</span>)
+{
+    <span class="kw">foreach</span> (<span class="kw">var</span> member <span class="kw">in</span> activity.MembersAdded)
+    {
+        <span class="cmt">// Check it&#x27;s the bot being added (not another user)</span>
+        <span class="kw">if</span> (member.Id == activity.Recipient.Id)
+        {
+            <span class="kw">await</span> _store.<span class="fn">SaveConversationAsync</span>(<span class="kw">new</span> <span class="typ">ConversationInfo</span>
+            {
+                UserId         = activity.From.Id,         <span class="cmt">// ← key used by NotifyController to look up this user</span>
+                ServiceUrl     = activity.ServiceUrl,
+                ConversationId = activity.Conversation.Id,
+                TenantId       = activity.<span class="fn">GetTenantId</span>()
+            });
+
+            <span class="cmt">// Send a welcome message so the user knows the bot is alive</span>
+            <span class="kw">using var</span> client = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(activity.ServiceUrl));
+            <span class="kw">var</span> welcome = activity.<span class="fn">CreateReply</span>(<span class="str">"Hi! I&#x27;m ready. You&#x27;ll receive cards here when actions need your attention."</span>);
+            <span class="kw">await</span> client.Conversations.<span class="fn">ReplyToActivityAsync</span>(welcome);
+        }
+    }
+}</code></pre>
+        </div>
+        <div class="code-pane" id="tab-ctx-message">
+      <pre><code><span class="lang-badge">C# &#8212; fires every time user sends a message</span><span class="cmt">// In MessagesController.HandleMessageAsync()</span>
+<span class="cmt">// Every message activity carries fresh routing context &#8212; update your stored values</span>
+<span class="kw">await</span> _store.<span class="fn">SaveConversationAsync</span>(<span class="kw">new</span> <span class="typ">ConversationInfo</span>
+{
+    UserId         = activity.From.Id,
+    ServiceUrl     = activity.ServiceUrl,
+    ConversationId = activity.Conversation.Id,
+    TenantId       = activity.<span class="fn">GetTenantId</span>()
+});
+
+<span class="cmt">// Then reply normally</span>
+<span class="kw">using var</span> client = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(activity.ServiceUrl));
+<span class="typ">Activity</span> reply = activity.<span class="fn">CreateReply</span>(<span class="str">"Got it!"</span>);
+<span class="kw">await</span> client.Conversations.<span class="fn">ReplyToActivityAsync</span>(reply);</code></pre>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ci">&#9888;&#65039;</div>
+        <div class="cb">
+          <strong>Never hardcode the <code>ServiceUrl</code></strong>
+          <p>The service URL looks like <code>https://smba.trafficmanager.net/amer/</code> but the region suffix changes depending on the tenant. It also changes over time. Always use the value from the incoming activity. Hardcoding it will cause silent failures for users on different tenants or after Microsoft moves regions.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="send-card">
+      <div class="eyebrow-tag">Task Module &#8212; Step 1</div>
+      <h2>Send a Trigger Card with a Button</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank"><span class="li">↗</span> Task module from bot</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/bot-v3/bots-cards" target="_blank"><span class="li">↗</span> Cards &amp; actions (v3)</a>
+      </div>
+
+      <p>Your bot posts a card to a Teams conversation. The card contains an <code>Action.Submit</code> button with a special <code>msteams.type = "task/fetch"</code> payload that tells Teams to open a modal instead of a normal submit.</p>
+
+      <h3><span class="dot"></span>Project structure — where each file lives</h3>
+      <div class="code-block">
+      <pre><code><span class="lang-badge">Project structure</span>YourBot/
+├── Controllers/
+│   ├── MessagesController.cs   ← bot inbox — all Teams traffic arrives here
+│   └── NotifyController.cs     ← your own endpoint — called by backend/jobs to send cards
+├── Models/
+│   ├── ConversationInfo.cs     ← holds serviceUrl + conversationId (saved on bot install)
+│   └── ActivityInfo.cs         ← holds activityId of a specific posted card
+├── Services/
+│   ├── IConversationStore.cs   ← Save/Get conversation + activity info
+│   └── ConversationStore.cs    ← your DB implementation (SQL Server, Cosmos DB, etc.)
+└── Helpers/
+    └── BotHelper.cs            ← SendTriggerCard, BuildModalCard, HandleTaskFetch,
+                                   HandleTaskSubmit, ProcessAndNotify, result cards …</code></pre>
+      </div>
+
+      <h3><span class="dot"></span>Where do the parameters come from?</h3>
+      <table>
+        <tr><th>Parameter</th><th>Source</th><th>Details</th></tr>
+        <tr>
+          <td><code>conversationId</code></td>
+          <td>Your database via <code>_store.GetConversationAsync(userId)</code></td>
+          <td>Saved in <a href="#conversation-context">Storing Conversation Context</a> when the bot is installed — <code>activity.Conversation.Id</code></td>
+        </tr>
+        <tr>
+          <td><code>serviceUrl</code></td>
+          <td>Your database via <code>_store.GetConversationAsync(userId)</code></td>
+          <td>Saved alongside <code>conversationId</code> — <code>activity.ServiceUrl</code>. Never hardcode this.</td>
+        </tr>
+        <tr>
+          <td><code>itemId</code></td>
+          <td>Your business domain</td>
+          <td>The ID of whatever record triggered this notification — a DB row ID, order number, task ID, etc. Your backend decides this.</td>
+        </tr>
+      </table>
+
+      <h3><span class="dot"></span>Who actually calls <code>SendTriggerCard</code>?</h3>
+      <p>Not <code>MessagesController</code> — that only reacts to inbound Teams traffic. The call comes from <em>your own</em> backend: a webhook, a scheduled job, or a dedicated notify endpoint that your system hits when something needs human action in Teams.</p>
+
+      <div class="code-block">
+      <pre><code><span class="lang-badge">C# — Controllers/NotifyController.cs</span><span class="cmt">// Your own API endpoint — nothing to do with Teams directly.</span>
+<span class="cmt">// Your backend (job scheduler, webhook receiver, etc.) calls this when an item is ready.</span>
+[<span class="typ">RoutePrefix</span>(<span class="str">"api/notify"</span>)]
+<span class="kw">public class</span> <span class="typ">NotifyController</span> : <span class="typ">ApiController</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IConversationStore</span> _store;
+    <span class="kw">private readonly</span> <span class="typ">BotHelper</span> _bot;
+
+    <span class="kw">public</span> <span class="fn">NotifyController</span>(<span class="typ">IConversationStore</span> store, <span class="typ">BotHelper</span> bot)
+    {
+        _store = store;
+        _bot   = bot;
+    }
+
+    [<span class="typ">HttpPost</span>, Route(<span class="str">"{userId}/{itemId}"</span>)]
+    <span class="kw">public async</span> <span class="typ">Task</span>&lt;<span class="typ">IHttpActionResult</span>&gt; <span class="fn">NotifyUser</span>(<span class="kw">string</span> userId, <span class="kw">string</span> itemId)
+    {
+        <span class="cmt">// Load routing context that was saved when the user installed the bot</span>
+        <span class="kw">var</span> conv = <span class="kw">await</span> _store.<span class="fn">GetConversationAsync</span>(userId);
+        <span class="kw">if</span> (conv == <span class="kw">null</span>)
+            <span class="kw">return</span> <span class="fn">BadRequest</span>($<span class="str">"User '{userId}' has not installed the bot yet."</span>);
+
+        <span class="cmt">// All three parameters now resolved — send the trigger card</span>
+        <span class="kw">await</span> _bot.<span class="fn">SendTriggerCard</span>(
+            conversationId: conv.ConversationId,  <span class="cmt">// ← from stored ConversationInfo</span>
+            serviceUrl:     conv.ServiceUrl,      <span class="cmt">// ← from stored ConversationInfo</span>
+            itemId:         itemId);              <span class="cmt">// ← from your backend / business logic</span>
+        <span class="kw">return</span> <span class="fn">Ok</span>();
+    }
+}</code></pre>
+      </div>
+
+      <h3><span class="dot"></span>The trigger card</h3>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-card-json')">Card JSON</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-card-cs')">C# — Send handler</button>
+        </div>
+        <div class="code-pane active" id="tab-card-json">
+      <pre><code><span class="lang-badge">JSON</span><span class="punct">{</span>
+  <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"AdaptiveCard"</span><span class="punct">,</span>
+  <span class="attr">"version"</span><span class="punct">:</span> <span class="str">"1.3"</span><span class="punct">,</span>
+  <span class="attr">"body"</span><span class="punct">:</span> <span class="punct">[</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"TextBlock"</span><span class="punct">,</span>
+      <span class="attr">"text"</span><span class="punct">:</span> <span class="str">"Item #42 is ready for review."</span><span class="punct">,</span>
+      <span class="attr">"wrap"</span><span class="punct">:</span> <span class="bool">true</span>
+    <span class="punct">}</span>
+  <span class="punct">]</span><span class="punct">,</span>
+  <span class="attr">"actions"</span><span class="punct">:</span> <span class="punct">[</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"Action.Submit"</span><span class="punct">,</span>
+      <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Open Settings"</span><span class="punct">,</span>
+      <span class="attr">"data"</span><span class="punct">:</span> <span class="punct">{</span>
+        <span class="attr">"msteams"</span><span class="punct">:</span> <span class="punct">{</span>
+          <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"task/fetch"</span>   <span class="cmt">// triggers the modal</span>
+        <span class="punct">}</span><span class="punct">,</span>
+        <span class="attr">"action"</span><span class="punct">:</span> <span class="str">"openSettingsModal"</span><span class="punct">,</span>
+        <span class="attr">"itemId"</span><span class="punct">:</span> <span class="str">"42"</span>           <span class="cmt">// any context you'll need in task/fetch</span>
+      <span class="punct">}</span>
+    <span class="punct">}</span>
+  <span class="punct">]</span>
+<span class="punct">}</span></code></pre>
+        </div>
+        <div class="code-pane" id="tab-card-cs">
+      <pre><code><span class="lang-badge">C# — Helpers/BotHelper.cs</span><span class="kw">using</span> AdaptiveCards;
+<span class="kw">using</span> Microsoft.Bot.Connector;
+
+<span class="kw">public async</span> <span class="typ">Task</span> <span class="fn">SendTriggerCard</span>(<span class="kw">string</span> conversationId, <span class="kw">string</span> serviceUrl, <span class="kw">string</span> itemId)
+{
+    <span class="kw">var</span> card = <span class="kw">new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+    {
+        Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+        {
+            <span class="kw">new</span> <span class="typ">AdaptiveTextBlock</span>
+            {
+                Text = <span class="str">$"Item #{itemId} is ready for review."</span>,
+                Wrap = <span class="bool">true</span>
+            }
+        },
+        Actions = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveAction</span>&gt;
+        {
+            <span class="kw">new</span> <span class="typ">AdaptiveSubmitAction</span>
+            {
+                Title = <span class="str">"Open Settings"</span>,
+                Data = <span class="kw">new</span>
+                {
+                    msteams = <span class="kw">new</span> { type = <span class="str">"task/fetch"</span> },
+                    action  = <span class="str">"openSettingsModal"</span>,
+                    itemId  = itemId
+                }
+            }
+        }
+    };
+
+    <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span>
+    {
+        ContentType = <span class="typ">AdaptiveCard</span>.ContentType,
+        Content     = card
+    };
+
+    <span class="kw">var</span> message = Activity.CreateMessageActivity();
+    message.Attachments.Add(attachment);
+
+    <span class="kw">using var</span> client = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(serviceUrl));
+    <span class="kw">var</span> response = <span class="kw">await</span> client.Conversations
+        .<span class="fn">SendToConversationAsync</span>(conversationId, (<span class="typ">Activity</span>)message);
+
+    <span class="cmt">// Save response.Id — you'll need it to update this message later (Step 6)</span>
+    <span class="kw">await</span> _store.<span class="fn">SaveActivityInfoAsync</span>(itemId, <span class="kw">new</span> <span class="typ">ActivityInfo</span>
+    {
+        ActivityId     = response.Id,
+        ConversationId = conversationId,
+        ServiceUrl     = serviceUrl
+    });
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <div class="ci">💡</div>
+        <div class="cb">
+          <strong>Save the returned activity ID</strong>
+          <p>The <code>SendToConversationAsync</code> response includes the <code>Id</code> of the posted message. Store it alongside your item ID, <code>conversationId</code>, and <code>serviceUrl</code> in a database — you'll need all three to update the card later after processing.</p>
+        </div>
+      </div>
+
+      <div class="hbar">➡️ <strong>What happens next:</strong> the card appears in Teams. When the user clicks the button, Teams immediately fires a <code>task/fetch</code> invoke to your bot — <a href="#task-fetch">Step 2</a> handles that request and returns the modal to display.</div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="task-fetch">
+      <div class="eyebrow-tag">Task Module &#8212; Step 2</div>
+      <h2>task/fetch &#8212; Return the Modal Card</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/what-are-task-modules" target="_blank"><span class="li">↗</span> Task module overview</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank"><span class="li">↗</span> Task module from bot</a>
+      </div>
+
+      <div class="hbar">📍 <strong>Where this lives:</strong> this is the body of <code>HandleTaskFetchAsync()</code> from your <a href="#messages-controller">MessagesController (Setup → Step 5)</a>. The controller routes any <code>Invoke</code> activity with <code>activity.Name == "task/fetch"</code> to this method.</div>
+
+      <p>When the button is clicked, Teams fires a <code>task/fetch</code> invoke to your bot. Your job: load any dynamic data (e.g. from DB), build the Adaptive Card, and return a <code>TaskInfo</code> response within 5 seconds.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-fetch-json')">Response JSON</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-fetch-cs')">C# — Fetch handler</button>
+        </div>
+        <div class="code-pane active" id="tab-fetch-json">
+      <pre><code><span class="lang-badge">JSON — task/fetch response</span><span class="punct">{</span>
+  <span class="attr">"task"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"continue"</span><span class="punct">,</span>
+    <span class="attr">"value"</span><span class="punct">:</span> <span class="punct">{</span>
+      <span class="attr">"title"</span><span class="punct">:</span>  <span class="str">"Settings"</span><span class="punct">,</span>     <span class="cmt">// modal window title bar text</span>
+      <span class="attr">"height"</span><span class="punct">:</span> <span class="num">400</span><span class="punct">,</span>             <span class="cmt">// pixels or "small"/"medium"/"large"</span>
+      <span class="attr">"width"</span><span class="punct">:</span>  <span class="num">500</span><span class="punct">,</span>             <span class="cmt">// pixels or "small"/"medium"/"large"</span>
+      <span class="attr">"card"</span><span class="punct">:</span> <span class="punct">{</span>
+        <span class="attr">"contentType"</span><span class="punct">:</span> <span class="str">"application/vnd.microsoft.card.adaptive"</span><span class="punct">,</span>
+        <span class="attr">"content"</span><span class="punct">:</span> <span class="punct">{</span> <span class="cmt">/* your AdaptiveCard JSON here */</span> <span class="punct">}</span>
+      <span class="punct">}</span>
+    <span class="punct">}</span>
+  <span class="punct">}</span>
+<span class="punct">}</span></code></pre>
+        </div>
+        <div class="code-pane" id="tab-fetch-cs">
+      <pre><code><span class="lang-badge">C# — Controllers/MessagesController.cs</span><span class="kw">private async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">HandleTaskFetchAsync</span>(<span class="typ">Activity</span> activity)
+{
+    <span class="cmt">// Read context passed from the button's data payload</span>
+    <span class="kw">dynamic</span> payload = JsonConvert.<span class="fn">DeserializeObject</span>(activity.Value.ToString());
+    <span class="kw">string</span> itemId   = payload?.data?.itemId;
+
+    <span class="cmt">// Load dynamic data from your DB</span>
+    <span class="kw">var</span> options = <span class="kw">await</span> _repository.<span class="fn">GetOptionsForItem</span>(itemId);
+
+    <span class="cmt">// Build the card via BotHelper (Step 3)</span>
+    <span class="kw">var</span> card = _bot.<span class="fn">BuildModalCard</span>(options);
+
+    <span class="kw">var</span> taskResponse = <span class="kw">new</span>
+    {
+        task = <span class="kw">new</span>
+        {
+            type  = <span class="str">"continue"</span>,
+            value = <span class="kw">new</span>
+            {
+                title  = <span class="str">"Settings"</span>,
+                height = <span class="num">400</span>,
+                width  = <span class="num">500</span>,
+                card   = <span class="kw">new</span>
+                {
+                    contentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+                    content     = JsonConvert.<span class="fn">DeserializeObject</span>(card.<span class="fn">ToJson</span>())
+                }
+            }
+        }
+    };
+
+    <span class="kw">var</span> response = Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+    response.Content = <span class="kw">new</span> <span class="typ">StringContent</span>(
+        JsonConvert.<span class="fn">SerializeObject</span>(taskResponse),
+        Encoding.UTF8, <span class="str">"application/json"</span>);
+    <span class="kw">return</span> response;
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ci">⏱️</div>
+        <div class="cb">
+          <strong>5-second hard limit</strong>
+          <p>If your handler takes longer than 5 seconds to respond, Teams shows a generic error. Load data quickly — don't do heavy processing inside <code>task/fetch</code>. If you genuinely need more time, return a "Loading…" card first and chain to a second card.</p>
+        </div>
+      </div>
+
+      <div class="hbar">➡️ <strong>What happens next:</strong> Teams opens the modal and renders the card you returned. The user sees the form and fills it in. <a href="#adaptive-card">Step 3</a> shows how to build <code>BuildModalCard()</code> using the AdaptiveCards SDK.</div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="adaptive-card">
+      <div class="eyebrow-tag">Task Module &#8212; Step 3</div>
+      <h2>Adaptive Card &#8212; Inputs with Validation</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/adaptive-cards/sdk/authoring-cards/net" target="_blank"><span class="li">↗</span> AC .NET SDK</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/adaptive-cards/authoring-cards/input-validation" target="_blank"><span class="li">↗</span> Input validation spec</a>
+        <a class="lp" href="https://adaptivecards.io/explorer/Input.Number.html" target="_blank"><span class="li">↗</span> Input.Number schema</a>
+        <a class="lp" href="https://adaptivecards.io/explorer/Input.ChoiceSet.html" target="_blank"><span class="li">↗</span> Input.ChoiceSet schema</a>
+        <a class="lp" href="https://adaptivecards.io/designer/" target="_blank"><span class="li">↗</span> AC designer</a>
+        <a class="lp" href="https://adaptivecards.io/samples/InputsWithValidation.html" target="_blank"><span class="li">↗</span> Inputs with validation sample</a>
+      </div>
+
+      <p>The card shown inside the modal. Schema version <strong>1.3</strong> is required for <code>isRequired</code>, <code>errorMessage</code>, and <code>label</code> to work. Validation runs client-side in Teams before any submit is sent.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-ac-json')">Card JSON</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-ac-cs')">C# — Card builder</button>
+        </div>
+        <div class="code-pane active" id="tab-ac-json">
+      <pre><code><span class="lang-badge">JSON</span><span class="punct">{</span>
+  <span class="attr">"$schema"</span><span class="punct">:</span>  <span class="str">"http://adaptivecards.io/schemas/adaptive-card.json"</span><span class="punct">,</span>
+  <span class="attr">"type"</span><span class="punct">:</span>    <span class="str">"AdaptiveCard"</span><span class="punct">,</span>
+  <span class="attr">"version"</span><span class="punct">:</span> <span class="str">"1.3"</span><span class="punct">,</span>
+  <span class="attr">"body"</span><span class="punct">:</span> <span class="punct">[</span>
+
+    <span class="cmt">// ─── 1. Mandatory text field ─────────────────────────────────</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span>         <span class="str">"Input.Text"</span><span class="punct">,</span>
+      <span class="attr">"id"</span><span class="punct">:</span>           <span class="str">"name"</span><span class="punct">,</span>
+      <span class="attr">"label"</span><span class="punct">:</span>        <span class="str">"Name"</span><span class="punct">,</span>
+      <span class="attr">"placeholder"</span><span class="punct">:</span> <span class="str">"Enter a name"</span><span class="punct">,</span>
+      <span class="attr">"isRequired"</span><span class="punct">:</span>  <span class="bool">true</span><span class="punct">,</span>
+      <span class="attr">"errorMessage"</span><span class="punct">:</span><span class="str">"Name is required"</span>
+    <span class="punct">}</span><span class="punct">,</span>
+
+    <span class="cmt">// ─── 2. Number field, value must be &gt; 0 ──────────────────────</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span>         <span class="str">"Input.Number"</span><span class="punct">,</span>
+      <span class="attr">"id"</span><span class="punct">:</span>           <span class="str">"quantity"</span><span class="punct">,</span>
+      <span class="attr">"label"</span><span class="punct">:</span>        <span class="str">"Quantity"</span><span class="punct">,</span>
+      <span class="attr">"placeholder"</span><span class="punct">:</span> <span class="str">"Must be greater than 0"</span><span class="punct">,</span>
+      <span class="attr">"isRequired"</span><span class="punct">:</span>  <span class="bool">true</span><span class="punct">,</span>
+      <span class="attr">"min"</span><span class="punct">:</span>          <span class="num">1</span><span class="punct">,</span>
+      <span class="attr">"errorMessage"</span><span class="punct">:</span><span class="str">"Quantity must be greater than 0"</span>
+    <span class="punct">}</span><span class="punct">,</span>
+
+    <span class="cmt">// ─── 3. Multi-select list, at least one required ──────────────</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span>          <span class="str">"Input.ChoiceSet"</span><span class="punct">,</span>
+      <span class="attr">"id"</span><span class="punct">:</span>            <span class="str">"categories"</span><span class="punct">,</span>
+      <span class="attr">"label"</span><span class="punct">:</span>         <span class="str">"Categories"</span><span class="punct">,</span>
+      <span class="attr">"style"</span><span class="punct">:</span>         <span class="str">"expanded"</span><span class="punct">,</span>     <span class="cmt">// renders as checkboxes</span>
+      <span class="attr">"isMultiSelect"</span><span class="punct">:</span> <span class="bool">true</span><span class="punct">,</span>
+      <span class="attr">"isRequired"</span><span class="punct">:</span>   <span class="bool">true</span><span class="punct">,</span>           <span class="cmt">// at least one must be checked</span>
+      <span class="attr">"errorMessage"</span><span class="punct">:</span> <span class="str">"Select at least one category"</span><span class="punct">,</span>
+      <span class="attr">"choices"</span><span class="punct">:</span> <span class="punct">[</span>
+        <span class="punct">{</span> <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Option A"</span><span class="punct">,</span> <span class="attr">"value"</span><span class="punct">:</span> <span class="str">"a"</span> <span class="punct">}</span><span class="punct">,</span>
+        <span class="punct">{</span> <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Option B"</span><span class="punct">,</span> <span class="attr">"value"</span><span class="punct">:</span> <span class="str">"b"</span> <span class="punct">}</span><span class="punct">,</span>
+        <span class="punct">{</span> <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Option C"</span><span class="punct">,</span> <span class="attr">"value"</span><span class="punct">:</span> <span class="str">"c"</span> <span class="punct">}</span>
+      <span class="punct">]</span>
+    <span class="punct">}</span>
+
+  <span class="punct">]</span><span class="punct">,</span>
+  <span class="attr">"actions"</span><span class="punct">:</span> <span class="punct">[</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span>  <span class="str">"Action.Submit"</span><span class="punct">,</span>
+      <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Save"</span><span class="punct">,</span>
+      <span class="attr">"data"</span><span class="punct">:</span>  <span class="punct">{</span> <span class="attr">"itemId"</span><span class="punct">:</span> <span class="str">"42"</span> <span class="punct">}</span>  <span class="cmt">// echo back any context you need on submit</span>
+    <span class="punct">}</span>
+  <span class="punct">]</span>
+<span class="punct">}</span></code></pre>
+        </div>
+        <div class="code-pane" id="tab-ac-cs">
+      <pre><code><span class="lang-badge">C# — Helpers/BotHelper.cs</span><span class="kw">using</span> AdaptiveCards;
+
+<span class="kw">private</span> <span class="typ">AdaptiveCard</span> <span class="fn">BuildModalCard</span>(<span class="typ">IEnumerable</span>&lt;<span class="typ">OptionItem</span>&gt; options)
+{
+    <span class="kw">return new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+    {
+        Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+        {
+            <span class="cmt">// 1. Mandatory text field</span>
+            <span class="kw">new</span> <span class="typ">AdaptiveTextInput</span>
+            {
+                Id          = <span class="str">"name"</span>,
+                Label       = <span class="str">"Name"</span>,
+                Placeholder = <span class="str">"Enter a name"</span>,
+                IsRequired  = <span class="bool">true</span>,
+                ErrorMessage = <span class="str">"Name is required"</span>
+            },
+
+            <span class="cmt">// 2. Number field, value must be &gt; 0</span>
+            <span class="kw">new</span> <span class="typ">AdaptiveNumberInput</span>
+            {
+                Id          = <span class="str">"quantity"</span>,
+                Label       = <span class="str">"Quantity"</span>,
+                Placeholder = <span class="str">"Must be greater than 0"</span>,
+                IsRequired  = <span class="bool">true</span>,
+                Min         = <span class="num">1</span>,
+                ErrorMessage = <span class="str">"Quantity must be greater than 0"</span>
+            },
+
+            <span class="cmt">// 3. Multi-select list, at least one required</span>
+            <span class="kw">new</span> <span class="typ">AdaptiveChoiceSetInput</span>
+            {
+                Id            = <span class="str">"categories"</span>,
+                Label         = <span class="str">"Categories"</span>,
+                Style         = <span class="typ">AdaptiveChoiceInputStyle</span>.Expanded,  <span class="cmt">// checkboxes</span>
+                IsMultiSelect = <span class="bool">true</span>,
+                IsRequired    = <span class="bool">true</span>,
+                ErrorMessage  = <span class="str">"Select at least one category"</span>,
+                Choices       = options.<span class="fn">Select</span>(o => <span class="kw">new</span> <span class="typ">AdaptiveChoice</span>
+                {
+                    Title = o.DisplayName,
+                    Value = o.Id.ToString()
+                }).<span class="fn">ToList</span>()
+            }
+        },
+
+        Actions = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveAction</span>&gt;
+        {
+            <span class="kw">new</span> <span class="typ">AdaptiveSubmitAction</span>
+            {
+                Title = <span class="str">"Save"</span>,
+                Data  = <span class="kw">new</span> { itemId = <span class="str">"42"</span> }
+            }
+        }
+    };
+}</code></pre>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>Input types quick reference</h3>
+      <table>
+        <tr><th>JSON type</th><th>C# class</th><th>Key validation props</th></tr>
+        <tr><td><code>Input.Text</code></td><td><code>AdaptiveTextInput</code></td><td><code>IsRequired</code>, <code>MaxLength</code>, <code>ErrorMessage</code></td></tr>
+        <tr><td><code>Input.Number</code></td><td><code>AdaptiveNumberInput</code></td><td><code>IsRequired</code>, <code>Min</code>, <code>Max</code>, <code>ErrorMessage</code></td></tr>
+        <tr><td><code>Input.ChoiceSet</code></td><td><code>AdaptiveChoiceSetInput</code></td><td><code>IsRequired</code>, <code>IsMultiSelect</code>, <code>Style</code>, <code>ErrorMessage</code></td></tr>
+        <tr><td><code>Input.Toggle</code></td><td><code>AdaptiveToggleInput</code></td><td><code>IsRequired</code>, <code>ValueOn</code>, <code>ValueOff</code></td></tr>
+        <tr><td><code>Input.Date</code></td><td><code>AdaptiveDateInput</code></td><td><code>IsRequired</code>, <code>Min</code>, <code>Max</code></td></tr>
+      </table>
+
+      <div class="callout warn">
+        <div class="ci">⚠️</div>
+        <div class="cb">
+          <strong>Client validation only blocks submit — always validate server-side too</strong>
+          <p>The <code>min</code> / <code>isRequired</code> properties prevent the Teams client from sending a submit if validation fails. But you still need server-side validation in your <code>task/submit</code> handler since the API can be called directly.</p>
+        </div>
+      </div>
+
+      <div class="hbar">➡️ <strong>What happens next:</strong> Teams runs client-side validation when the user clicks Submit. If all fields pass, Teams fires a <code>task/submit</code> invoke with the field values — <a href="#task-submit">Step 4</a> reads them and processes the submission.</div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="task-submit">
+      <div class="eyebrow-tag">Task Module &#8212; Step 4</div>
+      <h2>task/submit &#8212; Read User Input</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank"><span class="li">↗</span> Task module from bot</a>
+      </div>
+
+      <p>After the user passes client-side validation and clicks Submit, Teams POSTs a <code>task/submit</code> invoke. All form values arrive in <code>activity.Value.data</code> keyed by the <code>id</code> you set on each input element.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-sub-json')">Payload JSON</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-sub-cs')">C# — Submit handler</button>
+        </div>
+        <div class="code-pane active" id="tab-sub-json">
+      <pre><code><span class="lang-badge">JSON — task/submit activity.Value</span><span class="punct">{</span>
+  <span class="attr">"data"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="cmt">// Keyed by each Input element's "id" property</span>
+    <span class="attr">"name"</span><span class="punct">:</span>        <span class="str">"My Item"</span><span class="punct">,</span>
+    <span class="attr">"quantity"</span><span class="punct">:</span>    <span class="str">"5"</span><span class="punct">,</span>      <span class="cmt">// Input.Number always comes as a STRING</span>
+    <span class="attr">"categories"</span><span class="punct">:</span> <span class="str">"a,c"</span><span class="punct">,</span>   <span class="cmt">// multi-select = comma-separated string</span>
+
+    <span class="cmt">// Any extra keys from Action.Submit data are merged in here</span>
+    <span class="attr">"itemId"</span><span class="punct">:</span> <span class="str">"42"</span>
+  <span class="punct">}</span>
+<span class="punct">}</span></code></pre>
+        </div>
+        <div class="code-pane" id="tab-sub-cs">
+      <pre><code><span class="lang-badge">C# — Controllers/MessagesController.cs</span><span class="kw">private async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">HandleTaskSubmitAsync</span>(<span class="typ">Activity</span> activity)
+{
+    <span class="kw">dynamic</span> payload = JsonConvert.<span class="fn">DeserializeObject</span>(activity.Value.ToString());
+    <span class="kw">var</span> data = payload?.data;
+
+    <span class="cmt">// Read field values — note: Input.Number returns a STRING</span>
+    <span class="kw">string</span> name     = (<span class="kw">string</span>)data?.name;
+    <span class="kw">int</span>    quantity = <span class="kw">int</span>.Parse((<span class="kw">string</span>)data?.quantity ?? <span class="str">"0"</span>);
+    <span class="kw">string</span> itemId   = (<span class="kw">string</span>)data?.itemId;
+
+    <span class="cmt">// Multi-select comes as comma-separated string</span>
+    <span class="kw">var</span> categories = ((<span class="kw">string</span>)data?.categories ?? <span class="str">""</span>)
+        .Split(<span class="kw">new</span>[] { <span class="str">','</span> }, StringSplitOptions.RemoveEmptyEntries)
+        .ToList();
+
+    <span class="cmt">// Server-side validation (always do this)</span>
+    <span class="kw">if</span> (string.IsNullOrWhiteSpace(name) || quantity &lt; <span class="num">1</span> || !categories.Any())
+    {
+        <span class="kw">return</span> <span class="fn">TaskContinueWithError</span>(<span class="str">"Validation failed. Please check your inputs."</span>);
+    }
+
+    <span class="cmt">// Close modal immediately — return {} so the dialog closes</span>
+    <span class="kw">var</span> closeResponse = Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+    closeResponse.Content = <span class="kw">new</span> <span class="typ">StringContent</span>(<span class="str">"{}"</span>, Encoding.UTF8, <span class="str">"application/json"</span>);
+
+    <span class="cmt">// Fire-and-forget: close the modal now, process in background</span>
+    <span class="cmt">// _bot.ProcessAndNotify() is implemented in Step 6 — it updates the original card when done</span>
+    _ = Task.<span class="fn">Run</span>(() => _bot.<span class="fn">ProcessAndNotify</span>(itemId, name, quantity, categories));
+
+    <span class="kw">return</span> closeResponse;
+}
+
+<span class="kw">private</span> <span class="typ">HttpResponseMessage</span> <span class="fn">TaskContinueWithError</span>(<span class="kw">string</span> message)
+{
+    <span class="cmt">// Re-show the modal with an error message at the top</span>
+    <span class="kw">var</span> errorCard = <span class="kw">new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+    {
+        Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+        {
+            <span class="kw">new</span> <span class="typ">AdaptiveTextBlock</span> { Text = message, Color = <span class="typ">AdaptiveTextColor</span>.Attention }
+            <span class="cmt">// ... same inputs as original card ...</span>
+        }
+    };
+    <span class="kw">var</span> taskResponse = <span class="kw">new</span>
+    {
+        task = <span class="kw">new</span> { type = <span class="str">"continue"</span>, value = <span class="kw">new</span> { card = <span class="kw">new</span> { contentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>, content = JsonConvert.<span class="fn">DeserializeObject</span>(errorCard.<span class="fn">ToJson</span>()) } } }
+    };
+    <span class="kw">var</span> response = Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+    response.Content = <span class="kw">new</span> <span class="typ">StringContent</span>(JsonConvert.<span class="fn">SerializeObject</span>(taskResponse), Encoding.UTF8, <span class="str">"application/json"</span>);
+    <span class="kw">return</span> response;
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <div class="ci">💡</div>
+        <div class="cb">
+          <strong>Input.Number always returns a string</strong>
+          <p>Even though the field is typed as a number, Teams serializes every value as a JSON string. Always use <code>int.Parse()</code> or <code>decimal.TryParse()</code> when reading number inputs server-side.</p>
+        </div>
+      </div>
+
+      <div class="hbar">➡️ <strong>What you return controls the modal:</strong> the code above uses Option A (close immediately with <code>{}</code>) and Option D (re-show with error via <code>TaskContinueWithError</code>). <a href="#response-patterns">Step 5</a> covers all four patterns with C# snippets. The background work fired via <code>Task.Run</code> is defined in <a href="#update-message">Step 6</a>.</div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="response-patterns">
+      <div class="eyebrow-tag">Task Module &#8212; Step 5</div>
+      <h2>Response Patterns for task/submit</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/what-are-task-modules" target="_blank"><span class="li">↗</span> Task module overview</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank"><span class="li">↗</span> Task module from bot</a>
+      </div>
+
+      <p>When you receive <code>task/submit</code> you have four choices for what to send back. Pick based on how long processing takes and what the user needs to see.</p>
+
+      <div class="response-grid">
+        <div class="rc">
+          <div class="rct">Option A</div>
+          <div class="rcn">✅ Close modal silently</div>
+          <p>Return HTTP 200 with body <code>{}</code>. Modal closes, no toast. Use when you'll update the original card separately.</p>
+        </div>
+        <div class="rc">
+          <div class="rct">Option B</div>
+          <div class="rcn">💬 Close + toast message</div>
+          <p>Return <code>{"task":{"type":"message","value":"Saved!"}}</code>. Modal closes and Teams shows a small notification popup.</p>
+        </div>
+        <div class="rc">
+          <div class="rct">Option C</div>
+          <div class="rcn">🔄 Show another card</div>
+          <p>Return <code>task/continue</code> with a new card. Modal stays open. Use for multi-step flows or confirmation screens.</p>
+        </div>
+        <div class="rc">
+          <div class="rct">Option D</div>
+          <div class="rcn">❌ Re-show with error</div>
+          <p>Return <code>task/continue</code> with the same card + an error <code>TextBlock</code> at the top. Modal stays open showing the validation error.</p>
+        </div>
+      </div>
+
+      <div class="hbar">💡 <strong>Recommended:</strong> Use Option A — close immediately, then update the original message card asynchronously. Users get immediate feedback that their action was received, and the card updates in place when processing finishes.</div>
+
+      <h3><span class="dot"></span>C# helpers for Options B and C</h3>
+      <p>Options A and D are already shown in the Step 4 code. Here are the helpers for the two remaining patterns:</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-rp-b')">Option B — toast</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-rp-c')">Option C — new card (wizard)</button>
+        </div>
+        <div class="code-pane active" id="tab-rp-b">
+      <pre><code><span class="lang-badge">C# — Controllers/MessagesController.cs · Option B (toast)</span><span class="cmt">// Returns a small popup message in Teams and closes the modal</span>
+<span class="kw">private</span> <span class="typ">HttpResponseMessage</span> <span class="fn">TaskMessageResponse</span>(<span class="kw">string</span> text)
+{
+    <span class="kw">var</span> taskResponse = <span class="kw">new</span>
+    {
+        task = <span class="kw">new</span> { type = <span class="str">"message"</span>, value = text }
+    };
+    <span class="kw">var</span> response = Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+    response.Content = <span class="kw">new</span> <span class="typ">StringContent</span>(
+        JsonConvert.<span class="fn">SerializeObject</span>(taskResponse),
+        Encoding.UTF8, <span class="str">"application/json"</span>);
+    <span class="kw">return</span> response;
+}
+
+<span class="cmt">// Usage — e.g., for a quick action that needs no follow-up card update:</span>
+<span class="kw">return</span> <span class="fn">TaskMessageResponse</span>(<span class="str">"Saved! Your changes have been applied."</span>);</code></pre>
+        </div>
+        <div class="code-pane" id="tab-rp-c">
+      <pre><code><span class="lang-badge">C# — Controllers/MessagesController.cs · Option C (new card)</span><span class="cmt">// Replaces the current modal content with a new card — modal stays open</span>
+<span class="kw">private</span> <span class="typ">HttpResponseMessage</span> <span class="fn">TaskContinueWithCard</span>(
+    <span class="typ">AdaptiveCard</span> card,
+    <span class="kw">string</span> title  = <span class="str">"Confirm"</span>,
+    <span class="kw">int</span>    height = <span class="num">300</span>,
+    <span class="kw">int</span>    width  = <span class="num">500</span>)
+{
+    <span class="kw">var</span> taskResponse = <span class="kw">new</span>
+    {
+        task = <span class="kw">new</span>
+        {
+            type  = <span class="str">"continue"</span>,
+            value = <span class="kw">new</span>
+            {
+                title  = title,
+                height = height,
+                width  = width,
+                card   = <span class="kw">new</span>
+                {
+                    contentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+                    content     = JsonConvert.<span class="fn">DeserializeObject</span>(card.<span class="fn">ToJson</span>())
+                }
+            }
+        }
+    };
+    <span class="kw">var</span> response = Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+    response.Content = <span class="kw">new</span> <span class="typ">StringContent</span>(
+        JsonConvert.<span class="fn">SerializeObject</span>(taskResponse),
+        Encoding.UTF8, <span class="str">"application/json"</span>);
+    <span class="kw">return</span> response;
+}
+
+<span class="cmt">// Usage — e.g., navigate to a confirmation step before saving:</span>
+<span class="kw">var</span> confirmCard = <span class="fn">BuildConfirmationCard</span>(name, quantity);
+<span class="kw">return</span> <span class="fn">TaskContinueWithCard</span>(confirmCard, title: <span class="str">"Confirm your changes"</span>);</code></pre>
+        </div>
+      </div>
+
+      <div class="hbar">➡️ <strong>What happens next:</strong> if you chose Option A (recommended), the modal closes and <code>ProcessAndNotify()</code> runs in the background. When it finishes, it replaces the original card in the conversation — <a href="#update-message">Step 6</a> shows exactly how.</div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="update-message">
+      <div class="eyebrow-tag">Task Module &#8212; Step 6</div>
+      <h2>Update the Original Message After Processing</h2>
+
+      <p>This is <code>ProcessAndNotify()</code> — the method Step 4 fires via <code>Task.Run()</code> after immediately closing the modal. It runs outside the original HTTP request so it can take as long as needed without hitting the 5-second limit. When it completes (success or failure), it replaces the original trigger card in the conversation with a result card. This requires the <code>activityId</code>, <code>conversationId</code>, and <code>serviceUrl</code> you saved back in Step 1.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-upd-cs')">C# — Process handler</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-upd-res')">C# — Card builders</button>
+        </div>
+        <div class="code-pane active" id="tab-upd-cs">
+      <pre><code><span class="lang-badge">C# — Helpers/BotHelper.cs</span><span class="kw">public async</span> <span class="typ">Task</span> <span class="fn">ProcessAndNotify</span>(<span class="kw">string</span> itemId, <span class="kw">string</span> name, <span class="kw">int</span> quantity, <span class="typ">List</span>&lt;<span class="kw">string</span>&gt; categories)
+{
+    <span class="cmt">// Load the saved message coordinates</span>
+    <span class="kw">var</span> info = <span class="kw">await</span> _store.<span class="fn">GetActivityInfoAsync</span>(itemId);
+
+    <span class="typ">AdaptiveCard</span> resultCard;
+    <span class="kw">try</span>
+    {
+        <span class="kw">await</span> _service.<span class="fn">ProcessItem</span>(itemId, ...);
+        resultCard = <span class="fn">BuildSuccessCard</span>(<span class="str">"Item saved successfully."</span>);
+    }
+    <span class="kw">catch</span> (<span class="typ">Exception</span> ex)
+    {
+        resultCard = <span class="fn">BuildFailureCard</span>($<span class="str">"Failed: {ex.Message}. Please try again."</span>);
+    }
+
+    <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span>
+    {
+        ContentType = <span class="typ">AdaptiveCard</span>.ContentType,
+        Content     = JsonConvert.<span class="fn">DeserializeObject</span>(resultCard.<span class="fn">ToJson</span>())
+    };
+
+    <span class="kw">var</span> update = <span class="kw">new</span> <span class="typ">Activity</span>
+    {
+        Type        = ActivityTypes.Message,
+        Attachments = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">Attachment</span>&gt; { attachment }
+    };
+
+    <span class="kw">using var</span> client = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(info.ServiceUrl));
+    <span class="kw">await</span> client.Conversations.<span class="fn">UpdateActivityAsync</span>(
+        info.ConversationId,
+        info.ActivityId,       <span class="cmt">// ← the saved activityId from SendToConversationAsync</span>
+        update);
+}</code></pre>
+        </div>
+        <div class="code-pane" id="tab-upd-res">
+      <pre><code><span class="lang-badge">C# — Helpers/BotHelper.cs · card builders</span><span class="kw">public</span> <span class="typ">AdaptiveCard</span> <span class="fn">BuildSuccessCard</span>(<span class="kw">string</span> message)
+{
+    <span class="kw">return new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+    {
+        Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+        {
+            <span class="kw">new</span> <span class="typ">AdaptiveTextBlock</span>
+            {
+                Text   = <span class="str">"✅ " + message</span>,
+                Color  = <span class="typ">AdaptiveTextColor</span>.Good,
+                Weight = <span class="typ">AdaptiveTextWeight</span>.Bolder,
+                Wrap   = <span class="bool">true</span>
+            }
+        }
+    };
+}
+
+<span class="kw">public</span> <span class="typ">AdaptiveCard</span> <span class="fn">BuildFailureCard</span>(<span class="kw">string</span> message)
+{
+    <span class="kw">return new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+    {
+        Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+        {
+            <span class="kw">new</span> <span class="typ">AdaptiveTextBlock</span>
+            {
+                Text   = <span class="str">"❌ " + message</span>,
+                Color  = <span class="typ">AdaptiveTextColor</span>.Attention,
+                Weight = <span class="typ">AdaptiveTextWeight</span>.Bolder,
+                Wrap   = <span class="bool">true</span>
+            }
+        },
+        Actions = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveAction</span>&gt;
+        {
+            <span class="cmt">// Give user a way to retry</span>
+            <span class="kw">new</span> <span class="typ">AdaptiveSubmitAction</span>
+            {
+                Title = <span class="str">"Try Again"</span>,
+                Data  = <span class="kw">new</span> { msteams = <span class="kw">new</span> { type = <span class="str">"task/fetch"</span> }, action = <span class="str">"openSettingsModal"</span> }
+            }
+        }
+    };
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ci">⚠️</div>
+        <div class="cb">
+          <strong>Store activityId + serviceUrl + conversationId in a DB</strong>
+          <p>Your async processing runs in a background thread after the HTTP request has completed. By that time the original <code>Activity</code> object is gone from memory. Persist these three values when you first post the card so you can retrieve them later.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="complete-project">
+      <div class="eyebrow-tag">Reference</div>
+      <h2>Complete Project Files</h2>
+
+      <p>All the code from Steps 1–6, assembled into compilable files. Each tab is a complete file — copy them into the matching path in your project. The only placeholder left is <code>_yourRepository</code> in <code>MessagesController</code>: replace it with your own data-access service.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active"  onclick="switchTab(this,'cp-models')">Models/</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-istore')">IConversationStore</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-store')">ConversationStore</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-helper')">BotHelper</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-controller')">MessagesController</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-notify')">NotifyController</button>
+        </div>
+
+        <!-- ── Models ─────────────────────────────────────────────────────── -->
+        <div class="code-pane active" id="cp-models">
+      <pre><code><span class="lang-badge">C# — Models/ConversationInfo.cs + Models/ActivityInfo.cs</span><span class="cmt">// Models/ConversationInfo.cs</span>
+<span class="kw">public class</span> <span class="typ">ConversationInfo</span>
+{
+    <span class="kw">public string</span> UserId         { <span class="kw">get</span>; <span class="kw">set</span>; }  <span class="cmt">// activity.From.Id &#8212; lookup key</span>
+    <span class="kw">public string</span> ServiceUrl     { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> ConversationId { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> TenantId       { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+
+<span class="cmt">// Models/ActivityInfo.cs</span>
+<span class="kw">public class</span> <span class="typ">ActivityInfo</span>
+{
+    <span class="kw">public string</span> ActivityId     { <span class="kw">get</span>; <span class="kw">set</span>; }  <span class="cmt">// returned by SendToConversationAsync</span>
+    <span class="kw">public string</span> ConversationId { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> ServiceUrl     { <span class="kw">get</span>; <span class="kw">set</span>; }
+}</code></pre>
+        </div>
+
+        <!-- ── IConversationStore ──────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-istore">
+      <pre><code><span class="lang-badge">C# — Services/IConversationStore.cs</span><span class="kw">using</span> System.Threading.Tasks;
+
+<span class="kw">public interface</span> <span class="typ">IConversationStore</span>
+{
+    <span class="cmt">// ConversationInfo is keyed by UserId (activity.From.Id)</span>
+    <span class="typ">Task</span>                   <span class="fn">SaveConversationAsync</span>(<span class="typ">ConversationInfo</span> info);
+    <span class="typ">Task</span>&lt;<span class="typ">ConversationInfo</span>&gt; <span class="fn">GetConversationAsync</span>(<span class="kw">string</span> userId);
+
+    <span class="cmt">// ActivityInfo is keyed by itemId (your domain ID)</span>
+    <span class="typ">Task</span>                   <span class="fn">SaveActivityInfoAsync</span>(<span class="kw">string</span> itemId, <span class="typ">ActivityInfo</span> info);
+    <span class="typ">Task</span>&lt;<span class="typ">ActivityInfo</span>&gt;    <span class="fn">GetActivityInfoAsync</span>(<span class="kw">string</span> itemId);
+}</code></pre>
+        </div>
+
+        <!-- ── ConversationStore ───────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-store">
+      <pre><code><span class="lang-badge">C# — Services/ConversationStore.cs</span><span class="kw">using</span> System.Collections.Concurrent;
+<span class="kw">using</span> System.Threading.Tasks;
+
+<span class="cmt">/// In-memory stub. Replace with SQL Server, Cosmos DB, etc.</span>
+<span class="kw">public class</span> <span class="typ">ConversationStore</span> : <span class="typ">IConversationStore</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationInfo</span>&gt; _conversations = <span class="kw">new</span>();
+    <span class="kw">private readonly</span> <span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ActivityInfo</span>&gt;    _activities    = <span class="kw">new</span>();
+
+    <span class="kw">public</span> <span class="typ">Task</span> <span class="fn">SaveConversationAsync</span>(<span class="typ">ConversationInfo</span> info)
+    {
+        _conversations[info.UserId] = info;
+        <span class="kw">return</span> Task.CompletedTask;
+    }
+
+    <span class="kw">public</span> <span class="typ">Task</span>&lt;<span class="typ">ConversationInfo</span>&gt; <span class="fn">GetConversationAsync</span>(<span class="kw">string</span> userId)
+    {
+        _conversations.<span class="fn">TryGetValue</span>(userId, <span class="kw">out var</span> info);
+        <span class="kw">return</span> Task.<span class="fn">FromResult</span>(info);
+    }
+
+    <span class="kw">public</span> <span class="typ">Task</span> <span class="fn">SaveActivityInfoAsync</span>(<span class="kw">string</span> itemId, <span class="typ">ActivityInfo</span> info)
+    {
+        _activities[itemId] = info;
+        <span class="kw">return</span> Task.CompletedTask;
+    }
+
+    <span class="kw">public</span> <span class="typ">Task</span>&lt;<span class="typ">ActivityInfo</span>&gt; <span class="fn">GetActivityInfoAsync</span>(<span class="kw">string</span> itemId)
+    {
+        _activities.<span class="fn">TryGetValue</span>(itemId, <span class="kw">out var</span> info);
+        <span class="kw">return</span> Task.<span class="fn">FromResult</span>(info);
+    }
+}</code></pre>
+        </div>
+
+        <!-- ── BotHelper ───────────────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-helper">
+      <pre><code><span class="lang-badge">C# — Helpers/BotHelper.cs</span><span class="kw">using</span> System;
+<span class="kw">using</span> System.Collections.Generic;
+<span class="kw">using</span> System.Linq;
+<span class="kw">using</span> System.Threading.Tasks;
+<span class="kw">using</span> AdaptiveCards;
+<span class="kw">using</span> Microsoft.Bot.Connector;
+<span class="kw">using</span> Newtonsoft.Json;
+
+<span class="kw">public class</span> <span class="typ">BotHelper</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IConversationStore</span> _store;
+
+    <span class="kw">public</span> <span class="fn">BotHelper</span>(<span class="typ">IConversationStore</span> store) { _store = store; }
+
+    <span class="cmt">// ── Step 1: Send trigger card (called from NotifyController) ────────────</span>
+    <span class="kw">public async</span> <span class="typ">Task</span> <span class="fn">SendTriggerCard</span>(<span class="kw">string</span> conversationId, <span class="kw">string</span> serviceUrl, <span class="kw">string</span> itemId)
+    {
+        <span class="kw">var</span> card = <span class="kw">new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+        {
+            Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+            {
+                <span class="kw">new</span> <span class="typ">AdaptiveTextBlock</span> { Text = $<span class="str">"Item #{itemId} is ready for review."</span>, Wrap = <span class="bool">true</span> }
+            },
+            Actions = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveAction</span>&gt;
+            {
+                <span class="kw">new</span> <span class="typ">AdaptiveSubmitAction</span>
+                {
+                    Title = <span class="str">"Open Settings"</span>,
+                    Data  = <span class="kw">new</span> { msteams = <span class="kw">new</span> { type = <span class="str">"task/fetch"</span> }, action = <span class="str">"openSettingsModal"</span>, itemId = itemId }
+                }
+            }
+        };
+
+        <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span> { ContentType = <span class="typ">AdaptiveCard</span>.ContentType, Content = card };
+        <span class="kw">var</span> message    = Activity.CreateMessageActivity();
+        message.Attachments.Add(attachment);
+
+        <span class="kw">using var</span> client   = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(serviceUrl));
+        <span class="kw">var</span> response = <span class="kw">await</span> client.Conversations.<span class="fn">SendToConversationAsync</span>(conversationId, (<span class="typ">Activity</span>)message);
+
+        <span class="kw">await</span> _store.<span class="fn">SaveActivityInfoAsync</span>(itemId, <span class="kw">new</span> <span class="typ">ActivityInfo</span>
+        {
+            ActivityId     = response.Id,
+            ConversationId = conversationId,
+            ServiceUrl     = serviceUrl
+        });
+    }
+
+    <span class="cmt">// ── Step 3: Build modal card (called from MessagesController.HandleTaskFetchAsync) ─</span>
+    <span class="kw">public</span> <span class="typ">AdaptiveCard</span> <span class="fn">BuildModalCard</span>(<span class="typ">IEnumerable</span>&lt;<span class="typ">OptionItem</span>&gt; options)
+    {
+        <span class="kw">return new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+        {
+            Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+            {
+                <span class="kw">new</span> <span class="typ">AdaptiveTextInput</span>
+                {
+                    Id           = <span class="str">"name"</span>,
+                    Label        = <span class="str">"Name"</span>,
+                    Placeholder  = <span class="str">"Enter a name"</span>,
+                    IsRequired   = <span class="bool">true</span>,
+                    ErrorMessage = <span class="str">"Name is required"</span>
+                },
+                <span class="kw">new</span> <span class="typ">AdaptiveNumberInput</span>
+                {
+                    Id           = <span class="str">"quantity"</span>,
+                    Label        = <span class="str">"Quantity"</span>,
+                    Placeholder  = <span class="str">"Must be greater than 0"</span>,
+                    IsRequired   = <span class="bool">true</span>,
+                    Min          = <span class="num">1</span>,
+                    ErrorMessage = <span class="str">"Quantity must be greater than 0"</span>
+                },
+                <span class="kw">new</span> <span class="typ">AdaptiveChoiceSetInput</span>
+                {
+                    Id            = <span class="str">"categories"</span>,
+                    Label         = <span class="str">"Categories"</span>,
+                    Style         = <span class="typ">AdaptiveChoiceInputStyle</span>.Expanded,
+                    IsMultiSelect = <span class="bool">true</span>,
+                    IsRequired    = <span class="bool">true</span>,
+                    ErrorMessage  = <span class="str">"Select at least one category"</span>,
+                    Choices       = options.<span class="fn">Select</span>(o => <span class="kw">new</span> <span class="typ">AdaptiveChoice</span>
+                    {
+                        Title = o.DisplayName,
+                        Value = o.Id.<span class="fn">ToString</span>()
+                    }).<span class="fn">ToList</span>()
+                }
+            },
+            Actions = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveAction</span>&gt;
+            {
+                <span class="kw">new</span> <span class="typ">AdaptiveSubmitAction</span>
+                {
+                    Title = <span class="str">"Save"</span>,
+                    Data  = <span class="kw">new</span> { }  <span class="cmt">// itemId is echoed via the task/fetch response wrapper</span>
+                }
+            }
+        };
+    }
+
+    <span class="cmt">// ── Step 6: Background processing (called via Task.Run from HandleTaskSubmitAsync) ─</span>
+    <span class="kw">public async</span> <span class="typ">Task</span> <span class="fn">ProcessAndNotify</span>(<span class="kw">string</span> itemId, <span class="kw">string</span> name, <span class="kw">int</span> quantity, <span class="typ">List</span>&lt;<span class="kw">string</span>&gt; categories)
+    {
+        <span class="kw">var</span> info = <span class="kw">await</span> _store.<span class="fn">GetActivityInfoAsync</span>(itemId);
+
+        <span class="typ">AdaptiveCard</span> resultCard;
+        <span class="kw">try</span>
+        {
+            <span class="cmt">// TODO: replace with your own business logic</span>
+            <span class="cmt">// await _yourService.ProcessItem(itemId, name, quantity, categories);</span>
+            resultCard = <span class="fn">BuildSuccessCard</span>(<span class="str">"Item saved successfully."</span>);
+        }
+        <span class="kw">catch</span> (<span class="typ">Exception</span> ex)
+        {
+            resultCard = <span class="fn">BuildFailureCard</span>($<span class="str">"Failed: {ex.Message}. Please try again."</span>);
+        }
+
+        <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span>
+        {
+            ContentType = <span class="typ">AdaptiveCard</span>.ContentType,
+            Content     = JsonConvert.<span class="fn">DeserializeObject</span>(resultCard.<span class="fn">ToJson</span>())
+        };
+        <span class="kw">var</span> update = <span class="kw">new</span> <span class="typ">Activity</span>
+        {
+            Type        = ActivityTypes.Message,
+            Attachments = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">Attachment</span>&gt; { attachment }
+        };
+
+        <span class="kw">using var</span> client = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(info.ServiceUrl));
+        <span class="kw">await</span> client.Conversations.<span class="fn">UpdateActivityAsync</span>(info.ConversationId, info.ActivityId, update);
+    }
+
+    <span class="cmt">// ── Card builders ───────────────────────────────────────────────────────</span>
+    <span class="kw">public</span> <span class="typ">AdaptiveCard</span> <span class="fn">BuildSuccessCard</span>(<span class="kw">string</span> message)
+    {
+        <span class="kw">return new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+        {
+            Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+            {
+                <span class="kw">new</span> <span class="typ">AdaptiveTextBlock</span>
+                {
+                    Text   = <span class="str">"&#x2705; " + message</span>,
+                    Color  = <span class="typ">AdaptiveTextColor</span>.Good,
+                    Weight = <span class="typ">AdaptiveTextWeight</span>.Bolder,
+                    Wrap   = <span class="bool">true</span>
+                }
+            }
+        };
+    }
+
+    <span class="kw">public</span> <span class="typ">AdaptiveCard</span> <span class="fn">BuildFailureCard</span>(<span class="kw">string</span> message)
+    {
+        <span class="kw">return new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+        {
+            Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+            {
+                <span class="kw">new</span> <span class="typ">AdaptiveTextBlock</span>
+                {
+                    Text   = <span class="str">"&#x274C; " + message</span>,
+                    Color  = <span class="typ">AdaptiveTextColor</span>.Attention,
+                    Weight = <span class="typ">AdaptiveTextWeight</span>.Bolder,
+                    Wrap   = <span class="bool">true</span>
+                }
+            },
+            Actions = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveAction</span>&gt;
+            {
+                <span class="kw">new</span> <span class="typ">AdaptiveSubmitAction</span>
+                {
+                    Title = <span class="str">"Try Again"</span>,
+                    Data  = <span class="kw">new</span> { msteams = <span class="kw">new</span> { type = <span class="str">"task/fetch"</span> }, action = <span class="str">"openSettingsModal"</span> }
+                }
+            }
+        };
+    }
+}</code></pre>
+        </div>
+
+        <!-- ── MessagesController ──────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-controller">
+      <pre><code><span class="lang-badge">C# — Controllers/MessagesController.cs</span><span class="kw">using</span> System;
+<span class="kw">using</span> System.Collections.Generic;
+<span class="kw">using</span> System.Net;
+<span class="kw">using</span> System.Net.Http;
+<span class="kw">using</span> System.Text;
+<span class="kw">using</span> System.Threading.Tasks;
+<span class="kw">using</span> System.Web.Http;
+<span class="kw">using</span> AdaptiveCards;
+<span class="kw">using</span> Microsoft.Bot.Connector;
+<span class="kw">using</span> Microsoft.Bot.Connector.Teams;
+<span class="kw">using</span> Newtonsoft.Json;
+
+[<span class="typ">BotAuthentication</span>]
+<span class="kw">public class</span> <span class="typ">MessagesController</span> : <span class="typ">ApiController</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IConversationStore</span> _store;
+    <span class="kw">private readonly</span> <span class="typ">BotHelper</span>          _bot;
+
+    <span class="kw">public</span> <span class="fn">MessagesController</span>(<span class="typ">IConversationStore</span> store, <span class="typ">BotHelper</span> bot)
+    {
+        _store = store;
+        _bot   = bot;
+    }
+
+    [<span class="typ">HttpPost</span>]
+    <span class="kw">public async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">Post</span>([<span class="typ">FromBody</span>] <span class="typ">Activity</span> activity)
+    {
+        <span class="kw">if</span> (activity == <span class="kw">null</span>)
+            <span class="kw">return</span> Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.BadRequest);
+
+        <span class="kw">switch</span> (activity.Type)
+        {
+            <span class="kw">case</span> ActivityTypes.Message:
+                <span class="kw">await</span> <span class="fn">HandleMessageAsync</span>(activity);
+                <span class="kw">break</span>;
+            <span class="kw">case</span> ActivityTypes.Invoke:
+                <span class="kw">return await</span> <span class="fn">HandleInvokeAsync</span>(activity);
+            <span class="kw">case</span> ActivityTypes.ConversationUpdate:
+                <span class="kw">await</span> <span class="fn">HandleConversationUpdateAsync</span>(activity);
+                <span class="kw">break</span>;
+        }
+        <span class="kw">return</span> Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+    }
+
+    <span class="cmt">// ── Invoke routing ────────────────────────────────────────────────────────</span>
+    <span class="kw">private async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">HandleInvokeAsync</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">switch</span> (activity.Name)
+        {
+            <span class="kw">case</span> <span class="str">"task/fetch"</span>:  <span class="kw">return await</span> <span class="fn">HandleTaskFetchAsync</span>(activity);
+            <span class="kw">case</span> <span class="str">"task/submit"</span>: <span class="kw">return await</span> <span class="fn">HandleTaskSubmitAsync</span>(activity);
+            <span class="kw">default</span>:           <span class="kw">return</span> Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+        }
+    }
+
+    <span class="cmt">// ── ConversationUpdate: save context when bot is installed ────────────────</span>
+    <span class="kw">private async</span> <span class="typ">Task</span> <span class="fn">HandleConversationUpdateAsync</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">if</span> (activity.MembersAdded != <span class="kw">null</span>)
+        {
+            <span class="kw">foreach</span> (<span class="kw">var</span> member <span class="kw">in</span> activity.MembersAdded)
+            {
+                <span class="kw">if</span> (member.Id == activity.Recipient.Id)
+                {
+                    <span class="kw">await</span> _store.<span class="fn">SaveConversationAsync</span>(<span class="kw">new</span> <span class="typ">ConversationInfo</span>
+                    {
+                        UserId         = activity.From.Id,
+                        ServiceUrl     = activity.ServiceUrl,
+                        ConversationId = activity.Conversation.Id,
+                        TenantId       = activity.<span class="fn">GetTenantId</span>()
+                    });
+                    <span class="kw">using var</span> client = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(activity.ServiceUrl));
+                    <span class="kw">await</span> client.Conversations.<span class="fn">ReplyToActivityAsync</span>(activity.<span class="fn">CreateReply</span>(<span class="str">"Hi! I'm ready."</span>));
+                }
+            }
+        }
+    }
+
+    <span class="cmt">// ── Message: keep context fresh ───────────────────────────────────────────</span>
+    <span class="kw">private async</span> <span class="typ">Task</span> <span class="fn">HandleMessageAsync</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">await</span> _store.<span class="fn">SaveConversationAsync</span>(<span class="kw">new</span> <span class="typ">ConversationInfo</span>
+        {
+            UserId         = activity.From.Id,
+            ServiceUrl     = activity.ServiceUrl,
+            ConversationId = activity.Conversation.Id,
+            TenantId       = activity.<span class="fn">GetTenantId</span>()
+        });
+        <span class="kw">using var</span> client = <span class="kw">new</span> <span class="typ">ConnectorClient</span>(<span class="kw">new</span> <span class="typ">Uri</span>(activity.ServiceUrl));
+        <span class="kw">await</span> client.Conversations.<span class="fn">ReplyToActivityAsync</span>(activity.<span class="fn">CreateReply</span>(<span class="str">"Hello!"</span>));
+    }
+
+    <span class="cmt">// ── Step 2: task/fetch ────────────────────────────────────────────────────</span>
+    <span class="kw">private async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">HandleTaskFetchAsync</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">dynamic</span> payload = JsonConvert.<span class="fn">DeserializeObject</span>(activity.Value.<span class="fn">ToString</span>());
+        <span class="kw">string</span> itemId   = payload?.data?.itemId;
+
+        <span class="cmt">// TODO: replace _yourRepository with your own data-access service</span>
+        <span class="kw">var</span> options = <span class="kw">await</span> _yourRepository.<span class="fn">GetOptionsForItem</span>(itemId);
+        <span class="kw">var</span> card    = _bot.<span class="fn">BuildModalCard</span>(options);
+
+        <span class="kw">var</span> taskResponse = <span class="kw">new</span>
+        {
+            task = <span class="kw">new</span>
+            {
+                type  = <span class="str">"continue"</span>,
+                value = <span class="kw">new</span>
+                {
+                    title  = <span class="str">"Settings"</span>,
+                    height = <span class="num">400</span>,
+                    width  = <span class="num">500</span>,
+                    card   = <span class="kw">new</span>
+                    {
+                        contentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+                        content     = JsonConvert.<span class="fn">DeserializeObject</span>(card.<span class="fn">ToJson</span>())
+                    }
+                }
+            }
+        };
+
+        <span class="kw">var</span> response = Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+        response.Content = <span class="kw">new</span> <span class="typ">StringContent</span>(JsonConvert.<span class="fn">SerializeObject</span>(taskResponse), Encoding.UTF8, <span class="str">"application/json"</span>);
+        <span class="kw">return</span> response;
+    }
+
+    <span class="cmt">// ── Step 4: task/submit ───────────────────────────────────────────────────</span>
+    <span class="kw">private async</span> <span class="typ">Task</span>&lt;<span class="typ">HttpResponseMessage</span>&gt; <span class="fn">HandleTaskSubmitAsync</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">dynamic</span> payload = JsonConvert.<span class="fn">DeserializeObject</span>(activity.Value.<span class="fn">ToString</span>());
+        <span class="kw">var</span> data = payload?.data;
+
+        <span class="kw">string</span> name       = (<span class="kw">string</span>)data?.name;
+        <span class="kw">int</span>    quantity   = <span class="kw">int</span>.<span class="fn">Parse</span>((<span class="kw">string</span>)data?.quantity ?? <span class="str">"0"</span>);
+        <span class="kw">string</span> itemId     = (<span class="kw">string</span>)data?.itemId;
+        <span class="kw">var</span>    categories = ((<span class="kw">string</span>)data?.categories ?? <span class="str">""</span>)
+                              .<span class="fn">Split</span>(<span class="kw">new</span>[] { <span class="str">','</span> }, StringSplitOptions.RemoveEmptyEntries)
+                              .<span class="fn">ToList</span>();
+
+        <span class="kw">if</span> (<span class="kw">string</span>.<span class="fn">IsNullOrWhiteSpace</span>(name) || quantity &lt; <span class="num">1</span> || !categories.<span class="fn">Any</span>())
+            <span class="kw">return</span> <span class="fn">TaskContinueWithError</span>(<span class="str">"Validation failed. Please check your inputs."</span>);
+
+        _ = Task.<span class="fn">Run</span>(() => _bot.<span class="fn">ProcessAndNotify</span>(itemId, name, quantity, categories));
+
+        <span class="kw">var</span> closeResponse = Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+        closeResponse.Content = <span class="kw">new</span> <span class="typ">StringContent</span>(<span class="str">"{}"</span>, Encoding.UTF8, <span class="str">"application/json"</span>);
+        <span class="kw">return</span> closeResponse;
+    }
+
+    <span class="cmt">// ── Response helpers — stay here because they use Request (ApiController) ─</span>
+    <span class="kw">private</span> <span class="typ">HttpResponseMessage</span> <span class="fn">TaskContinueWithError</span>(<span class="kw">string</span> message)
+    {
+        <span class="kw">var</span> errorCard = <span class="kw">new</span> <span class="typ">AdaptiveCard</span>(<span class="kw">new</span> <span class="typ">AdaptiveSchemaVersion</span>(<span class="num">1</span>, <span class="num">3</span>))
+        {
+            Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+            {
+                <span class="kw">new</span> <span class="typ">AdaptiveTextBlock</span> { Text = message, Color = <span class="typ">AdaptiveTextColor</span>.Attention }
+                <span class="cmt">// TODO: add back the same input fields so the user can correct and resubmit</span>
+            }
+        };
+        <span class="kw">return</span> <span class="fn">BuildTaskContinueResponse</span>(<span class="kw">new</span> { card = <span class="kw">new</span> { contentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>, content = JsonConvert.<span class="fn">DeserializeObject</span>(errorCard.<span class="fn">ToJson</span>()) } });
+    }
+
+    <span class="kw">private</span> <span class="typ">HttpResponseMessage</span> <span class="fn">TaskMessageResponse</span>(<span class="kw">string</span> text)     <span class="cmt">// Option B: toast</span>
+    {
+        <span class="kw">return</span> <span class="fn">BuildJsonResponse</span>(<span class="kw">new</span> { task = <span class="kw">new</span> { type = <span class="str">"message"</span>, value = text } });
+    }
+
+    <span class="kw">private</span> <span class="typ">HttpResponseMessage</span> <span class="fn">TaskContinueWithCard</span>(<span class="typ">AdaptiveCard</span> card, <span class="kw">string</span> title = <span class="str">"Confirm"</span>, <span class="kw">int</span> height = <span class="num">300</span>, <span class="kw">int</span> width = <span class="num">500</span>)  <span class="cmt">// Option C: new card</span>
+    {
+        <span class="kw">return</span> <span class="fn">BuildTaskContinueResponse</span>(<span class="kw">new</span> { title, height, width, card = <span class="kw">new</span> { contentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>, content = JsonConvert.<span class="fn">DeserializeObject</span>(card.<span class="fn">ToJson</span>()) } });
+    }
+
+    <span class="kw">private</span> <span class="typ">HttpResponseMessage</span> <span class="fn">BuildTaskContinueResponse</span>(<span class="kw">object</span> value)
+    {
+        <span class="kw">return</span> <span class="fn">BuildJsonResponse</span>(<span class="kw">new</span> { task = <span class="kw">new</span> { type = <span class="str">"continue"</span>, value } });
+    }
+
+    <span class="kw">private</span> <span class="typ">HttpResponseMessage</span> <span class="fn">BuildJsonResponse</span>(<span class="kw">object</span> body)
+    {
+        <span class="kw">var</span> response = Request.<span class="fn">CreateResponse</span>(<span class="typ">HttpStatusCode</span>.OK);
+        response.Content = <span class="kw">new</span> <span class="typ">StringContent</span>(JsonConvert.<span class="fn">SerializeObject</span>(body), Encoding.UTF8, <span class="str">"application/json"</span>);
+        <span class="kw">return</span> response;
+    }
+}</code></pre>
+        </div>
+
+        <!-- ── NotifyController ────────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-notify">
+      <pre><code><span class="lang-badge">C# — Controllers/NotifyController.cs</span><span class="kw">using</span> System.Threading.Tasks;
+<span class="kw">using</span> System.Web.Http;
+
+<span class="cmt">// Your own API endpoint — not a Teams endpoint.</span>
+<span class="cmt">// Your backend (job scheduler, webhook receiver, etc.) calls this when an item needs action.</span>
+[<span class="typ">RoutePrefix</span>(<span class="str">"api/notify"</span>)]
+<span class="kw">public class</span> <span class="typ">NotifyController</span> : <span class="typ">ApiController</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IConversationStore</span> _store;
+    <span class="kw">private readonly</span> <span class="typ">BotHelper</span>          _bot;
+
+    <span class="kw">public</span> <span class="fn">NotifyController</span>(<span class="typ">IConversationStore</span> store, <span class="typ">BotHelper</span> bot)
+    {
+        _store = store;
+        _bot   = bot;
+    }
+
+    [<span class="typ">HttpPost</span>, Route(<span class="str">"{userId}/{itemId}"</span>)]
+    <span class="kw">public async</span> <span class="typ">Task</span>&lt;<span class="typ">IHttpActionResult</span>&gt; <span class="fn">NotifyUser</span>(<span class="kw">string</span> userId, <span class="kw">string</span> itemId)
+    {
+        <span class="cmt">// Load routing context saved when the user installed the bot</span>
+        <span class="kw">var</span> conv = <span class="kw">await</span> _store.<span class="fn">GetConversationAsync</span>(userId);
+        <span class="kw">if</span> (conv == <span class="kw">null</span>)
+            <span class="kw">return</span> <span class="fn">BadRequest</span>($<span class="str">"User '{userId}' has not installed the bot yet."</span>);
+
+        <span class="cmt">// All three parameters now resolved</span>
+        <span class="kw">await</span> _bot.<span class="fn">SendTriggerCard</span>(
+            conversationId: conv.ConversationId,  <span class="cmt">// ← from stored ConversationInfo</span>
+            serviceUrl:     conv.ServiceUrl,      <span class="cmt">// ← from stored ConversationInfo</span>
+            itemId:         itemId);              <span class="cmt">// ← from your backend / business logic</span>
+
+        <span class="kw">return</span> <span class="fn">Ok</span>();
+    }
+}</code></pre>
+        </div>
+
+      </div>
+
+      <div class="callout info">
+        <div class="ci">💡</div>
+        <div class="cb">
+          <strong>Register everything in WebApiConfig.cs / DI container</strong>
+          <p>Both controllers use constructor injection. Register these three types with your DI container (SimpleInjector, Unity, etc.) in <code>App_Start/WebApiConfig.cs</code>:</p>
+          <pre style="margin-top:8px;font-size:12px;background:rgba(0,0,0,.25);padding:10px;border-radius:6px;overflow-x:auto"><code>container.Register&lt;IConversationStore, ConversationStore&gt;(Lifestyle.Singleton);
+container.Register&lt;BotHelper&gt;(Lifestyle.Singleton);
+// Both MessagesController and NotifyController resolve automatically</code></pre>
+        </div>
+      </div>
+
+    </section>
+
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="refs">
+      <div class="eyebrow-tag">Reference</div>
+      <h2>All Reference Links</h2>
+
+      <table>
+        <tr><th>Topic</th><th>URL</th><th>Note</th></tr>
+        <tr><td>Bot overview (v3 SDK)</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/bot-v3/bots-overview" target="_blank">…/resources/bot-v3/bots-overview</a></td><td>Use <code>/bot-v3/</code> path — not <code>/bots/</code></td></tr>
+        <tr><td>Task module overview</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/what-are-task-modules" target="_blank">…/what-are-task-modules</a></td><td>TaskInfo object, modal sizing</td></tr>
+        <tr><td>Task module from bot</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank">…/task-modules-bots</a></td><td>task/fetch + task/submit payload reference</td></tr>
+        <tr><td>Adaptive Card .NET SDK</td><td><a href="https://learn.microsoft.com/en-us/adaptive-cards/sdk/authoring-cards/net" target="_blank">…/sdk/authoring-cards/net</a></td><td>ToJson(), FromJson(), object model</td></tr>
+        <tr><td>Input validation spec</td><td><a href="https://learn.microsoft.com/en-us/adaptive-cards/authoring-cards/input-validation" target="_blank">…/authoring-cards/input-validation</a></td><td>isRequired, errorMessage, min/max</td></tr>
+        <tr><td>Input.Number schema</td><td><a href="https://adaptivecards.io/explorer/Input.Number.html" target="_blank">adaptivecards.io/explorer/Input.Number</a></td><td>All properties + interactive example</td></tr>
+        <tr><td>Input.ChoiceSet schema</td><td><a href="https://adaptivecards.io/explorer/Input.ChoiceSet.html" target="_blank">adaptivecards.io/explorer/Input.ChoiceSet</a></td><td>isMultiSelect, style: expanded</td></tr>
+        <tr><td>Adaptive Card designer</td><td><a href="https://adaptivecards.io/designer/" target="_blank">adaptivecards.io/designer</a></td><td>Paste JSON and preview live</td></tr>
+        <tr><td>Inputs with validation sample</td><td><a href="https://adaptivecards.io/samples/InputsWithValidation.html" target="_blank">adaptivecards.io/samples/InputsWithValidation</a></td><td>Working example JSON</td></tr>
+        <tr><td>Official C# sample (v3)</td><td><a href="https://github.com/OfficeDev/microsoft-teams-sample-task-module-csharp" target="_blank">github/microsoft-teams-sample-task-module-csharp</a></td><td>MessagesController.cs + RootDialog.cs</td></tr>
+        <tr><td>NuGet — Connector.Teams</td><td><a href="https://www.nuget.org/packages/Microsoft.Bot.Connector.Teams/0.10.0" target="_blank">nuget — Connector.Teams 0.10.0</a></td><td>Targets .NET Framework 4.6</td></tr>
+        <tr><td>NuGet — AdaptiveCards</td><td><a href="https://www.nuget.org/packages/AdaptiveCards/" target="_blank">nuget — AdaptiveCards 3.1.0</a></td><td>Targets .NET Framework 4.5.2+</td></tr>
+        <tr><td>Bot auth v3 sample</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/add-authentication" target="_blank">…/bots/how-to/authentication/add-authentication</a></td><td>Azure Bot registration walkthrough</td></tr>
+        <tr><td>Cards &amp; actions (v3)</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/bot-v3/bots-cards" target="_blank">&#8230;/resources/bot-v3/bots-cards</a></td><td>Supported card action types</td></tr>
+        <tr><td>Teams Developer Portal</td><td><a href="https://dev.teams.microsoft.com/home" target="_blank">dev.teams.microsoft.com</a></td><td>Create manifest, configure app, download ZIP</td></tr>
+        <tr><td>Manifest schema v1.11</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema" target="_blank">&#8230;/resources/schema/manifest-schema</a></td><td>All manifest.json fields with types and constraints</td></tr>
+        <tr><td>Sideloading / custom app policies</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/teams-custom-app-policies-and-settings" target="_blank">learn.microsoft.com/&#8230;custom-app-policies</a></td><td>How admins enable sideloading for developers</td></tr>
+        <tr><td>Dev Tunnels CLI download</td><td><a href="https://aka.ms/devtunnel/download" target="_blank">aka.ms/devtunnel/download</a></td><td>Standalone installer (not VS-exclusive)</td></tr>
+        <tr><td>Dev Tunnels CLI reference</td><td><a href="https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/cli-commands" target="_blank">learn.microsoft.com/&#8230;dev-tunnels/cli-commands</a></td><td>All devtunnel commands + access control options</td></tr>
+        <tr><td>Azure Bot pricing</td><td><a href="https://azure.microsoft.com/en-us/pricing/details/bot-services/" target="_blank">azure.microsoft.com/pricing/details/bot-services</a></td><td>Standard channels (Teams) are free; bot registration has no compute cost</td></tr>
+        <tr><td>ConversationUpdate activity (v3)</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/bot-v3/bots-notifications" target="_blank">&#8230;/resources/bot-v3/bots-notifications</a></td><td>Bot install/uninstall events, member added/removed</td></tr>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  function switchTab(btn, paneId) {
+    const block = btn.closest('.code-block');
+    block.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+    block.querySelectorAll('.code-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(paneId).classList.add('active');
+  }
+
+  // Sidebar active on scroll
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.nav-a');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(n => n.classList.remove('active'));
+        const m = document.querySelector(`.nav-a[href="#${e.target.id}"]`);
+        if (m) m.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

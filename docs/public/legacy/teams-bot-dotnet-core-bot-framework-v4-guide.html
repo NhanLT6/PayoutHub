@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teams Bot Complete Guide — .NET Core · Bot Framework v4</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f14; --surface: #13161e; --surface2: #1a1e2a; --border: #252a38;
+      --accent: #4fc3f7; --accent2: #7c83f5; --accent3: #56e39f;
+      --warn: #f6a623; --danger: #f05c5c;
+      --text: #d8dde8; --text-muted: #6b7591; --text-dim: #8b93a8;
+      --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+
+      --sb-track-color: #232E33;
+      --sb-thumb-color: #6BAF8D;
+      --sb-size: 4px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.75;}
+
+    * {
+      scrollbar-width: thin;                      /* Firefox */
+      scrollbar-color: var(--sb-thumb-color) var(--sb-track-color); /* Firefox */
+    }
+
+    *::-webkit-scrollbar {
+      width: var(--sb-size);
+      height: var(--sb-size);                     /* for horizontal scrollbars */
+    }
+
+    *::-webkit-scrollbar-track {
+      background: var(--sb-track-color);
+      border-radius: 8px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background: var(--sb-thumb-color);
+      border-radius: 3px;
+    }
+
+    *::-webkit-scrollbar-button {
+      display: none;
+    }
+
+    .layout { display: grid; grid-template-columns: 256px 1fr; min-height: 100vh; }
+    .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    .sidebar-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .sidebar-header .eyebrow { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; }
+    .sidebar-header h1 { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-top: 4px; }
+    .nav-group { padding: 0 10px 6px; }
+    .nav-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: .1em; text-transform: uppercase; padding: 8px 8px 3px; }
+    .nav-a { display: flex; align-items: center; gap: 8px; padding: 5px 9px; border-radius: 5px; color: var(--text-dim); text-decoration: none; font-size: 12.5px; transition: all .15s; border: 1px solid transparent; cursor: pointer; }
+    .nav-a:hover { background: var(--surface2); color: var(--text); }
+    .nav-a.active { background: rgba(79,195,247,.1); color: var(--accent); border-color: rgba(79,195,247,.2); }
+    .nav-a .ni { font-size: 13px; opacity: .8; }
+    main { padding: 44px 60px; max-width: 860px; }
+    .section { margin-bottom: 60px; scroll-margin-top: 20px; }
+    .eyebrow-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: .15em; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .eyebrow-tag::after { content: ''; width: 28px; height: 1px; background: var(--accent); opacity: .4; }
+    h2 { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 14px; letter-spacing: -.2px; }
+    h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 22px 0 8px; display: flex; align-items: center; gap: 8px; }
+    h3 .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+    p { color: var(--text-dim); margin-bottom: 10px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 20px; margin: 8px 0 12px; }
+    li { color: var(--text-dim); font-size: 13px; margin-bottom: 4px; }
+    li strong { color: var(--text); font-weight: 500; }
+    p code, li code, td code { background: rgba(79,195,247,.1); color: var(--accent); padding: 1px 6px; border-radius: 3px; font-family: var(--mono); font-size: 12px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+    .callout { border-radius: 7px; padding: 12px 14px; margin: 14px 0; border-left: 3px solid; display: flex; gap: 11px; align-items: flex-start; }
+    .callout .ci { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .callout .cb { flex: 1; }
+    .callout .cb strong { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
+    .callout .cb p { margin: 0; font-size: 13px; }
+    .callout.info { background: rgba(79,195,247,.07); border-color: var(--accent); }
+    .callout.info .cb strong { color: var(--accent); }
+    .callout.warn { background: rgba(246,166,35,.07); border-color: var(--warn); }
+    .callout.warn .cb strong { color: var(--warn); }
+    .callout.tip { background: rgba(86,227,159,.07); border-color: var(--accent3); }
+    .callout.tip .cb strong { color: var(--accent3); }
+    .callout.danger { background: rgba(240,92,92,.07); border-color: var(--danger); }
+    .callout.danger .cb strong { color: var(--danger); }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+    th { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--border); }
+    td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+    td:first-child { color: var(--text); font-weight: 500; }
+    tr:last-child td { border-bottom: none; }
+    .code-block { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .code-tabs { display: flex; background: #0a0c11; border-bottom: 1px solid var(--border); }
+    .code-tab { padding: 8px 16px; font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-right: 1px solid var(--border); transition: all .15s; letter-spacing: .03em; background: transparent; border-top: none; border-left: none; border-bottom: 2px solid transparent; }
+    .code-tab:hover { color: var(--text); }
+    .code-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(79,195,247,.05); }
+    .code-pane { display: none; }
+    .code-pane.active { display: block; }
+    pre { background: #080a0f; padding: 18px 20px; overflow-x: auto; margin: 0; position: relative; }
+    code { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; }
+    .lang-badge { position: absolute; top: 8px; right: 12px; font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .num { color: #f78c6c; } .cmt { color: #4a5568; font-style: italic; }
+    .typ { color: #80cbc4; } .fn { color: #82aaff; } .attr { color: #ffcb6b; } .punct { color: #89ddff; } .bool { color: #ff9cac; }
+    .flow { margin: 20px 0; }
+    .flow-step { display: flex; gap: 16px; }
+    .flow-col { display: flex; flex-direction: column; align-items: center; width: 38px; flex-shrink: 0; }
+    .flow-num { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 600; flex-shrink: 0; }
+    .flow-line { width: 1px; flex: 1; min-height: 18px; background: var(--border); margin: 3px 0; }
+    .flow-step:last-child .flow-line { display: none; }
+    .flow-body { padding: 4px 0 22px; flex: 1; }
+    .flow-body h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .flow-body p { font-size: 12.5px; color: var(--text-dim); margin-bottom: 4px; }
+    .badge { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; margin-right: 4px; margin-top: 4px; font-weight: 500; letter-spacing: .04em; }
+    .b-teams { background: rgba(124,131,245,.15); color: var(--accent2); border: 1px solid rgba(124,131,245,.25); }
+    .b-azure { background: rgba(79,195,247,.12); color: var(--accent); border: 1px solid rgba(79,195,247,.2); }
+    .b-bot { background: rgba(86,227,159,.1); color: var(--accent3); border: 1px solid rgba(86,227,159,.2); }
+    .b-warn { background: rgba(246,166,35,.1); color: var(--warn); border: 1px solid rgba(246,166,35,.2); }
+    .arch-diagram { background: #080a0f; border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin: 16px 0; overflow-x: auto; }
+    .arch-row { display: flex; align-items: center; justify-content: center; gap: 0; margin: 8px 0; flex-wrap: nowrap; }
+    .arch-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px; text-align: center; flex-shrink: 0; min-width: 110px; }
+    .arch-box .ab-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    .arch-box .ab-label { font-size: 11px; font-weight: 600; color: var(--text); display: block; }
+    .arch-box .ab-sub { font-size: 10px; color: var(--text-muted); font-family: var(--mono); display: block; margin-top: 2px; }
+    .arch-arrow { display: flex; flex-direction: column; align-items: center; padding: 0 8px; flex-shrink: 0; }
+    .arch-arrow .aa-line { height: 1px; background: var(--border); position: relative; width: 52px; display: flex; align-items: center; }
+    .arch-arrow .aa-line::after { content: '▶'; position: absolute; right: -6px; font-size: 9px; color: var(--text-muted); }
+    .arch-arrow .aa-label { font-size: 10px; color: var(--text-muted); font-family: var(--mono); margin-bottom: 4px; white-space: nowrap; }
+    .arch-arrow .aa-label2 { font-size: 10px; color: var(--text-muted); font-family: var(--mono); margin-top: 4px; white-space: nowrap; }
+    .hbar { background: linear-gradient(90deg, rgba(79,195,247,.08), transparent); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 12px 0; font-size: 13px; color: var(--text); }
+    .step-list { margin: 16px 0; }
+    .step-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .step-item:last-child { border-bottom: none; }
+    .step-num { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--accent); background: rgba(79,195,247,.1); border: 1px solid rgba(79,195,247,.2); border-radius: 5px; padding: 3px 8px; flex-shrink: 0; height: fit-content; margin-top: 2px; }
+    .step-content h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .step-content p { font-size: 13px; margin: 0; }
+    .pkg { display: inline-flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 9px 13px; margin: 6px 4px 6px 0; font-family: var(--mono); font-size: 12px; }
+    .pkg .pn { color: var(--accent); } .pkg .pv { color: var(--accent3); } .pkg .ps { color: var(--text-muted); }
+    .response-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+    .rc { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 13px 15px; }
+    .rc .rct { font-family: var(--mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
+    .rc .rcn { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .rc p { font-size: 12px; margin: 0; }
+    .link-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 18px; }
+    .lp { display: inline-flex; align-items: center; gap: 5px; background: rgba(79,195,247,.06); border: 1px solid rgba(79,195,247,.18); color: var(--text-dim); border-radius: 20px; padding: 3px 11px 3px 8px; font-family: var(--mono); font-size: 11px; text-decoration: none; transition: all .15s; white-space: nowrap; line-height: 1.6; }
+    .lp:hover { background: rgba(79,195,247,.14); color: var(--accent); text-decoration: none; border-color: rgba(79,195,247,.35); }
+    .lp .li { font-size: 10px; opacity: .6; }
+    .dispatch-tree { background: #080a0f; border: 1px solid var(--border); border-radius: 8px; padding: 18px 24px; margin: 14px 0; font-family: var(--mono); font-size: 12.5px; line-height: 2; overflow-x: auto; white-space: pre; }
+  </style>
+</head>
+<body>
+<div style="margin:16px;padding:14px 18px;border:2px solid #b45309;background:#fffbeb;color:#1c1917;border-radius:8px;font:14px/1.55 system-ui,Segoe UI,sans-serif">
+<strong>LEGACY. Đọc trước khi dùng.</strong><br>
+Hướng dẫn này viết cho bot Teams trên .NET Core / ASP.NET Core dùng Bot Framework SDK v4 (<code>Microsoft.Bot.Builder.*</code>, <code>TeamsActivityHandler</code>, <code>CloudAdapter</code>). Microsoft đã kết thúc hỗ trợ Bot Framework SDK ngày 31/12/2025 và archive repo. Bot đã triển khai trên Azure Bot Service vẫn chạy, nhưng không còn bản vá. Kiểm tra lần cuối: tháng 11/2026.<br><br>
+<strong>Khi viết doc mới, bắt đầu từ:</strong>
+<ul style="margin:6px 0 0 18px;padding:0">
+<li><strong>Teams SDK</strong>: framework dành riêng cho agent trong Teams, nên chọn nếu bot chỉ chạy trong Teams. Theo tài liệu Microsoft có gói tương thích để giữ handler Bot Framework cũ và chỉ đổi adapter, nên đây là đường di chuyển ít việc nhất cho bot v4.</li>
+<li><strong>Microsoft 365 Agents SDK</strong>: chọn nếu cần agent đa kênh. Cần .NET 8 trở lên, đổi namespace và package (ví dụ <code>Microsoft.Bot.Builder.Integration.AspNet.Core</code> sang <code>Microsoft.Agents.Hosting.AspNetCore</code>), serialization chuyển từ Newtonsoft sang System.Text.Json, một số thứ như Adaptive Dialogs không được mang sang.</li>
+</ul>
+<p style="margin:8px 0 0"><strong>Còn dùng được:</strong> phần giải thích cách Teams định tuyến, manifest, Azure Bot registration, luồng task/fetch và task/submit, lưu conversation reference, gửi và cập nhật message ngoài một turn. Đây là hành vi của Teams và Azure Bot Service. <strong>Không nên chép:</strong> tên class, package và code mẫu. Đối chiếu với tài liệu migration trước khi áp dụng.</p>
+<p style="margin:8px 0 0">Tham khảo: <a href="https://learn.microsoft.com/en-us/microsoft-365/agents-sdk/bf-migration-guidance">Bot Framework to Agents SDK migration</a> · <a href="https://learn.microsoft.com/en-us/microsoft-365/agents-sdk/bf-migration-dotnet">.NET migration</a> · <a href="https://microsoft.github.io/teams-sdk/teams/choosing-an-sdk">Pick the right SDK for your Teams agent</a></p>
+</div>
+<div class="layout">
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="eyebrow">Complete Guide</div>
+      <h1>Teams Bot +<br>Task Module</h1>
+      <div style="margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text-muted)">.NET Core · Bot Framework v4</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Concepts</div>
+      <a class="nav-a active" href="#how-it-works"><span class="ni">🗺</span> How It All Works</a>
+      <a class="nav-a" href="#v3-vs-v4"><span class="ni">⚡</span> v3 → v4 What Changed</a>
+      <a class="nav-a" href="#packages"><span class="ni">📦</span> Packages</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Setup &amp; Auth</div>
+      <a class="nav-a" href="#project-setup"><span class="ni">🔧</span> Project Setup</a>
+      <a class="nav-a" href="#azure-registration"><span class="ni">☁️</span> Azure Bot Registration</a>
+      <a class="nav-a" href="#teams-manifest"><span class="ni">📋</span> Teams App Manifest</a>
+      <a class="nav-a" href="#auth-flow"><span class="ni">🔐</span> How Auth Works</a>
+      <a class="nav-a" href="#bot-class"><span class="ni">🎮</span> TeamsActivityHandler</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Task Module Flow</div>
+      <a class="nav-a" href="#conversation-ref"><span class="ni">💾</span> Storing Conv. Reference</a>
+      <a class="nav-a" href="#send-card"><span class="ni">1️⃣</span> Send Trigger Card</a>
+      <a class="nav-a" href="#task-fetch"><span class="ni">2️⃣</span> task/fetch → Return Modal</a>
+      <a class="nav-a" href="#adaptive-card"><span class="ni">3️⃣</span> Adaptive Card + Validation</a>
+      <a class="nav-a" href="#task-submit"><span class="ni">4️⃣</span> task/submit → Read Input</a>
+      <a class="nav-a" href="#response-patterns"><span class="ni">5️⃣</span> Response Patterns</a>
+      <a class="nav-a" href="#update-message"><span class="ni">6️⃣</span> Update Original Message</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Proactive</div>
+      <a class="nav-a" href="#proactive"><span class="ni">📡</span> Proactive Messaging</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Reference</div>
+      <a class="nav-a" href="#complete-project"><span class="ni">📦</span> Complete Project</a>
+      <a class="nav-a" href="#refs"><span class="ni">🔗</span> All Links</a>
+    </div>
+  </nav>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main>
+
+    <!-- ─── SECTION PLACEHOLDER — filled by subsequent edits ─── -->
+    <section class="section" id="how-it-works">
+      <div class="eyebrow-tag">Big Picture</div>
+      <h2>How It All Works</h2>
+
+      <p>Three moving parts, same as always. You never talk to Teams directly — everything is relayed through <strong>Azure Bot Service</strong>, which authenticates both sides and forwards activities to your endpoint.</p>
+
+      <div class="arch-diagram">
+        <div class="arch-row">
+          <div class="arch-box">
+            <span class="ab-icon">💬</span>
+            <span class="ab-label">Teams Client</span>
+            <span class="ab-sub">desktop / web</span>
+          </div>
+          <div class="arch-arrow">
+            <span class="aa-label">HTTPS POST</span>
+            <div class="aa-line"></div>
+            <span class="aa-label2">JWT signed</span>
+          </div>
+          <div class="arch-box" style="border-color:rgba(79,195,247,.4)">
+            <span class="ab-icon">☁️</span>
+            <span class="ab-label">Azure Bot Service</span>
+            <span class="ab-sub">relay + auth</span>
+          </div>
+          <div class="arch-arrow">
+            <span class="aa-label">HTTPS POST</span>
+            <div class="aa-line"></div>
+            <span class="aa-label2">JWT signed</span>
+          </div>
+          <div class="arch-box" style="border-color:rgba(86,227,159,.4)">
+            <span class="ab-icon">🖥️</span>
+            <span class="ab-label">Your Bot</span>
+            <span class="ab-sub">CloudAdapter +<br>TeamsActivityHandler</span>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-muted);font-family:var(--mono)">
+          Teams ↔ Azure Bot Service use a Teams-issued JWT &nbsp;·&nbsp; Azure Bot Service ↔ Your Bot use a Bot Framework JWT
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>What each part does</h3>
+      <table>
+        <tr><th>Part</th><th>Role</th><th>You configure it?</th></tr>
+        <tr><td>Teams Client</td><td>Renders cards, displays modals, captures user input</td><td>No — Microsoft managed</td></tr>
+        <tr><td>Azure Bot Service</td><td>Authenticates both sides; relays messages between Teams and your endpoint</td><td>Yes — register once in Azure portal</td></tr>
+        <tr><td>Your Bot (ASP.NET Core)</td><td>Receives POST from Azure; routes via <code>CloudAdapter</code> → <code>TeamsActivityHandler</code></td><td>Yes — <code>Program.cs</code>, <code>appsettings.json</code></td></tr>
+      </table>
+
+      <h3><span class="dot"></span>How an incoming request is routed</h3>
+      <p>The <code>CloudAdapter</code> validates the JWT and deserialises the activity, then calls your bot's <code>OnTurnAsync</code>. <code>TeamsActivityHandler</code> dispatches based on <code>activity.Type</code> and <code>activity.Name</code> — you override only the methods you care about.</p>
+      <div class="dispatch-tree"><span style="color:var(--accent3)">bot.OnTurnAsync(ITurnContext)</span>
+  <span style="color:var(--text-dim)">├─</span> activity.Type = <span style="color:var(--str)">"message"</span>             <span style="color:var(--text-muted)">──→</span> <span style="color:var(--accent)">OnMessageActivityAsync()</span>
+  <span style="color:var(--text-dim)">├─</span> activity.Type = <span style="color:var(--str)">"conversationUpdate"</span>  <span style="color:var(--text-muted)">──→</span> <span style="color:var(--accent)">OnConversationUpdateActivityAsync()</span>
+  <span style="color:var(--text-dim)">│    ├─</span> [Teams] members added           <span style="color:var(--text-muted)">──→</span> <span style="color:var(--accent)">OnTeamsMembersAddedAsync()</span>
+  <span style="color:var(--text-dim)">│    └─</span> [Teams] members removed         <span style="color:var(--text-muted)">──→</span> <span style="color:var(--accent)">OnTeamsMembersRemovedAsync()</span>
+  <span style="color:var(--text-dim)">└─</span> activity.Type = <span style="color:var(--str)">"invoke"</span>             <span style="color:var(--text-muted)">──→</span> <span style="color:var(--accent)">OnInvokeActivityAsync()</span>
+       <span style="color:var(--text-dim)">├─</span> activity.Name = <span style="color:var(--str)">"task/fetch"</span>    <span style="color:var(--text-muted)">──→</span> <span style="color:var(--accent)">OnTeamsTaskModuleFetchAsync()</span>
+       <span style="color:var(--text-dim)">├─</span> activity.Name = <span style="color:var(--str)">"task/submit"</span>   <span style="color:var(--text-muted)">──→</span> <span style="color:var(--accent)">OnTeamsTaskModuleSubmitAsync()</span>
+       <span style="color:var(--text-dim)">└─</span> activity.Name = <span style="color:var(--str)">"cardAction.invoke"</span> <span style="color:var(--text-muted)">→</span> <span style="color:var(--accent)">OnTeamsCardActionInvokeAsync()</span></div>
+
+      <h3><span class="dot"></span>The full task module lifecycle at a glance</h3>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(124,131,245,.15);color:var(--accent2);border:1px solid rgba(124,131,245,.3)">1</div><div class="flow-line"></div></div>
+          <div class="flow-body">
+            <h4>Bot posts a trigger card to Teams</h4>
+            <p>Call <code>turnContext.SendActivityAsync()</code> with an Adaptive Card attachment. The card has an <code>Action.Submit</code> button carrying <code>msteams.type = "task/fetch"</code>. Save the returned <code>ActivityId</code> — you'll need it to update the card later.</p>
+            <span class="badge b-bot">Bot → Azure</span><span class="badge b-azure">Azure → Teams</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(79,195,247,.15);color:var(--accent);border:1px solid rgba(79,195,247,.3)">2</div><div class="flow-line"></div></div>
+          <div class="flow-body">
+            <h4>User clicks → task/fetch arrives → bot returns modal spec</h4>
+            <p>Teams fires an <code>invoke</code> activity (<code>name = "task/fetch"</code>). <code>OnTeamsTaskModuleFetchAsync</code> is called. Return a <code>TaskModuleResponse</code> with a <code>TaskModuleTaskInfo</code> within <strong>5 seconds</strong>.</p>
+            <span class="badge b-teams">Teams → Azure</span><span class="badge b-azure">Azure → Bot</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(86,227,159,.15);color:var(--accent3);border:1px solid rgba(86,227,159,.3)">3</div><div class="flow-line"></div></div>
+          <div class="flow-body">
+            <h4>Teams renders the modal with your Adaptive Card</h4>
+            <p>The card is displayed in a popup. Client-side validation (isRequired, min/max) runs before any submit is allowed.</p>
+            <span class="badge b-teams">Teams renders modal</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(246,166,35,.15);color:var(--warn);border:1px solid rgba(246,166,35,.3)">4</div><div class="flow-line"></div></div>
+          <div class="flow-body">
+            <h4>User submits → task/submit arrives → bot processes data</h4>
+            <p>Teams fires <code>name = "task/submit"</code> with all field values in <code>taskModuleRequest.Data</code>. Do server-side validation, kick off a fire-and-forget task, return a <code>TaskModuleResponse</code> immediately to close the modal.</p>
+            <span class="badge b-teams">Teams → Azure</span><span class="badge b-azure">Azure → Bot</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(240,92,92,.15);color:var(--danger);border:1px solid rgba(240,92,92,.3)">5</div><div class="flow-line"></div></div>
+          <div class="flow-body">
+            <h4>Background task finishes → bot updates the original card</h4>
+            <p>Use <code>ContinueConversationAsync</code> + <code>turnContext.UpdateActivityAsync</code> with the stored <code>ActivityId</code> to replace the trigger card with a success or failure result.</p>
+            <span class="badge b-bot">Bot updates message</span><span class="badge b-teams">Teams re-renders card</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="v3-vs-v4">
+      <div class="eyebrow-tag">Migration Reference</div>
+      <h2>v3 &#8594; v4: What Changed</h2>
+
+      <div class="callout danger">
+        <div class="ci">📦</div>
+        <div class="cb">
+          <strong>Bot Framework SDK archived (January 2026)</strong>
+          <p>The <code>Microsoft.Bot.Builder.*</code> v4 NuGet packages were archived by Microsoft on January 5, 2026 (support ceased December 31, 2025). They still work and Teams continues to support them — no breaking changes planned. For truly greenfield projects Microsoft points to the <strong>Microsoft 365 Agents SDK</strong> (<a href="https://aka.ms/agents" target="_blank">aka.ms/agents</a>). This guide covers Bot Framework v4 as it remains the best-documented path for task modules and Adaptive Cards today.</p>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>Concept mapping</h3>
+      <table>
+        <tr><th>Concept</th><th>v3</th><th>v4</th></tr>
+        <tr><td>Entry point</td><td><code>MessagesController : ApiController</code></td><td><code>app.MapPost("/api/messages", adapter.ProcessAsync)</code></td></tr>
+        <tr><td>Authentication</td><td><code>[BotAuthentication]</code> attribute on controller</td><td>Built into <code>CloudAdapter</code> — nothing to add</td></tr>
+        <tr><td>Bot base class</td><td><code>IDialog</code>, custom invoke routing</td><td><code>TeamsActivityHandler</code> — override typed methods</td></tr>
+        <tr><td>Config file</td><td><code>Web.config</code> / <code>appSettings</code></td><td><code>appsettings.json</code></td></tr>
+        <tr><td>DI / startup</td><td><code>Global.asax</code>, <code>UnityConfig</code></td><td><code>Program.cs</code>, <code>builder.Services</code></td></tr>
+        <tr><td>Task modules</td><td>Manual <code>activity.Name</code> routing in controller</td><td><code>OnTeamsTaskModuleFetchAsync</code> / <code>OnTeamsTaskModuleSubmitAsync</code></td></tr>
+        <tr><td>Proactive messaging</td><td>Store <code>ServiceUrl</code> + <code>ConversationId</code> separately</td><td>Store <code>ConversationReference</code> (one object); <code>ContinueConversationAsync</code></td></tr>
+        <tr><td>State management</td><td><code>IBotDataStore</code></td><td><code>IStorage</code> + <code>BotState</code> + property accessors</td></tr>
+        <tr><td>NuGet package</td><td><code>Microsoft.Bot.Connector.Teams 0.10.0</code></td><td><code>Microsoft.Bot.Builder.Integration.AspNet.Core 4.22.x</code></td></tr>
+      </table>
+
+      <h3><span class="dot"></span>What stayed exactly the same</h3>
+      <ul>
+        <li>The <strong><code>/api/messages</code> endpoint path</strong> — Azure Bot Service still POSTs here</li>
+        <li>The <strong>Activity JSON wire format</strong> — same schema, same fields</li>
+        <li>The <strong><code>task/fetch</code> + <code>task/submit</code> protocol</strong> — same payload structure, same 5-second limit</li>
+        <li>The <strong>Adaptive Card JSON schema</strong> — same version strings, same validation properties</li>
+        <li><strong>Azure Bot Service registration</strong> — same portal steps, same App ID + Client Secret model</li>
+        <li><strong>Teams app manifest</strong> — same JSON structure, same sideloading process</li>
+        <li><strong>Dev Tunnels</strong> setup for local development</li>
+        <li><strong><code>ServiceUrl</code> is still region-specific</strong> — still must not be hardcoded</li>
+      </ul>
+    </section>
+    <hr>
+    <section class="section" id="packages">
+      <div class="eyebrow-tag">Dependencies</div>
+      <h2>Packages</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://www.nuget.org/packages/Microsoft.Bot.Builder.Integration.AspNet.Core" target="_blank"><span class="li">↗</span> NuGet · Bot.Builder.Integration</a>
+        <a class="lp" href="https://www.nuget.org/packages/AdaptiveCards/" target="_blank"><span class="li">↗</span> NuGet · AdaptiveCards</a>
+      </div>
+
+      <p>Two NuGet packages cover everything. Target <strong>.NET 6, 7, or 8</strong> — prefer .NET 8 (LTS) for new work.</p>
+
+      <div class="pkg"><span>📦</span> <span class="pn">Microsoft.Bot.Builder.Integration.AspNet.Core</span> <span class="ps">→</span> <span class="pv">4.22.x</span> <span class="ps">· CloudAdapter, DI helpers, IBotFrameworkHttpAdapter</span></div>
+      <div class="pkg"><span>📦</span> <span class="pn">AdaptiveCards</span> <span class="ps">→</span> <span class="pv">3.1.0</span> <span class="ps">· Strongly-typed C# object model for cards</span></div>
+
+      <div class="callout info">
+        <div class="ci">💡</div>
+        <div class="cb">
+          <strong><code>Microsoft.Bot.Builder.Integration.AspNet.Core</code> pulls in everything else automatically</strong>
+          <p><code>Microsoft.Bot.Builder</code>, <code>Microsoft.Bot.Connector</code>, and <code>Microsoft.Bot.Schema</code> are all transitive dependencies. Install only the integration package and you get the full SDK.</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ci">⚠️</div>
+        <div class="cb">
+          <strong>CloudAdapter vs BotFrameworkHttpAdapter</strong>
+          <p>Both compile and work. <code>CloudAdapter</code> (introduced in 4.14) is the current recommended adapter — it uses <code>BotFrameworkAuthentication</code> which supports managed identity and modern Entra ID auth patterns. <code>BotFrameworkHttpAdapter</code> uses the older <code>ICredentialProvider</code>. Use <code>CloudAdapter</code> for new projects.</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-pkg-cli')">Package Manager Console</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-pkg-xml')">.csproj</button>
+        </div>
+        <div class="code-pane active" id="tab-pkg-cli">
+<pre><code><span class="lang-badge">PMC</span><span class="cmt"># Bot Framework v4 — CloudAdapter, TeamsActivityHandler, all schema types</span>
+Install-Package Microsoft.Bot.Builder.Integration.AspNet.Core -Version 4.22.3
+
+<span class="cmt"># Strongly-typed Adaptive Card object model</span>
+Install-Package AdaptiveCards -Version 3.1.0</code></pre>
+        </div>
+        <div class="code-pane" id="tab-pkg-xml">
+<pre><code><span class="lang-badge">XML</span><span class="punct">&lt;</span><span class="typ">ItemGroup</span><span class="punct">&gt;</span>
+  <span class="punct">&lt;</span><span class="typ">PackageReference</span> <span class="attr">Include</span>=<span class="str">"Microsoft.Bot.Builder.Integration.AspNet.Core"</span> <span class="attr">Version</span>=<span class="str">"4.22.3"</span> <span class="punct">/&gt;</span>
+  <span class="punct">&lt;</span><span class="typ">PackageReference</span> <span class="attr">Include</span>=<span class="str">"AdaptiveCards"</span> <span class="attr">Version</span>=<span class="str">"3.1.0"</span> <span class="punct">/&gt;</span>
+<span class="punct">&lt;/</span><span class="typ">ItemGroup</span><span class="punct">&gt;</span></code></pre>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="project-setup">
+      <div class="eyebrow-tag">Setup &#8212; Step 0</div>
+      <h2>Project Setup</h2>
+
+      <p>A standard <strong>ASP.NET Core Web API</strong> project. In Rider: <em>New Solution → ASP.NET Core Web Application → Web API</em>, target <strong>.NET 8</strong>. The bot framework plugs in via NuGet + three small files: <code>appsettings.json</code>, <code>AdapterWithErrorHandler.cs</code>, and <code>Program.cs</code>.</p>
+
+      <h3><span class="dot"></span>appsettings.json</h3>
+<div class="code-block"><pre><code><span class="lang-badge">JSON</span><span class="punct">{</span>
+  <span class="attr">"MicrosoftAppType"</span><span class="punct">:</span>     <span class="str">"SingleTenant"</span><span class="punct">,</span>   <span class="cmt">// SingleTenant | MultiTenant | UserAssignedMSI</span>
+  <span class="attr">"MicrosoftAppId"</span><span class="punct">:</span>       <span class="str">"&lt;your-app-id-from-entra&gt;"</span><span class="punct">,</span>
+  <span class="attr">"MicrosoftAppPassword"</span><span class="punct">:</span> <span class="str">"&lt;your-client-secret&gt;"</span><span class="punct">,</span>
+  <span class="attr">"MicrosoftAppTenantId"</span><span class="punct">:</span> <span class="str">"&lt;your-tenant-id&gt;"</span><span class="punct">,</span>    <span class="cmt">// required for SingleTenant</span>
+  <span class="attr">"BaseUrl"</span><span class="punct">:</span>              <span class="str">"https://your-tunnel-or-deployed-url.com"</span>
+<span class="punct">}</span></code></pre></div>
+
+      <table>
+        <tr><th>Field</th><th>Value</th></tr>
+        <tr><td><code>MicrosoftAppType</code></td><td><code>SingleTenant</code> — internal org bot (most common). <code>MultiTenant</code> — public Teams app store. <code>UserAssignedMSI</code> — managed identity, no secret needed.</td></tr>
+        <tr><td><code>MicrosoftAppId</code></td><td>Client ID from the Entra ID app registration linked to your Azure Bot.</td></tr>
+        <tr><td><code>MicrosoftAppPassword</code></td><td>Client secret value. Leave empty only for <code>UserAssignedMSI</code>.</td></tr>
+        <tr><td><code>MicrosoftAppTenantId</code></td><td>Directory (tenant) ID from Entra ID. Required for <code>SingleTenant</code>.</td></tr>
+        <tr><td><code>BaseUrl</code></td><td>Your tunnel or deployed host. Used when building task module <code>Url</code> for HTML-based dialogs.</td></tr>
+      </table>
+
+      <h3><span class="dot"></span>AdapterWithErrorHandler.cs</h3>
+<div class="code-block"><pre><code><span class="lang-badge">C#</span><span class="kw">using</span> Microsoft.Bot.Builder.Integration.AspNet.Core;
+<span class="kw">using</span> Microsoft.Bot.Connector.Authentication;
+
+<span class="kw">public class</span> <span class="typ">AdapterWithErrorHandler</span> : <span class="typ">CloudAdapter</span>
+{
+    <span class="kw">public</span> <span class="fn">AdapterWithErrorHandler</span>(
+        <span class="typ">BotFrameworkAuthentication</span> auth,
+        <span class="typ">ILogger</span>&lt;<span class="typ">IBotFrameworkHttpAdapter</span>&gt; logger)
+        : <span class="kw">base</span>(auth, logger)
+    {
+        <span class="fn">OnTurnError</span> = <span class="kw">async</span> (turnContext, exception) =>
+        {
+            logger.<span class="fn">LogError</span>(exception, <span class="str">"[OnTurnError] {Message}"</span>, exception.Message);
+            <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(<span class="str">"The bot encountered an error."</span>);
+            <span class="kw">await</span> turnContext.<span class="fn">TraceActivityAsync</span>(
+                <span class="str">"OnTurnError Trace"</span>, exception.Message,
+                <span class="str">"https://www.botframework.com/schemas/error"</span>, <span class="str">"TurnError"</span>);
+        };
+    }
+}</code></pre></div>
+
+      <h3><span class="dot"></span>Program.cs</h3>
+<div class="code-block"><pre><code><span class="lang-badge">C# — Program.cs</span><span class="kw">using</span> Microsoft.Bot.Builder;
+<span class="kw">using</span> Microsoft.Bot.Builder.Integration.AspNet.Core;
+<span class="kw">using</span> Microsoft.Bot.Connector.Authentication;
+<span class="kw">using</span> System.Collections.Concurrent;
+
+<span class="kw">var</span> builder = <span class="typ">WebApplication</span>.<span class="fn">CreateBuilder</span>(args);
+
+<span class="cmt">// Reads MicrosoftAppId/Password/Type/TenantId from appsettings.json</span>
+<span class="cmt">// and performs JWT validation inside the adapter automatically</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="typ">BotFrameworkAuthentication</span>,
+    <span class="typ">ConfigurationBotFrameworkAuthentication</span>&gt;();
+
+<span class="cmt">// CloudAdapter is the current recommended adapter</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="typ">IBotFrameworkHttpAdapter</span>, <span class="typ">AdapterWithErrorHandler</span>&gt;();
+
+<span class="cmt">// Also register as BotAdapter for clean proactive-messaging injection (optional)</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="typ">BotAdapter</span>&gt;(
+    sp => (<span class="typ">BotAdapter</span>)sp.<span class="fn">GetRequiredService</span>&lt;<span class="typ">IBotFrameworkHttpAdapter</span>&gt;());
+
+<span class="cmt">// In-memory ConversationReference store — replace with DB in production</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationReference</span>&gt;&gt;();
+
+<span class="cmt">// Transient: fresh bot instance per turn</span>
+builder.Services.<span class="fn">AddTransient</span>&lt;<span class="typ">IBot</span>, <span class="typ">MyTeamsBot</span>&gt;();
+
+<span class="cmt">// Extra controllers (e.g. /api/notify for proactive triggers)</span>
+builder.Services.<span class="fn">AddControllers</span>();
+
+<span class="kw">var</span> app = builder.<span class="fn">Build</span>();
+app.<span class="fn">UseRouting</span>();
+app.<span class="fn">MapControllers</span>();
+
+<span class="cmt">// The single Teams bot endpoint — all activity types (message, invoke, etc.) arrive here</span>
+app.<span class="fn">MapPost</span>(<span class="str">"/api/messages"</span>, <span class="kw">async</span> (
+    <span class="typ">HttpRequest</span> req, <span class="typ">HttpResponse</span> res,
+    <span class="typ">IBotFrameworkHttpAdapter</span> adapter, <span class="typ">IBot</span> bot) =>
+{
+    <span class="kw">await</span> adapter.<span class="fn">ProcessAsync</span>(req, res, bot);
+});
+
+app.<span class="fn">Run</span>();</code></pre></div>
+
+      <div class="callout tip">
+        <div class="ci">✅</div>
+        <div class="cb">
+          <strong>Verify the route is registered</strong>
+          <p>Run the project and navigate to <code>https://localhost:&lt;port&gt;/api/messages</code> in a browser. You should get <strong>HTTP 405 Method Not Allowed</strong> — that means the route is wired up and waiting for a POST. A 404 means <code>app.MapPost</code> isn't being hit.</p>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="azure-registration">
+      <div class="eyebrow-tag">Setup &#8212; Step 1</div>
+      <h2>Azure Bot Registration</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/add-authentication" target="_blank"><span class="li">↗</span> Azure Bot registration walkthrough</a>
+        <a class="lp" href="https://azure.microsoft.com/en-us/pricing/details/bot-services/" target="_blank"><span class="li">↗</span> Azure Bot pricing</a>
+        <a class="lp" href="https://aka.ms/devtunnel/download" target="_blank"><span class="li">↗</span> Dev Tunnels download</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/cli-commands" target="_blank"><span class="li">↗</span> Dev Tunnels CLI reference</a>
+      </div>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-reg-gen')">General / Production</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-reg-dev')">Local Dev (per developer)</button>
+        </div>
+
+        <div class="code-pane active" id="tab-reg-gen">
+          <div style="padding:20px 24px">
+            <p style="margin-bottom:16px">One shared registration for your deployed environment. Messaging endpoint points to your hosted server.</p>
+            <div class="step-list">
+              <div class="step-item">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                  <h4>Create an Azure Bot resource</h4>
+                  <p>Azure portal → search <strong>Azure Bot</strong> → Create. Choose <em>Single Tenant</em> for App Type. This simultaneously creates a Microsoft Entra ID App Registration.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                  <h4>Record the App ID</h4>
+                  <p>Bot's <strong>Configuration</strong> blade → copy <strong>Microsoft App ID</strong> → this is your <code>MicrosoftAppId</code> in appsettings.json.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">03</div>
+                <div class="step-content">
+                  <h4>Create a Client Secret</h4>
+                  <p>Go to the linked <strong>Entra ID app registration</strong> → Certificates &amp; secrets → New client secret → copy the <strong>Value</strong> (shown once only) → this is your <code>MicrosoftAppPassword</code>.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">04</div>
+                <div class="step-content">
+                  <h4>Record the Tenant ID</h4>
+                  <p>Entra ID app registration → Overview → copy <strong>Directory (tenant) ID</strong> → this is your <code>MicrosoftAppTenantId</code>.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">05</div>
+                <div class="step-content">
+                  <h4>Set the Messaging Endpoint</h4>
+                  <p>Bot's <strong>Configuration</strong> blade → Messaging endpoint → enter <code>https://yourhost.com/api/messages</code> → Save.</p>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">06</div>
+                <div class="step-content">
+                  <h4>Enable the Teams channel</h4>
+                  <p>Bot's <strong>Channels</strong> blade → Microsoft Teams → Enable → Save.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-pane" id="tab-reg-dev">
+          <div style="padding:20px 24px">
+            <p style="margin-bottom:16px">A shared Azure Bot registration means only one tunnel URL at a time — blocking parallel team development. <strong>Solution: each developer creates their own free Azure Bot registration</strong>, their own tunnel, and their own sideloaded manifest. Bot registration has no compute cost.</p>
+
+            <h3 style="margin-top:0"><span class="dot"></span>Install the Dev Tunnels CLI</h3>
+<div class="code-block"><pre><code><span class="lang-badge">PowerShell</span>winget install Microsoft.DevTunnel</code></pre></div>
+
+            <h3><span class="dot"></span>Log in and create a persistent tunnel</h3>
+<div class="code-block"><pre><code><span class="lang-badge">Shell</span><span class="cmt"># One-time: authenticate with your Microsoft account</span>
+devtunnel user login
+
+<span class="cmt"># Create a named persistent tunnel — the subdomain never changes after this</span>
+devtunnel create my-bot-tunnel --allow-anonymous
+
+<span class="cmt"># Bind it to your app's port (check Properties/launchSettings.json)</span>
+devtunnel port create my-bot-tunnel -p 5000
+
+<span class="cmt"># Start the tunnel — output shows your stable URL</span>
+devtunnel host my-bot-tunnel
+<span class="cmt"># → https://my-bot-tunnel.devtunnels.ms</span></code></pre></div>
+
+            <p>Paste <code>https://my-bot-tunnel.devtunnels.ms/api/messages</code> into your personal Azure Bot's Messaging endpoint. Because the subdomain is persistent, you only set this once.</p>
+
+            <div class="callout info" style="margin-top:16px">
+              <div class="ci">🔒</div>
+              <div class="cb">
+                <strong>Why <code>--allow-anonymous</code> is safe here</strong>
+                <p>Azure Bot Service cannot add custom request headers to its outbound call to your endpoint — it only POSTs with its own Bot Framework JWT in the <code>Authorization</code> header. Token-based tunnel access (<code>devtunnel token</code>) or Entra-based access would therefore block Azure Bot Service itself from reaching your bot.</p>
+                <p style="margin-top:6px">The real security layer is the <code>CloudAdapter</code>: any request without a valid Bot Framework JWT signed with your <code>MicrosoftAppId</code> is rejected with HTTP 401 before your code runs. The tunnel URL is also a non-guessable random string — not publicly discoverable.</p>
+                <table style="margin-top:10px">
+                  <tr><th>Approach</th><th>Works with Azure Bot Service?</th><th>Actual security</th></tr>
+                  <tr><td><code>--allow-anonymous</code></td><td>✅ Yes</td><td>Protected by <code>CloudAdapter</code> JWT validation</td></tr>
+                  <tr><td>Token-based (<code>devtunnel token</code>)</td><td>❌ No — Azure can't pass the header</td><td>N/A</td></tr>
+                  <tr><td>Entra (<code>--tenant</code>)</td><td>❌ No — Azure can't do interactive login</td><td>N/A</td></tr>
+                </table>
+              </div>
+            </div>
+
+            <h3><span class="dot"></span>Daily workflow — 2 commands</h3>
+<div class="code-block"><pre><code><span class="lang-badge">Shell</span><span class="cmt"># Terminal 1 — start the tunnel</span>
+devtunnel host my-bot-tunnel
+
+<span class="cmt"># Terminal 2 (or Rider run config) — start the bot</span>
+dotnet run</code></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="teams-manifest">
+      <div class="eyebrow-tag">Setup &#8212; Step 2</div>
+      <h2>Teams App Manifest</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://dev.teams.microsoft.com/home" target="_blank"><span class="li">↗</span> Teams Developer Portal</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema" target="_blank"><span class="li">↗</span> Manifest schema v1.11</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/teams-custom-app-policies-and-settings" target="_blank"><span class="li">↗</span> Sideloading policies</a>
+      </div>
+
+      <p>A JSON file that tells Teams what your app can do and where your bot lives. You zip it with two icon files and either sideload it during development or publish it org-wide. <strong>Each Azure Bot registration (App ID) needs its own manifest.</strong></p>
+
+      <h3><span class="dot"></span>Minimal manifest.json for a bot</h3>
+<div class="code-block"><pre><code><span class="lang-badge">JSON — manifest.json</span><span class="punct">{</span>
+  <span class="attr">"$schema"</span><span class="punct">:</span> <span class="str">"https://developer.microsoft.com/json-schemas/teams/v1.11/MicrosoftTeams.schema.json"</span><span class="punct">,</span>
+  <span class="attr">"manifestVersion"</span><span class="punct">:</span> <span class="str">"1.11"</span><span class="punct">,</span>
+  <span class="attr">"version"</span><span class="punct">:</span> <span class="str">"1.0.0"</span><span class="punct">,</span>
+  <span class="attr">"id"</span><span class="punct">:</span> <span class="str">"&lt;same-as-your-MicrosoftAppId&gt;"</span><span class="punct">,</span>
+  <span class="attr">"packageName"</span><span class="punct">:</span> <span class="str">"com.yourcompany.yourbot"</span><span class="punct">,</span>
+  <span class="attr">"developer"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="attr">"name"</span><span class="punct">:</span> <span class="str">"Your Company"</span><span class="punct">,</span>
+    <span class="attr">"websiteUrl"</span><span class="punct">:</span> <span class="str">"https://yourcompany.com"</span><span class="punct">,</span>
+    <span class="attr">"privacyUrl"</span><span class="punct">:</span> <span class="str">"https://yourcompany.com/privacy"</span><span class="punct">,</span>
+    <span class="attr">"termsOfUseUrl"</span><span class="punct">:</span> <span class="str">"https://yourcompany.com/terms"</span>
+  <span class="punct">},</span>
+  <span class="attr">"name"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"short"</span><span class="punct">:</span> <span class="str">"My Bot"</span><span class="punct">,</span> <span class="attr">"full"</span><span class="punct">:</span> <span class="str">"My Teams Bot"</span> <span class="punct">},</span>
+  <span class="attr">"description"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"short"</span><span class="punct">:</span> <span class="str">"Short description"</span><span class="punct">,</span> <span class="attr">"full"</span><span class="punct">:</span> <span class="str">"Full description"</span> <span class="punct">},</span>
+  <span class="attr">"icons"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"color"</span><span class="punct">:</span> <span class="str">"color.png"</span><span class="punct">,</span> <span class="attr">"outline"</span><span class="punct">:</span> <span class="str">"outline.png"</span> <span class="punct">},</span>
+  <span class="attr">"accentColor"</span><span class="punct">:</span> <span class="str">"#FFFFFF"</span><span class="punct">,</span>
+  <span class="attr">"bots"</span><span class="punct">:</span> <span class="punct">[{</span>
+    <span class="attr">"botId"</span><span class="punct">:</span> <span class="str">"&lt;same-as-your-MicrosoftAppId&gt;"</span><span class="punct">,</span>
+    <span class="attr">"scopes"</span><span class="punct">:</span> <span class="punct">[</span><span class="str">"personal"</span><span class="punct">,</span> <span class="str">"team"</span><span class="punct">,</span> <span class="str">"groupChat"</span><span class="punct">],</span>
+    <span class="attr">"supportsFiles"</span><span class="punct">:</span> <span class="bool">false</span><span class="punct">,</span>
+    <span class="attr">"isNotificationOnly"</span><span class="punct">:</span> <span class="bool">false</span>
+  <span class="punct">}],</span>
+  <span class="attr">"permissions"</span><span class="punct">:</span> <span class="punct">[</span><span class="str">"identity"</span><span class="punct">,</span> <span class="str">"messageTeamMembers"</span><span class="punct">],</span>
+  <span class="attr">"validDomains"</span><span class="punct">:</span> <span class="punct">[</span><span class="str">"*.devtunnels.ms"</span><span class="punct">,</span> <span class="str">"yourcompany.com"</span><span class="punct">]</span>
+<span class="punct">}</span></code></pre></div>
+
+      <div class="callout warn">
+        <div class="ci">⚠️</div>
+        <div class="cb">
+          <strong><code>validDomains</code> must include every host your task module URLs point to</strong>
+          <p>For local dev add <code>*.devtunnels.ms</code>. For production add your deployed host. Missing domains cause the modal to fail silently — Teams will refuse to load the URL without any useful error message.</p>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>Create, zip and sideload</h3>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h4>Open Teams Developer Portal</h4>
+            <p>Go to <a href="https://dev.teams.microsoft.com/home" target="_blank">dev.teams.microsoft.com</a> → Apps → Import app (or create new) → fill in your Bot ID under the Bots capability.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h4>Download the ZIP</h4>
+            <p>Developer Portal → Publish → Download app package. The ZIP contains <code>manifest.json</code> + two PNG icons.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h4>Sideload in Teams</h4>
+            <p>Teams client → Apps → Manage your apps → Upload an app → Upload a custom app → select the ZIP.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h4>Admin one-time setup: enable sideloading</h4>
+            <p><a href="https://admin.teams.microsoft.com" target="_blank">admin.teams.microsoft.com</a> → Teams apps → Setup policies → Global → turn on <strong>Upload custom apps</strong> → Save. Takes up to 24 h to propagate.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="auth-flow">
+      <div class="eyebrow-tag">Setup &#8212; Step 3</div>
+      <h2>How Authentication Works</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/azure/bot-service/bot-builder-basics" target="_blank"><span class="li">↗</span> Bot Framework v4 basics</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/add-authentication" target="_blank"><span class="li">↗</span> Azure Bot registration walkthrough</a>
+      </div>
+
+      <p>Authentication is <em>service-to-service</em> — it's not about the Teams user logging in. It's about <strong>Azure Bot Service proving its identity to your bot</strong> on every request via a Bot Framework JWT. The <code>CloudAdapter</code> validates this automatically. You write zero auth code.</p>
+
+      <div class="flow" style="margin-top:20px">
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(124,131,245,.15);color:var(--accent2);border:1px solid rgba(124,131,245,.3)">1</div><div class="flow-line"></div></div>
+          <div class="flow-body"><h4>User triggers an activity in Teams</h4><p>Teams sends it to Azure Bot Service. Azure signs the forwarded request with a Bot Framework JWT and POSTs to <code>/api/messages</code>.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(79,195,247,.15);color:var(--accent);border:1px solid rgba(79,195,247,.3)">2</div><div class="flow-line"></div></div>
+          <div class="flow-body"><h4>CloudAdapter.ProcessAsync validates the JWT</h4><p><code>ConfigurationBotFrameworkAuthentication</code> reads <code>MicrosoftAppId</code> / <code>MicrosoftAppPassword</code> / <code>MicrosoftAppType</code> from <code>appsettings.json</code> and checks: signature, audience (== your App ID), issuer (Bot Framework endpoint), expiry.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(86,227,159,.15);color:var(--accent3);border:1px solid rgba(86,227,159,.3)">3</div><div class="flow-line"></div></div>
+          <div class="flow-body"><h4>Invalid JWT → HTTP 401, your code never runs</h4><p>Any caller that can't produce a valid Bot Framework JWT signed with your App ID is rejected at the adapter layer. This includes attackers hitting your tunnel URL.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(246,166,35,.15);color:var(--warn);border:1px solid rgba(246,166,35,.3)">4</div><div class="flow-line"></div></div>
+          <div class="flow-body"><h4>Valid JWT → activity deserialised → OnTurnAsync called</h4><p>The adapter calls <code>bot.OnTurnAsync(turnContext, ct)</code>. <code>TeamsActivityHandler</code> dispatches to your typed override method.</p></div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <div class="ci">✅</div>
+        <div class="cb">
+          <strong>Nothing to implement</strong>
+          <p>The two <code>AddSingleton</code> lines in <code>Program.cs</code> are all you need. <code>ConfigurationBotFrameworkAuthentication</code> reads your credentials and <code>CloudAdapter</code> does the validation on every request — no attributes, no middleware, no manual JWT parsing.</p>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="bot-class">
+      <div class="eyebrow-tag">Setup &#8212; Step 4</div>
+      <h2>TeamsActivityHandler &#8212; Your Bot&#x27;s Class</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/bot-task-module/csharp" target="_blank"><span class="li">↗</span> Official C# sample (v4)</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/bot-basics" target="_blank"><span class="li">↗</span> Bot basics (Teams)</a>
+      </div>
+
+      <p>Your bot is a class that inherits from <code>TeamsActivityHandler</code>. You override virtual methods for each activity type you care about — the base class handles everything else, including routing and returning the correct HTTP response codes to Azure Bot Service.</p>
+
+      <div class="hbar"><strong>Class hierarchy:</strong> <code>ActivityHandler</code> (Microsoft.Bot.Builder) → <code>TeamsActivityHandler</code> (Microsoft.Bot.Builder.Teams) → <code>MyTeamsBot</code> (your class)</div>
+
+      <h3><span class="dot"></span>Override method quick reference</h3>
+      <table>
+        <tr><th>Method</th><th>When it fires</th><th>Notes</th></tr>
+        <tr><td><code>OnMessageActivityAsync</code></td><td>User sends a text message</td><td>Most common. Call <code>RemoveRecipientMention()</code> to strip @mention text in channels.</td></tr>
+        <tr><td><code>OnConversationUpdateActivityAsync</code></td><td>Any conversation lifecycle event</td><td>Best place to call <code>base</code> and capture <code>ConversationReference</code>.</td></tr>
+        <tr><td><code>OnTeamsMembersAddedAsync</code></td><td>Bot or user added to team/chat</td><td>Send welcome message; capture <code>ConversationReference</code>.</td></tr>
+        <tr><td><code>OnTeamsMembersRemovedAsync</code></td><td>Bot or user removed</td><td>Cleanup stored references if needed.</td></tr>
+        <tr><td><code>OnInstallationUpdateAddAsync</code></td><td>Bot installed (personal/team/groupChat)</td><td><strong>Recommended</strong> for install detection. Fires <code>installationUpdate</code> with <code>Action = "add"</code>.</td></tr>
+        <tr><td><code>OnInstallationUpdateRemoveAsync</code></td><td>Bot uninstalled</td><td>Cleanup stored references. <code>Action = "remove"</code>.</td></tr>
+        <tr><td><code>OnTeamsTaskModuleFetchAsync</code></td><td>User clicks task/fetch button</td><td>Must return within <strong>5 seconds</strong>. See Step 2.</td></tr>
+        <tr><td><code>OnTeamsTaskModuleSubmitAsync</code></td><td>User submits modal form</td><td>Process data, return response. See Step 4.</td></tr>
+        <tr><td><code>OnTeamsCardActionInvokeAsync</code></td><td>Bot Framework card invoke button</td><td>For non-task-module invoke actions.</td></tr>
+        <tr><td><code>OnTeamsSigninVerifyStateAsync</code></td><td>SSO token exchange</td><td>Only if implementing SSO.</td></tr>
+      </table>
+
+      <h3><span class="dot"></span>Full bot skeleton</h3>
+<div class="code-block"><pre><code><span class="lang-badge">C# — MyTeamsBot.cs</span><span class="kw">using</span> Microsoft.Bot.Builder;
+<span class="kw">using</span> Microsoft.Bot.Builder.Teams;
+<span class="kw">using</span> Microsoft.Bot.Schema;
+<span class="kw">using</span> Microsoft.Bot.Schema.Teams;
+<span class="kw">using</span> Newtonsoft.Json.Linq;
+<span class="kw">using</span> System.Collections.Concurrent;
+
+<span class="kw">public class</span> <span class="typ">MyTeamsBot</span> : <span class="typ">TeamsActivityHandler</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IConfiguration</span> _config;
+    <span class="kw">private readonly</span> <span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationReference</span>&gt; _refs;
+
+    <span class="kw">public</span> <span class="fn">MyTeamsBot</span>(
+        <span class="typ">IConfiguration</span> config,
+        <span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationReference</span>&gt; refs)
+    {
+        _config = config;
+        _refs   = refs;
+    }
+
+    <span class="cmt">// ── User sent a message ───────────────────────────────────────────────</span>
+    <span class="kw">protected override async</span> <span class="typ">Task</span> <span class="fn">OnMessageActivityAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IMessageActivity</span>&gt; turnContext,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        turnContext.Activity.<span class="fn">RemoveRecipientMention</span>(); <span class="cmt">// strips @mention in channels</span>
+        <span class="kw">var</span> text = turnContext.Activity.Text?.Trim() ?? <span class="kw">string</span>.Empty;
+
+        <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(
+            <span class="typ">MessageFactory</span>.<span class="fn">Text</span>($<span class="str">"You said: {text}"</span>), cancellationToken);
+    }
+
+    <span class="cmt">// ── Conversation lifecycle — always capture ConversationReference ─────</span>
+    <span class="kw">protected override</span> <span class="typ">Task</span> <span class="fn">OnConversationUpdateActivityAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IConversationUpdateActivity</span>&gt; turnContext,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        <span class="fn">CaptureConversationReference</span>(turnContext.Activity);
+        <span class="kw">return base</span>.<span class="fn">OnConversationUpdateActivityAsync</span>(turnContext, cancellationToken);
+    }
+
+    <span class="cmt">// ── Bot installed (recommended over OnTeamsMembersAddedAsync) ─────────</span>
+    <span class="kw">protected override async</span> <span class="typ">Task</span> <span class="fn">OnInstallationUpdateAddAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IInstallationUpdateActivity</span>&gt; turnContext,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        <span class="fn">CaptureConversationReference</span>(turnContext.Activity <span class="kw">as</span> <span class="typ">Activity</span>);
+        <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(
+            <span class="typ">MessageFactory</span>.<span class="fn">Text</span>(<span class="str">"Hi! I'm ready."</span>), cancellationToken);
+    }
+
+    <span class="cmt">// ── Bot uninstalled ───────────────────────────────────────────────────</span>
+    <span class="kw">protected override</span> <span class="typ">Task</span> <span class="fn">OnInstallationUpdateRemoveAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IInstallationUpdateActivity</span>&gt; turnContext,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        <span class="kw">var</span> userId = turnContext.Activity.From?.Id;
+        <span class="kw">if</span> (userId != <span class="kw">null</span>) _refs.<span class="fn">TryRemove</span>(userId, <span class="kw">out</span> _);
+        <span class="kw">return</span> <span class="typ">Task</span>.CompletedTask;
+    }
+
+    <span class="cmt">// ── task/fetch → covered in Step 2 ───────────────────────────────────</span>
+    <span class="kw">protected override</span> <span class="typ">Task</span>&lt;<span class="typ">TaskModuleResponse</span>&gt; <span class="fn">OnTeamsTaskModuleFetchAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IInvokeActivity</span>&gt; turnContext,
+        <span class="typ">TaskModuleRequest</span> taskModuleRequest,
+        <span class="typ">CancellationToken</span> cancellationToken)
+        => <span class="kw">throw new</span> <span class="typ">NotImplementedException</span>();
+
+    <span class="cmt">// ── task/submit → covered in Step 4 ──────────────────────────────────</span>
+    <span class="kw">protected override</span> <span class="typ">Task</span>&lt;<span class="typ">TaskModuleResponse</span>&gt; <span class="fn">OnTeamsTaskModuleSubmitAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IInvokeActivity</span>&gt; turnContext,
+        <span class="typ">TaskModuleRequest</span> taskModuleRequest,
+        <span class="typ">CancellationToken</span> cancellationToken)
+        => <span class="kw">throw new</span> <span class="typ">NotImplementedException</span>();
+
+    <span class="cmt">// ── Helper ────────────────────────────────────────────────────────────</span>
+    <span class="kw">private void</span> <span class="fn">CaptureConversationReference</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">var</span> reference = activity.<span class="fn">GetConversationReference</span>();
+        _refs.<span class="fn">AddOrUpdate</span>(reference.User.Id, reference, (_, _) => reference);
+    }
+}</code></pre></div>
+    </section>
+    <hr>
+    <section class="section" id="conversation-ref">
+      <div class="eyebrow-tag">Foundation</div>
+      <h2>Storing Conversation Reference</h2>
+
+      <p>Before your bot can send proactive messages or update a previously posted card, it needs a <code>ConversationReference</code>. This is a single object capturing everything required to resume a conversation — it arrives on every <code>Activity</code> your bot receives via <code>activity.GetConversationReference()</code>. Persist it during early interactions so you can use it later when no turn is active.</p>
+
+      <h3><span class="dot"></span>What ConversationReference contains</h3>
+      <table>
+        <tr><th>Property</th><th>Type</th><th>What it's used for</th></tr>
+        <tr><td><code>User</code></td><td><code>{ Id, Name }</code></td><td>The Teams user who triggered the activity</td></tr>
+        <tr><td><code>Bot</code></td><td><code>{ Id, Name }</code></td><td>Your bot's identity</td></tr>
+        <tr><td><code>Conversation</code></td><td><code>{ Id, IsGroup }</code></td><td>The conversation/chat thread ID</td></tr>
+        <tr><td><code>ChannelId</code></td><td><code>"msteams"</code></td><td>Always "msteams" for Teams</td></tr>
+        <tr><td><code>ServiceUrl</code></td><td><code>string</code></td><td>Region-specific relay URL. <strong>Never hardcode.</strong> Always store from incoming activity.</td></tr>
+      </table>
+
+      <div class="callout warn">
+        <div class="ci">⚠️</div>
+        <div class="cb">
+          <strong>ServiceUrl is region-specific and can change</strong>
+          <p>It looks like <code>https://smba.trafficmanager.net/amer/</code> but the suffix changes by tenant and Microsoft can move regions. Always store the value from the incoming activity and use the stored value for proactive calls. Never hardcode it.</p>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>When does it first arrive?</h3>
+      <p><code>activity.GetConversationReference()</code> is available on <em>every</em> activity your handlers receive. The best moments to capture and persist it:</p>
+      <ul>
+        <li><strong><code>OnInstallationUpdateAddAsync</code></strong> — fires when the bot is installed. <strong>Recommended by Microsoft</strong> for install detection. Has a clear <code>Action = "add"</code> vs <code>"remove"</code> distinction.</li>
+        <li><strong><code>OnConversationUpdateActivityAsync</code></strong> — fires on conversation lifecycle events. Good as a defensive layer to keep the reference fresh.</li>
+        <li><strong><code>OnMessageActivityAsync</code></strong> — fires on every user message. Good as a fallback to refresh the stored reference.</li>
+      </ul>
+      <div class="hbar">All cases: <code>var reference = activity.GetConversationReference();</code> — it's a method call on the Activity object your handler already receives. Nothing special to do.</div>
+
+      <h3><span class="dot"></span>Persisting to a database</h3>
+<div class="code-block"><pre><code><span class="lang-badge">C#</span><span class="cmt">// Your DB model — one row per user</span>
+<span class="kw">public class</span> <span class="typ">ConversationRefRecord</span>
+{
+    <span class="kw">public string</span> UserId              { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="cmt">// Serialize full ConversationReference to JSON — easiest way to store it</span>
+    <span class="kw">public string</span> ConversationRefJson { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="cmt">// Also store the ActivityId of the last trigger card so you can UpdateActivityAsync later</span>
+    <span class="kw">public string</span> LastCardActivityId  { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+
+<span class="cmt">// Saving (inside CaptureConversationReference or OnTeamsMembersAddedAsync):</span>
+<span class="kw">var</span> reference = activity.<span class="fn">GetConversationReference</span>();
+<span class="kw">var</span> json      = <span class="typ">JsonConvert</span>.<span class="fn">SerializeObject</span>(reference);
+<span class="kw">await</span> _db.<span class="fn">UpsertConversationRefAsync</span>(reference.User.Id, json);
+
+<span class="cmt">// Restoring for proactive use:</span>
+<span class="kw">var</span> json      = <span class="kw">await</span> _db.<span class="fn">GetConversationRefJsonAsync</span>(userId);
+<span class="kw">var</span> reference = <span class="typ">JsonConvert</span>.<span class="fn">DeserializeObject</span>&lt;<span class="typ">ConversationReference</span>&gt;(json)!</code></pre></div>
+    </section>
+    <hr>
+    <section class="section" id="send-card">
+      <div class="eyebrow-tag">Task Module &#8212; Step 1</div>
+      <h2>Send a Trigger Card with a Button</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank"><span class="li">↗</span> Task module from bot</a>
+      </div>
+
+      <p>Post an Adaptive Card to the conversation. The card has an <code>Action.Submit</code> button with <code>msteams.type = "task/fetch"</code> — that tells Teams to open a modal instead of performing a normal form submit. <strong>Save the returned <code>ActivityId</code></strong> — you'll need it to update the card after processing.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-card-json')">JSON</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-card-cs')">C#</button>
+        </div>
+        <div class="code-pane active" id="tab-card-json">
+<pre><code><span class="lang-badge">JSON — Adaptive Card</span><span class="punct">{</span>
+  <span class="attr">"$schema"</span><span class="punct">:</span> <span class="str">"http://adaptivecards.io/schemas/adaptive-card.json"</span><span class="punct">,</span>
+  <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"AdaptiveCard"</span><span class="punct">,</span>
+  <span class="attr">"version"</span><span class="punct">:</span> <span class="str">"1.3"</span><span class="punct">,</span>
+  <span class="attr">"body"</span><span class="punct">:</span> <span class="punct">[{</span>
+    <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"TextBlock"</span><span class="punct">,</span>
+    <span class="attr">"text"</span><span class="punct">:</span> <span class="str">"Item #42 is ready for review."</span><span class="punct">,</span>
+    <span class="attr">"weight"</span><span class="punct">:</span> <span class="str">"Bolder"</span><span class="punct">,</span>
+    <span class="attr">"wrap"</span><span class="punct">:</span> <span class="bool">true</span>
+  <span class="punct">}],</span>
+  <span class="attr">"actions"</span><span class="punct">:</span> <span class="punct">[{</span>
+    <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"Action.Submit"</span><span class="punct">,</span>
+    <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Open Form"</span><span class="punct">,</span>
+    <span class="attr">"data"</span><span class="punct">:</span> <span class="punct">{</span>
+      <span class="attr">"msteams"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"task/fetch"</span> <span class="punct">},</span>
+      <span class="attr">"itemId"</span><span class="punct">:</span> <span class="str">"42"</span>    <span class="cmt">// any context you need in task/fetch</span>
+    <span class="punct">}</span>
+  <span class="punct">}]</span>
+<span class="punct">}</span></code></pre>
+        </div>
+        <div class="code-pane" id="tab-card-cs">
+<pre><code><span class="lang-badge">C#</span><span class="kw">private async</span> <span class="typ">Task</span> <span class="fn">SendTriggerCardAsync</span>(
+    <span class="typ">ITurnContext</span> turnContext, <span class="kw">string</span> itemId, <span class="kw">string</span> itemName, <span class="typ">CancellationToken</span> ct)
+{
+    <span class="kw">var</span> cardJson = $<span class="str">@"{{
+      ""$schema"": ""http://adaptivecards.io/schemas/adaptive-card.json"",
+      ""type"": ""AdaptiveCard"",
+      ""version"": ""1.3"",
+      ""body"": [{{ ""type"": ""TextBlock"", ""text"": ""{itemName} needs attention."",
+                    ""weight"": ""Bolder"", ""wrap"": true }}],
+      ""actions"": [{{
+        ""type"": ""Action.Submit"", ""title"": ""Open Form"",
+        ""data"": {{ ""msteams"": {{ ""type"": ""task/fetch"" }}, ""itemId"": ""{itemId}"" }}
+      }}]
+    }}"</span>;
+
+    <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span>
+    {
+        ContentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+        Content     = <span class="typ">JsonConvert</span>.<span class="fn">DeserializeObject</span>(cardJson)
+    };
+
+    <span class="cmt">// Save ActivityId — needed later to update the card with the result</span>
+    <span class="kw">var</span> response   = <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(
+        <span class="typ">MessageFactory</span>.<span class="fn">Attachment</span>(attachment), ct);
+    <span class="kw">var</span> activityId = response.Id;
+
+    <span class="kw">await</span> _db.<span class="fn">SaveCardActivityIdAsync</span>(turnContext.Activity.From.Id, activityId);
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <div class="ci">💡</div>
+        <div class="cb">
+          <strong>Store the ActivityId from <code>SendActivityAsync</code></strong>
+          <p>The response object from <code>turnContext.SendActivityAsync()</code> contains an <code>Id</code> property — that's the ActivityId of the message just sent. Persist it alongside the <code>ConversationReference</code>. You'll pass it to <code>UpdateActivityAsync</code> later to replace the card in-place rather than posting a new message.</p>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="task-fetch">
+      <div class="eyebrow-tag">Task Module &#8212; Step 2</div>
+      <h2>task/fetch &#8212; Return the Modal Card</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/what-are-task-modules" target="_blank"><span class="li">↗</span> Task module overview</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank"><span class="li">↗</span> Task module from bot</a>
+      </div>
+
+      <p>When the user clicks the button, Teams fires an <code>invoke</code> activity at your bot. <code>OnTeamsTaskModuleFetchAsync</code> is called. Build your card, fill in the <code>TaskModuleTaskInfo</code>, and return — the entire method must complete within <strong>5 seconds</strong>.</p>
+
+      <div class="callout warn">
+        <div class="ci">⚠️</div>
+        <div class="cb">
+          <strong>5-second hard limit</strong>
+          <p>Teams shows an error if no response arrives within 5 seconds. Do not do slow DB queries or external HTTP calls here. Load any dynamic data before returning the task info. Heavy processing belongs in <code>OnTeamsTaskModuleSubmitAsync</code>.</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-fetch-cs')">C#</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-fetch-json')">Incoming payload (JSON)</button>
+        </div>
+        <div class="code-pane active" id="tab-fetch-cs">
+<pre><code><span class="lang-badge">C#</span><span class="kw">protected override</span> <span class="typ">Task</span>&lt;<span class="typ">TaskModuleResponse</span>&gt; <span class="fn">OnTeamsTaskModuleFetchAsync</span>(
+    <span class="typ">ITurnContext</span>&lt;<span class="typ">IInvokeActivity</span>&gt; turnContext,
+    <span class="typ">TaskModuleRequest</span> taskModuleRequest,
+    <span class="typ">CancellationToken</span> cancellationToken)
+{
+    <span class="cmt">// Parse data from the card button's `data` object</span>
+    <span class="kw">var</span> data   = <span class="typ">JObject</span>.<span class="fn">FromObject</span>(taskModuleRequest.Data);
+    <span class="kw">var</span> itemId = data[<span class="str">"itemId"</span>]?.ToString() ?? <span class="kw">string</span>.Empty;
+
+    <span class="kw">var</span> taskInfo = <span class="kw">new</span> <span class="typ">TaskModuleTaskInfo</span>
+    {
+        Title  = <span class="str">"Review Item"</span>,
+        Height = <span class="num">400</span>,
+        Width  = <span class="num">560</span>,
+        <span class="cmt">// Option A: render an Adaptive Card inside the modal</span>
+        Card   = <span class="fn">BuildModalAdaptiveCard</span>(itemId),
+
+        <span class="cmt">// Option B: render a web page inside the modal (use one or the other)</span>
+        <span class="cmt">// Url         = $"https://{_config["BaseUrl"]}/dialogs/review?itemId={itemId}",</span>
+        <span class="cmt">// FallbackUrl = $"https://{_config["BaseUrl"]}/dialogs/review?itemId={itemId}",</span>
+        <span class="cmt">// CompletionBotId = _config["MicrosoftAppId"], // required when using Url</span>
+    };
+
+    <span class="cmt">// Must return within 5 seconds</span>
+    <span class="kw">return</span> <span class="typ">Task</span>.<span class="fn">FromResult</span>(<span class="kw">new</span> <span class="typ">TaskModuleResponse</span>
+    {
+        Task = <span class="kw">new</span> <span class="typ">TaskModuleContinueResponse</span>
+        {
+            Value = taskInfo  <span class="cmt">// Type = "continue" is set automatically by the constructor</span>
+        }
+    });
+}</code></pre>
+        </div>
+        <div class="code-pane" id="tab-fetch-json">
+<pre><code><span class="lang-badge">JSON — invoke activity arriving at your bot</span><span class="punct">{</span>
+  <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"invoke"</span><span class="punct">,</span>
+  <span class="attr">"name"</span><span class="punct">:</span> <span class="str">"task/fetch"</span><span class="punct">,</span>
+  <span class="attr">"value"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="attr">"data"</span><span class="punct">:</span> <span class="punct">{</span>
+      <span class="attr">"msteams"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"task/fetch"</span> <span class="punct">},</span>
+      <span class="attr">"itemId"</span><span class="punct">:</span> <span class="str">"42"</span>
+    <span class="punct">},</span>
+    <span class="attr">"context"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"theme"</span><span class="punct">:</span> <span class="str">"default"</span> <span class="punct">}</span>
+  <span class="punct">}</span>
+<span class="punct">}</span></code></pre>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>TaskModuleTaskInfo property reference</h3>
+      <table>
+        <tr><th>Property</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code>Title</code></td><td><code>string</code></td><td>Modal header text</td></tr>
+        <tr><td><code>Height</code></td><td><code>int</code> or <code>"small"/"medium"/"large"</code></td><td>small ≈ 20%, medium ≈ 50%, large ≈ 60% of Teams window height</td></tr>
+        <tr><td><code>Width</code></td><td><code>int</code> or <code>"small"/"medium"/"large"</code></td><td>Same scale</td></tr>
+        <tr><td><code>Card</code></td><td><code>Attachment</code></td><td>Adaptive Card to render inside the modal. Use instead of <code>Url</code>.</td></tr>
+        <tr><td><code>Url</code></td><td><code>string</code></td><td>Web page URL to render inside the modal. Use instead of <code>Card</code>.</td></tr>
+        <tr><td><code>FallbackUrl</code></td><td><code>string</code></td><td>Required when using <code>Url</code>.</td></tr>
+        <tr><td><code>CompletionBotId</code></td><td><code>string</code></td><td>Your bot's App ID. Required when using <code>Url</code> so task/submit reaches the bot.</td></tr>
+      </table>
+    </section>
+    <hr>
+    <section class="section" id="adaptive-card">
+      <div class="eyebrow-tag">Task Module &#8212; Step 3</div>
+      <h2>Adaptive Card &#8212; Inputs with Validation</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/adaptive-cards/sdk/authoring-cards/net" target="_blank"><span class="li">↗</span> AC .NET SDK</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/adaptive-cards/authoring-cards/input-validation" target="_blank"><span class="li">↗</span> Input validation spec</a>
+        <a class="lp" href="https://adaptivecards.io/explorer/Input.Number.html" target="_blank"><span class="li">↗</span> Input.Number schema</a>
+        <a class="lp" href="https://adaptivecards.io/explorer/Input.ChoiceSet.html" target="_blank"><span class="li">↗</span> Input.ChoiceSet schema</a>
+        <a class="lp" href="https://adaptivecards.io/designer/" target="_blank"><span class="li">↗</span> AC designer</a>
+        <a class="lp" href="https://adaptivecards.io/samples/InputsWithValidation.html" target="_blank"><span class="li">↗</span> Inputs with validation sample</a>
+      </div>
+
+      <p>The card rendered inside the modal. Schema version <strong>1.3+</strong> is required for <code>isRequired</code>, <code>errorMessage</code>, and <code>label</code> to work. Teams validates inputs client-side before allowing submit.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'tab-ac-json')">JSON</button>
+          <button class="code-tab" onclick="switchTab(this,'tab-ac-cs')">C# (AdaptiveCards NuGet)</button>
+        </div>
+        <div class="code-pane active" id="tab-ac-json">
+<pre><code><span class="lang-badge">JSON</span><span class="punct">{</span>
+  <span class="attr">"$schema"</span><span class="punct">:</span> <span class="str">"http://adaptivecards.io/schemas/adaptive-card.json"</span><span class="punct">,</span>
+  <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"AdaptiveCard"</span><span class="punct">,</span>
+  <span class="attr">"version"</span><span class="punct">:</span> <span class="str">"1.3"</span><span class="punct">,</span>
+  <span class="attr">"body"</span><span class="punct">:</span> <span class="punct">[</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"Input.Text"</span><span class="punct">,</span>
+      <span class="attr">"id"</span><span class="punct">:</span> <span class="str">"fullName"</span><span class="punct">,</span>
+      <span class="attr">"label"</span><span class="punct">:</span> <span class="str">"Full Name"</span><span class="punct">,</span>
+      <span class="attr">"placeholder"</span><span class="punct">:</span> <span class="str">"Enter your full name"</span><span class="punct">,</span>
+      <span class="attr">"isRequired"</span><span class="punct">:</span> <span class="bool">true</span><span class="punct">,</span>
+      <span class="attr">"errorMessage"</span><span class="punct">:</span> <span class="str">"Full name is required."</span>
+    <span class="punct">},</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"Input.Number"</span><span class="punct">,</span>
+      <span class="attr">"id"</span><span class="punct">:</span> <span class="str">"quantity"</span><span class="punct">,</span>
+      <span class="attr">"label"</span><span class="punct">:</span> <span class="str">"Quantity"</span><span class="punct">,</span>
+      <span class="attr">"placeholder"</span><span class="punct">:</span> <span class="str">"Must be greater than 0"</span><span class="punct">,</span>
+      <span class="attr">"min"</span><span class="punct">:</span> <span class="num">1</span><span class="punct">,</span>
+      <span class="attr">"isRequired"</span><span class="punct">:</span> <span class="bool">true</span><span class="punct">,</span>
+      <span class="attr">"errorMessage"</span><span class="punct">:</span> <span class="str">"Quantity must be 1 or greater."</span>
+    <span class="punct">},</span>
+    <span class="punct">{</span>
+      <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"Input.ChoiceSet"</span><span class="punct">,</span>
+      <span class="attr">"id"</span><span class="punct">:</span> <span class="str">"categories"</span><span class="punct">,</span>
+      <span class="attr">"label"</span><span class="punct">:</span> <span class="str">"Categories (select at least one)"</span><span class="punct">,</span>
+      <span class="attr">"style"</span><span class="punct">:</span> <span class="str">"expanded"</span><span class="punct">,</span>
+      <span class="attr">"isMultiSelect"</span><span class="punct">:</span> <span class="bool">true</span><span class="punct">,</span>
+      <span class="attr">"isRequired"</span><span class="punct">:</span> <span class="bool">true</span><span class="punct">,</span>
+      <span class="attr">"errorMessage"</span><span class="punct">:</span> <span class="str">"Please select at least one category."</span><span class="punct">,</span>
+      <span class="attr">"choices"</span><span class="punct">:</span> <span class="punct">[</span>
+        <span class="punct">{</span> <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Option A"</span><span class="punct">,</span> <span class="attr">"value"</span><span class="punct">:</span> <span class="str">"a"</span> <span class="punct">},</span>
+        <span class="punct">{</span> <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Option B"</span><span class="punct">,</span> <span class="attr">"value"</span><span class="punct">:</span> <span class="str">"b"</span> <span class="punct">},</span>
+        <span class="punct">{</span> <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Option C"</span><span class="punct">,</span> <span class="attr">"value"</span><span class="punct">:</span> <span class="str">"c"</span> <span class="punct">}</span>
+      <span class="punct">]</span>
+    <span class="punct">}</span>
+  <span class="punct">],</span>
+  <span class="attr">"actions"</span><span class="punct">:</span> <span class="punct">[{</span> <span class="attr">"type"</span><span class="punct">:</span> <span class="str">"Action.Submit"</span><span class="punct">,</span> <span class="attr">"title"</span><span class="punct">:</span> <span class="str">"Submit"</span> <span class="punct">}]</span>
+<span class="punct">}</span></code></pre>
+        </div>
+        <div class="code-pane" id="tab-ac-cs">
+<pre><code><span class="lang-badge">C# — AdaptiveCards NuGet</span><span class="kw">using</span> AdaptiveCards;
+
+<span class="kw">private</span> <span class="typ">Attachment</span> <span class="fn">BuildModalAdaptiveCard</span>(<span class="kw">string</span> itemId)
+{
+    <span class="kw">var</span> card = <span class="kw">new</span> <span class="typ">AdaptiveCard</span>(<span class="str">"1.3"</span>)
+    {
+        Body = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveElement</span>&gt;
+        {
+            <span class="kw">new</span> <span class="typ">AdaptiveTextInput</span>
+            {
+                Id           = <span class="str">"fullName"</span>,
+                Label        = <span class="str">"Full Name"</span>,
+                Placeholder  = <span class="str">"Enter your full name"</span>,
+                IsRequired   = <span class="bool">true</span>,
+                ErrorMessage = <span class="str">"Full name is required."</span>
+            },
+            <span class="kw">new</span> <span class="typ">AdaptiveNumberInput</span>
+            {
+                Id           = <span class="str">"quantity"</span>,
+                Label        = <span class="str">"Quantity"</span>,
+                Placeholder  = <span class="str">"Must be greater than 0"</span>,
+                Min          = <span class="num">1</span>,
+                IsRequired   = <span class="bool">true</span>,
+                ErrorMessage = <span class="str">"Quantity must be 1 or greater."</span>
+            },
+            <span class="kw">new</span> <span class="typ">AdaptiveChoiceSetInput</span>
+            {
+                Id            = <span class="str">"categories"</span>,
+                Label         = <span class="str">"Categories (select at least one)"</span>,
+                Style         = <span class="typ">AdaptiveChoiceInputStyle</span>.Expanded,
+                IsMultiSelect = <span class="bool">true</span>,
+                IsRequired    = <span class="bool">true</span>,
+                ErrorMessage  = <span class="str">"Please select at least one category."</span>,
+                Choices       = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveChoice</span>&gt;
+                {
+                    <span class="kw">new</span> <span class="typ">AdaptiveChoice</span> { Title = <span class="str">"Option A"</span>, Value = <span class="str">"a"</span> },
+                    <span class="kw">new</span> <span class="typ">AdaptiveChoice</span> { Title = <span class="str">"Option B"</span>, Value = <span class="str">"b"</span> },
+                    <span class="kw">new</span> <span class="typ">AdaptiveChoice</span> { Title = <span class="str">"Option C"</span>, Value = <span class="str">"c"</span> },
+                }
+            }
+        },
+        Actions = <span class="kw">new</span> <span class="typ">List</span>&lt;<span class="typ">AdaptiveAction</span>&gt;
+        {
+            <span class="kw">new</span> <span class="typ">AdaptiveSubmitAction</span> { Title = <span class="str">"Submit"</span> }
+        }
+    };
+
+    <span class="kw">return new</span> <span class="typ">Attachment</span>
+    {
+        ContentType = <span class="typ">AdaptiveCard</span>.ContentType,  <span class="cmt">// "application/vnd.microsoft.card.adaptive"</span>
+        Content     = card
+    };
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <div class="ci">💡</div>
+        <div class="cb">
+          <strong>Client validation runs before submit — but always validate server-side too</strong>
+          <p><code>isRequired</code>, <code>min</code>/<code>max</code>, and <code>isRequired</code> on ChoiceSet all run in the Teams client. However, client-side validation can be bypassed. Always re-validate every field in <code>OnTeamsTaskModuleSubmitAsync</code>.</p>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="task-submit">
+      <div class="eyebrow-tag">Task Module &#8212; Step 4</div>
+      <h2>task/submit &#8212; Read User Input</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank"><span class="li">↗</span> Task module from bot</a>
+      </div>
+
+      <p>After the user passes client-side validation and clicks Submit, Teams posts a <code>task/submit</code> invoke. All field values are in <code>taskModuleRequest.Data</code>, keyed by the <code>id</code> you set on each input element. Return a <code>TaskModuleResponse</code> quickly — kick off heavy processing as fire-and-forget.</p>
+
+<div class="code-block"><pre><code><span class="lang-badge">C#</span><span class="kw">protected override async</span> <span class="typ">Task</span>&lt;<span class="typ">TaskModuleResponse</span>&gt; <span class="fn">OnTeamsTaskModuleSubmitAsync</span>(
+    <span class="typ">ITurnContext</span>&lt;<span class="typ">IInvokeActivity</span>&gt; turnContext,
+    <span class="typ">TaskModuleRequest</span> taskModuleRequest,
+    <span class="typ">CancellationToken</span> cancellationToken)
+{
+    <span class="kw">var</span> data = <span class="typ">JObject</span>.<span class="fn">FromObject</span>(taskModuleRequest.Data);
+
+    <span class="cmt">// ── Read fields (ALL values arrive as strings) ────────────────────</span>
+    <span class="kw">var</span> fullName    = data[<span class="str">"fullName"</span>]?.ToString()   ?? <span class="kw">string</span>.Empty;
+    <span class="kw">var</span> quantityStr = data[<span class="str">"quantity"</span>]?.ToString()   ?? <span class="kw">string</span>.Empty;
+    <span class="kw">var</span> categories  = data[<span class="str">"categories"</span>]?.ToString() ?? <span class="kw">string</span>.Empty; <span class="cmt">// "a,b,c"</span>
+    <span class="kw">var</span> confirmed   = data[<span class="str">"confirmed"</span>]?.ToString()  == <span class="str">"true"</span>;       <span class="cmt">// Toggle → string!</span>
+
+    <span class="cmt">// ── Server-side validation (client validation can be bypassed) ────</span>
+    <span class="kw">if</span> (<span class="kw">string</span>.<span class="fn">IsNullOrWhiteSpace</span>(fullName))
+        <span class="kw">return</span> <span class="fn">MessageResponse</span>(<span class="str">"Validation failed: Name is required."</span>);
+
+    <span class="kw">if</span> (!<span class="kw">int</span>.<span class="fn">TryParse</span>(quantityStr, <span class="kw">out var</span> quantity) || quantity &lt; <span class="num">1</span>)
+        <span class="kw">return</span> <span class="fn">MessageResponse</span>(<span class="str">"Validation failed: Quantity must be 1 or greater."</span>);
+
+    <span class="kw">var</span> selectedCategories = categories
+        .<span class="fn">Split</span>(<span class="str">','</span>, <span class="typ">StringSplitOptions</span>.RemoveEmptyEntries)
+        .<span class="fn">Select</span>(s => s.<span class="fn">Trim</span>()).<span class="fn">ToList</span>();
+
+    <span class="kw">if</span> (!selectedCategories.<span class="fn">Any</span>())
+        <span class="kw">return</span> <span class="fn">MessageResponse</span>(<span class="str">"Validation failed: Select at least one category."</span>);
+
+    <span class="cmt">// ── Capture before fire-and-forget (ITurnContext won't exist later) ─</span>
+    <span class="kw">var</span> convRef    = turnContext.Activity.<span class="fn">GetConversationReference</span>();
+    <span class="kw">var</span> activityId = <span class="kw">await</span> _db.<span class="fn">GetCardActivityIdAsync</span>(convRef.User.Id);
+
+    <span class="cmt">// ── Fire-and-forget: return immediately to close the modal ─────────</span>
+    _ = <span class="typ">Task</span>.<span class="fn">Run</span>(<span class="kw">async</span> () =>
+    {
+        <span class="kw">try</span>
+        {
+            <span class="kw">await</span> <span class="fn">ProcessSubmissionAsync</span>(fullName, quantity, selectedCategories);
+            <span class="kw">await</span> <span class="fn">UpdateTriggerCardAsync</span>(convRef, activityId, success: <span class="bool">true</span>);
+        }
+        <span class="kw">catch</span>
+        {
+            <span class="kw">await</span> <span class="fn">UpdateTriggerCardAsync</span>(convRef, activityId, success: <span class="bool">false</span>);
+        }
+    });
+
+    <span class="cmt">// Return empty response — closes the modal with no popup message</span>
+    <span class="kw">return new</span> <span class="typ">TaskModuleResponse</span>();
+}
+
+<span class="kw">private static</span> <span class="typ">TaskModuleResponse</span> <span class="fn">MessageResponse</span>(<span class="kw">string</span> text) =>
+    <span class="kw">new</span> <span class="typ">TaskModuleResponse</span>
+    {
+        Task = <span class="kw">new</span> <span class="typ">TaskModuleMessageResponse</span> { Type = <span class="str">"message"</span>, Value = text }
+    };</code></pre></div>
+
+      <h3><span class="dot"></span>Data type gotchas</h3>
+      <table>
+        <tr><th>Input type</th><th>Value in <code>Data</code></th><th>What to do</th></tr>
+        <tr><td><code>Input.Text</code></td><td><code>string</code></td><td>Empty string <code>""</code> if blank, even if <code>isRequired</code> was set. Always check server-side.</td></tr>
+        <tr><td><code>Input.Number</code></td><td><code>string</code> (<code>"42"</code>)</td><td>Parse with <code>int.TryParse</code> or <code>double.TryParse</code>.</td></tr>
+        <tr><td><code>Input.ChoiceSet</code> (multi)</td><td><code>string</code> (<code>"a,b,c"</code>)</td><td>Split on <code>','</code>. Empty string if nothing selected.</td></tr>
+        <tr><td><code>Input.ChoiceSet</code> (single)</td><td><code>string</code> (<code>"high"</code>)</td><td>Raw value string.</td></tr>
+        <tr><td><code>Input.Toggle</code></td><td><code>string</code> (<code>"true"</code> / <code>"false"</code>)</td><td>Check <code>== "true"</code> — it is <strong>not</strong> a bool.</td></tr>
+        <tr><td><code>Input.Date</code></td><td><code>string</code> (<code>"yyyy-MM-dd"</code>)</td><td>Parse with <code>DateTime.Parse</code> or <code>DateOnly.Parse</code>.</td></tr>
+        <tr><td><code>Input.Time</code></td><td><code>string</code> (<code>"HH:mm"</code>)</td><td>Parse with <code>TimeSpan.Parse</code> or <code>TimeOnly.Parse</code>.</td></tr>
+      </table>
+    </section>
+    <hr>
+    <section class="section" id="response-patterns">
+      <div class="eyebrow-tag">Task Module &#8212; Step 5</div>
+      <h2>Response Patterns for task/submit</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/what-are-task-modules" target="_blank"><span class="li">↗</span> Task module overview</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank"><span class="li">↗</span> Task module from bot</a>
+      </div>
+
+      <p>Four choices for what to return from <code>OnTeamsTaskModuleSubmitAsync</code>. Pick based on how long processing takes and what the user needs to see.</p>
+
+      <div class="response-grid">
+        <div class="rc"><div class="rct">Pattern 1</div><div class="rcn">Close silently</div><p>Return <code>new TaskModuleResponse()</code>. Modal closes instantly. Best for fire-and-forget — result appears by updating the original card.</p></div>
+        <div class="rc"><div class="rct">Pattern 2</div><div class="rcn">Show message popup</div><p>Return a <code>TaskModuleMessageResponse</code>. Modal closes and a brief text popup is shown. Good for quick acknowledgements.</p></div>
+        <div class="rc"><div class="rct">Pattern 3</div><div class="rcn">Continue (wizard)</div><p>Return a <code>TaskModuleContinueResponse</code> with a new <code>TaskModuleTaskInfo</code>. Modal stays open with new content. Good for multi-step flows.</p></div>
+        <div class="rc"><div class="rct">Pattern 4</div><div class="rcn">Continue (web page)</div><p>Return a <code>TaskModuleContinueResponse</code> with a <code>Url</code>. Modal content replaced with an HTML page. Good when step 2 needs richer UI.</p></div>
+      </div>
+
+<div class="code-block"><pre><code><span class="lang-badge">C#</span><span class="cmt">// Pattern 1 — Close silently (pair with UpdateActivityAsync for result)</span>
+<span class="kw">return new</span> <span class="typ">TaskModuleResponse</span>();
+
+<span class="cmt">// Pattern 2 — Close and show a brief message popup</span>
+<span class="kw">return new</span> <span class="typ">TaskModuleResponse</span>
+{
+    Task = <span class="kw">new</span> <span class="typ">TaskModuleMessageResponse</span>
+    {
+        Type  = <span class="str">"message"</span>,
+        Value = <span class="str">"Saved successfully!"</span>
+    }
+};
+
+<span class="cmt">// Pattern 3 — Replace modal with another card (wizard step)</span>
+<span class="kw">return new</span> <span class="typ">TaskModuleResponse</span>
+{
+    Task = <span class="kw">new</span> <span class="typ">TaskModuleContinueResponse</span>
+    {
+        Type  = <span class="str">"continue"</span>,
+        Value = <span class="kw">new</span> <span class="typ">TaskModuleTaskInfo</span>
+        {
+            Title  = <span class="str">"Step 2 of 2"</span>,
+            Height = <span class="num">400</span>, Width = <span class="num">560</span>,
+            Card   = <span class="fn">BuildStep2Card</span>()
+        }
+    }
+};
+
+<span class="cmt">// Pattern 4 — Replace modal with a web page</span>
+<span class="kw">return new</span> <span class="typ">TaskModuleResponse</span>
+{
+    Task = <span class="kw">new</span> <span class="typ">TaskModuleContinueResponse</span>
+    {
+        Type  = <span class="str">"continue"</span>,
+        Value = <span class="kw">new</span> <span class="typ">TaskModuleTaskInfo</span>
+        {
+            Title           = <span class="str">"Confirm Details"</span>,
+            Height          = <span class="num">500</span>, Width = <span class="num">700</span>,
+            Url             = $<span class="str">"https://{_config[</span><span class="str">"BaseUrl"</span><span class="str">]}/confirm?ref={refId}"</span>,
+            FallbackUrl     = $<span class="str">"https://{_config[</span><span class="str">"BaseUrl"</span><span class="str">]}/confirm?ref={refId}"</span>,
+            CompletionBotId = _config[<span class="str">"MicrosoftAppId"</span>]
+        }
+    }
+};</code></pre></div>
+    </section>
+    <hr>
+    <section class="section" id="update-message">
+      <div class="eyebrow-tag">Task Module &#8212; Step 6</div>
+      <h2>Update the Original Message After Processing</h2>
+
+      <p>When your background task completes, replace the trigger card in the chat with a result card. You need two things stored in your DB: the <code>ConversationReference</code> (to resume the conversation) and the <code>ActivityId</code> of the original card (to update it rather than post a new message).</p>
+
+<div class="code-block"><pre><code><span class="lang-badge">C#</span><span class="kw">private async</span> <span class="typ">Task</span> <span class="fn">UpdateTriggerCardAsync</span>(
+    <span class="typ">ConversationReference</span> convRef, <span class="kw">string</span> activityId, <span class="kw">bool</span> success)
+{
+    <span class="kw">var</span> resultJson = success ? <span class="fn">BuildSuccessCard</span>() : <span class="fn">BuildFailureCard</span>();
+    <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span>
+    {
+        ContentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+        Content     = <span class="typ">JsonConvert</span>.<span class="fn">DeserializeObject</span>(resultJson)
+    };
+
+    <span class="kw">await</span> _botAdapter.<span class="fn">ContinueConversationAsync</span>(
+        _config[<span class="str">"MicrosoftAppId"</span>]!,
+        convRef,
+        <span class="kw">async</span> (turnContext, ct) =>
+        {
+            <span class="kw">var</span> update = <span class="typ">MessageFactory</span>.<span class="fn">Attachment</span>(attachment);
+            update.Id  = activityId; <span class="cmt">// ← identifies which message to replace</span>
+            <span class="kw">await</span> turnContext.<span class="fn">UpdateActivityAsync</span>(update, ct);
+        },
+        <span class="typ">CancellationToken</span>.None);
+}
+
+<span class="kw">private string</span> <span class="fn">BuildSuccessCard</span>() => <span class="str">"""
+    {
+      "type": "AdaptiveCard", "version": "1.3",
+      "body": [{ "type": "TextBlock",
+                 "text": "✅ Done — processed successfully.",
+                 "color": "Good", "weight": "Bolder", "wrap": true }]
+    }
+    """</span>;
+
+<span class="kw">private string</span> <span class="fn">BuildFailureCard</span>() => <span class="str">"""
+    {
+      "type": "AdaptiveCard", "version": "1.3",
+      "body": [{ "type": "TextBlock",
+                 "text": "❌ Something went wrong. Please try again.",
+                 "color": "Attention", "weight": "Bolder", "wrap": true }],
+      "actions": [{
+        "type": "Action.Submit", "title": "Retry",
+        "data": { "msteams": { "type": "task/fetch" } }
+      }]
+    }
+    """</span>;</code></pre></div>
+
+      <div class="callout warn">
+        <div class="ci">⚠️</div>
+        <div class="cb">
+          <strong>Read from DB inside <code>ContinueConversationAsync</code>, not before</strong>
+          <p>Capture <code>ConversationReference</code> and <code>ActivityId</code> before the fire-and-forget task starts — but load any other data you need from the DB inside the callback, not outside it. The <code>ITurnContext</code> only exists within the callback scope.</p>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="proactive">
+      <div class="eyebrow-tag">Proactive Messaging</div>
+      <h2>Sending Messages Outside a Turn</h2>
+      <div class="link-pills">
+        <a class="lp" href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/send-proactive-messages" target="_blank"><span class="li">↗</span> Proactive messaging (Teams)</a>
+        <a class="lp" href="https://learn.microsoft.com/en-us/azure/bot-service/bot-builder-howto-proactive-message" target="_blank"><span class="li">↗</span> Proactive messaging (general)</a>
+      </div>
+
+      <p>Your bot initiates a message without a user having triggered an activity first — e.g. an external system event, a scheduled job, or the result of a long background task. You need the stored <code>ConversationReference</code> and <code>BotAdapter.ContinueConversationAsync</code>.</p>
+
+      <h3><span class="dot"></span>The pattern</h3>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(124,131,245,.15);color:var(--accent2);border:1px solid rgba(124,131,245,.3)">1</div><div class="flow-line"></div></div>
+          <div class="flow-body"><h4>During any normal turn — capture and persist ConversationReference</h4><p>Do this in <code>OnTeamsMembersAddedAsync</code> and/or <code>OnConversationUpdateActivityAsync</code>. Covered in the "Storing Conv. Reference" section.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(79,195,247,.15);color:var(--accent);border:1px solid rgba(79,195,247,.3)">2</div><div class="flow-line"></div></div>
+          <div class="flow-body"><h4>External trigger arrives</h4><p>An HTTP call hits your <code>/api/notify</code> controller, a background job fires, a message queue event is received, etc.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-col"><div class="flow-num" style="background:rgba(86,227,159,.15);color:var(--accent3);border:1px solid rgba(86,227,159,.3)">3</div><div class="flow-line"></div></div>
+          <div class="flow-body"><h4>Load ConversationReference and call ContinueConversationAsync</h4><p>The adapter creates a synthetic turn context. Inside the callback you have a full <code>ITurnContext</code> — call <code>SendActivityAsync</code>, <code>UpdateActivityAsync</code>, etc. normally.</p></div>
+        </div>
+      </div>
+
+      <h3><span class="dot"></span>NotifyController — HTTP-triggered proactive message</h3>
+<div class="code-block"><pre><code><span class="lang-badge">C# — Controllers/NotifyController.cs</span>[<span class="typ">Route</span>(<span class="str">"api/notify"</span>)]
+[<span class="typ">ApiController</span>]
+<span class="kw">public class</span> <span class="typ">NotifyController</span> : <span class="typ">ControllerBase</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">BotAdapter</span>    _adapter;
+    <span class="kw">private readonly</span> <span class="typ">IConfiguration</span> _config;
+    <span class="kw">private readonly</span> <span class="typ">IConversationStore</span> _store;
+
+    <span class="kw">public</span> <span class="fn">NotifyController</span>(
+        <span class="typ">BotAdapter</span> adapter, <span class="typ">IConfiguration</span> config, <span class="typ">IConversationStore</span> store)
+    {
+        _adapter = adapter;
+        _config  = config;
+        _store   = store;
+    }
+
+    [<span class="typ">HttpPost</span>(<span class="str">"{userId}"</span>)]
+    <span class="kw">public async</span> <span class="typ">Task</span>&lt;<span class="typ">IActionResult</span>&gt; <span class="fn">NotifyUser</span>(<span class="kw">string</span> userId, [<span class="typ">FromBody</span>] <span class="kw">string</span> message)
+    {
+        <span class="kw">var</span> refJson = <span class="kw">await</span> _store.<span class="fn">GetConversationRefJsonAsync</span>(userId);
+        <span class="kw">if</span> (refJson <span class="kw">is null</span>)
+            <span class="kw">return</span> <span class="fn">NotFound</span>(<span class="str">"User has not interacted with the bot."</span>);
+
+        <span class="kw">var</span> reference  = <span class="typ">JsonConvert</span>.<span class="fn">DeserializeObject</span>&lt;<span class="typ">ConversationReference</span>&gt;(refJson)!;
+        <span class="kw">var</span> attachment = <span class="fn">BuildNotificationCard</span>(message);
+
+        <span class="kw">await</span> _adapter.<span class="fn">ContinueConversationAsync</span>(
+            _config[<span class="str">"MicrosoftAppId"</span>]!,
+            reference,
+            <span class="kw">async</span> (turnContext, ct) =>
+            {
+                <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(
+                    <span class="typ">MessageFactory</span>.<span class="fn">Attachment</span>(attachment), ct);
+            },
+            <span class="kw">default</span>);
+
+        <span class="kw">return</span> <span class="fn">Ok</span>();
+    }
+}</code></pre></div>
+
+      <div class="callout info">
+        <div class="ci">💡</div>
+        <div class="cb">
+          <strong>Inject <code>BotAdapter</code> directly (cleaner than casting)</strong>
+          <p>Add this to <code>Program.cs</code> so you can inject <code>BotAdapter</code> without a cast:</p>
+          <p><code>builder.Services.AddSingleton&lt;BotAdapter&gt;(sp => (BotAdapter)sp.GetRequiredService&lt;IBotFrameworkHttpAdapter&gt;());</code></p>
+          <p>Then inject <code>BotAdapter</code> in your controller instead of <code>IBotFrameworkHttpAdapter</code> — no <code>((BotAdapter)_adapter)</code> cast needed.</p>
+        </div>
+      </div>
+    </section>
+    <hr>
+
+    <!-- ──────────────────────────────────────────── -->
+    <section class="section" id="complete-project">
+      <div class="eyebrow-tag">Reference</div>
+      <h2>Complete Project Files</h2>
+
+      <p>All the code from the guide, assembled into compilable files. Each tab is a complete file — copy them into the matching path in your project. Replace the in-memory <code>ConcurrentDictionary</code> store with your own database layer in production.</p>
+
+      <div class="code-block">
+        <div class="code-tabs">
+          <button class="code-tab active"  onclick="switchTab(this,'cp-appsettings')">appsettings.json</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-program')">Program.cs</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-adapter')">AdapterWithErrorHandler</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-bot')">MyTeamsBot.cs</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-notify')">NotifyController.cs</button>
+          <button class="code-tab"         onclick="switchTab(this,'cp-manifest')">manifest.json</button>
+        </div>
+
+        <!-- ── appsettings.json ──────────────────────────────────────────────── -->
+        <div class="code-pane active" id="cp-appsettings">
+      <pre><code><span class="lang-badge">JSON — appsettings.json</span><span class="punct">{</span>
+  <span class="attr">"MicrosoftAppType"</span><span class="punct">:</span>     <span class="str">"SingleTenant"</span><span class="punct">,</span>
+  <span class="attr">"MicrosoftAppId"</span><span class="punct">:</span>       <span class="str">"&lt;your-app-id-from-entra&gt;"</span><span class="punct">,</span>
+  <span class="attr">"MicrosoftAppPassword"</span><span class="punct">:</span> <span class="str">"&lt;your-client-secret&gt;"</span><span class="punct">,</span>
+  <span class="attr">"MicrosoftAppTenantId"</span><span class="punct">:</span> <span class="str">"&lt;your-tenant-id&gt;"</span><span class="punct">,</span>
+  <span class="attr">"BaseUrl"</span><span class="punct">:</span>              <span class="str">"https://your-tunnel.devtunnels.ms"</span>
+<span class="punct">}</span></code></pre>
+        </div>
+
+        <!-- ── Program.cs ────────────────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-program">
+      <pre><code><span class="lang-badge">C# — Program.cs</span><span class="kw">using</span> Microsoft.Bot.Builder;
+<span class="kw">using</span> Microsoft.Bot.Builder.Integration.AspNet.Core;
+<span class="kw">using</span> Microsoft.Bot.Connector.Authentication;
+<span class="kw">using</span> Microsoft.Bot.Schema;
+<span class="kw">using</span> System.Collections.Concurrent;
+
+<span class="kw">var</span> builder = <span class="typ">WebApplication</span>.<span class="fn">CreateBuilder</span>(args);
+
+<span class="cmt">// Auth — reads MicrosoftAppId/Password/Type/TenantId from appsettings.json</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="typ">BotFrameworkAuthentication</span>,
+    <span class="typ">ConfigurationBotFrameworkAuthentication</span>&gt;();
+
+<span class="cmt">// Adapter — validates JWT, routes activities to bot</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="typ">IBotFrameworkHttpAdapter</span>, <span class="typ">AdapterWithErrorHandler</span>&gt;();
+
+<span class="cmt">// Also expose as BotAdapter for proactive messaging injection</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="typ">BotAdapter</span>&gt;(
+    sp => (<span class="typ">BotAdapter</span>)sp.<span class="fn">GetRequiredService</span>&lt;<span class="typ">IBotFrameworkHttpAdapter</span>&gt;());
+
+<span class="cmt">// In-memory ConversationReference store — replace with DB in production</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationReference</span>&gt;&gt;();
+
+<span class="cmt">// Bot — transient: fresh instance per turn</span>
+builder.Services.<span class="fn">AddTransient</span>&lt;<span class="typ">IBot</span>, <span class="typ">MyTeamsBot</span>&gt;();
+
+<span class="cmt">// Controllers (NotifyController, etc.)</span>
+builder.Services.<span class="fn">AddControllers</span>();
+
+<span class="kw">var</span> app = builder.<span class="fn">Build</span>();
+app.<span class="fn">UseRouting</span>();
+app.<span class="fn">MapControllers</span>();
+
+<span class="cmt">// Single bot endpoint — all activity types arrive here</span>
+app.<span class="fn">MapPost</span>(<span class="str">"/api/messages"</span>, <span class="kw">async</span> (
+    <span class="typ">HttpRequest</span> req, <span class="typ">HttpResponse</span> res,
+    <span class="typ">IBotFrameworkHttpAdapter</span> adapter, <span class="typ">IBot</span> bot) =>
+{
+    <span class="kw">await</span> adapter.<span class="fn">ProcessAsync</span>(req, res, bot);
+});
+
+app.<span class="fn">Run</span>();</code></pre>
+        </div>
+
+        <!-- ── AdapterWithErrorHandler ───────────────────────────────────────── -->
+        <div class="code-pane" id="cp-adapter">
+      <pre><code><span class="lang-badge">C# — AdapterWithErrorHandler.cs</span><span class="kw">using</span> Microsoft.Bot.Builder.Integration.AspNet.Core;
+<span class="kw">using</span> Microsoft.Bot.Connector.Authentication;
+
+<span class="kw">public class</span> <span class="typ">AdapterWithErrorHandler</span> : <span class="typ">CloudAdapter</span>
+{
+    <span class="kw">public</span> <span class="fn">AdapterWithErrorHandler</span>(
+        <span class="typ">BotFrameworkAuthentication</span> auth,
+        <span class="typ">ILogger</span>&lt;<span class="typ">IBotFrameworkHttpAdapter</span>&gt; logger)
+        : <span class="kw">base</span>(auth, logger)
+    {
+        <span class="fn">OnTurnError</span> = <span class="kw">async</span> (turnContext, exception) =>
+        {
+            logger.<span class="fn">LogError</span>(exception, <span class="str">"[OnTurnError] {Message}"</span>, exception.Message);
+            <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(<span class="str">"The bot encountered an error."</span>);
+        };
+    }
+}</code></pre>
+        </div>
+
+        <!-- ── MyTeamsBot.cs ─────────────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-bot">
+      <pre><code><span class="lang-badge">C# — MyTeamsBot.cs</span><span class="kw">using</span> Microsoft.Bot.Builder;
+<span class="kw">using</span> Microsoft.Bot.Builder.Teams;
+<span class="kw">using</span> Microsoft.Bot.Schema;
+<span class="kw">using</span> Microsoft.Bot.Schema.Teams;
+<span class="kw">using</span> Newtonsoft.Json;
+<span class="kw">using</span> Newtonsoft.Json.Linq;
+<span class="kw">using</span> System.Collections.Concurrent;
+
+<span class="kw">public class</span> <span class="typ">MyTeamsBot</span> : <span class="typ">TeamsActivityHandler</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IConfiguration</span> _config;
+    <span class="kw">private readonly</span> <span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationReference</span>&gt; _refs;
+
+    <span class="kw">public</span> <span class="fn">MyTeamsBot</span>(
+        <span class="typ">IConfiguration</span> config,
+        <span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationReference</span>&gt; refs)
+    {
+        _config = config;
+        _refs   = refs;
+    }
+
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+    <span class="cmt">// LIFECYCLE — Install / Uninstall / Message</span>
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+
+    <span class="cmt">// Recommended by Microsoft for install detection (installationUpdate activity)</span>
+    <span class="kw">protected override async</span> <span class="typ">Task</span> <span class="fn">OnInstallationUpdateAddAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IInstallationUpdateActivity</span>&gt; turnContext,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        <span class="fn">CaptureConversationReference</span>(turnContext.Activity <span class="kw">as</span> <span class="typ">Activity</span>);
+        <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(
+            <span class="typ">MessageFactory</span>.<span class="fn">Text</span>(<span class="str">"Hi! I'm ready."</span>), cancellationToken);
+    }
+
+    <span class="cmt">// Cleanup when bot is uninstalled</span>
+    <span class="kw">protected override</span> <span class="typ">Task</span> <span class="fn">OnInstallationUpdateRemoveAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IInstallationUpdateActivity</span>&gt; turnContext,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        <span class="kw">var</span> userId = turnContext.Activity.From?.Id;
+        <span class="kw">if</span> (userId != <span class="kw">null</span>) _refs.<span class="fn">TryRemove</span>(userId, <span class="kw">out</span> _);
+        <span class="kw">return</span> <span class="typ">Task</span>.CompletedTask;
+    }
+
+    <span class="cmt">// Keep ConversationReference fresh on any conversation lifecycle event</span>
+    <span class="kw">protected override</span> <span class="typ">Task</span> <span class="fn">OnConversationUpdateActivityAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IConversationUpdateActivity</span>&gt; turnContext,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        <span class="fn">CaptureConversationReference</span>(turnContext.Activity <span class="kw">as</span> <span class="typ">Activity</span>);
+        <span class="kw">return base</span>.<span class="fn">OnConversationUpdateActivityAsync</span>(turnContext, cancellationToken);
+    }
+
+    <span class="cmt">// User sent a message</span>
+    <span class="kw">protected override async</span> <span class="typ">Task</span> <span class="fn">OnMessageActivityAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IMessageActivity</span>&gt; turnContext,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        turnContext.Activity.<span class="fn">RemoveRecipientMention</span>();
+        <span class="kw">var</span> text = turnContext.Activity.Text?.Trim() ?? <span class="kw">string</span>.Empty;
+        <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(
+            <span class="typ">MessageFactory</span>.<span class="fn">Text</span>($<span class="str">"You said: {text}"</span>), cancellationToken);
+    }
+
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+    <span class="cmt">// TASK MODULE — Step 1: Send trigger card</span>
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+
+    <span class="cmt">/// Call this to post a card with a button that opens the modal.</span>
+    <span class="cmt">/// Returns the ActivityId of the posted message (store it to update later).</span>
+    <span class="kw">public async</span> <span class="typ">Task</span>&lt;<span class="kw">string</span>&gt; <span class="fn">SendTriggerCardAsync</span>(
+        <span class="typ">ITurnContext</span> turnContext, <span class="kw">string</span> itemId, <span class="kw">string</span> itemName,
+        <span class="typ">CancellationToken</span> ct)
+    {
+        <span class="kw">var</span> cardJson = $<span class="str">@"{{
+          ""$schema"": ""http://adaptivecards.io/schemas/adaptive-card.json"",
+          ""type"": ""AdaptiveCard"", ""version"": ""1.3"",
+          ""body"": [{{ ""type"": ""TextBlock"", ""text"": ""{itemName} needs attention."",
+                        ""weight"": ""Bolder"", ""wrap"": true }}],
+          ""actions"": [{{
+            ""type"": ""Action.Submit"", ""title"": ""Open Form"",
+            ""data"": {{ ""msteams"": {{ ""type"": ""task/fetch"" }}, ""itemId"": ""{itemId}"" }}
+          }}]
+        }}"</span>;
+
+        <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span>
+        {
+            ContentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+            Content     = <span class="typ">JsonConvert</span>.<span class="fn">DeserializeObject</span>(cardJson)
+        };
+
+        <span class="kw">var</span> response = <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(
+            <span class="typ">MessageFactory</span>.<span class="fn">Attachment</span>(attachment), ct);
+        <span class="kw">return</span> response.Id; <span class="cmt">// Store this ActivityId to update the card later</span>
+    }
+
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+    <span class="cmt">// TASK MODULE — Step 2: task/fetch → return modal</span>
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+
+    <span class="kw">protected override</span> <span class="typ">Task</span>&lt;<span class="typ">TaskModuleResponse</span>&gt; <span class="fn">OnTeamsTaskModuleFetchAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IInvokeActivity</span>&gt; turnContext,
+        <span class="typ">TaskModuleRequest</span> taskModuleRequest,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        <span class="cmt">// taskModuleRequest.Data is the "data" field from the Action.Submit button</span>
+        <span class="kw">var</span> data   = <span class="typ">JObject</span>.<span class="fn">FromObject</span>(taskModuleRequest.Data);
+        <span class="kw">var</span> itemId = data[<span class="str">"itemId"</span>]?.ToString() ?? <span class="kw">string</span>.Empty;
+
+        <span class="cmt">// Build the modal card (Step 3 — Adaptive Card with inputs + validation)</span>
+        <span class="kw">var</span> modalJson = <span class="fn">BuildModalCardJson</span>(itemId);
+
+        <span class="kw">var</span> taskInfo = <span class="kw">new</span> <span class="typ">TaskModuleTaskInfo</span>
+        {
+            Title  = <span class="str">"Review Item"</span>,
+            Height = <span class="num">500</span>,
+            Width  = <span class="num">560</span>,
+            Card   = <span class="kw">new</span> <span class="typ">Attachment</span>
+            {
+                ContentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+                Content     = <span class="typ">JsonConvert</span>.<span class="fn">DeserializeObject</span>(modalJson)
+            }
+        };
+
+        <span class="cmt">// Type = "continue" is set automatically by TaskModuleContinueResponse constructor</span>
+        <span class="kw">return</span> <span class="typ">Task</span>.<span class="fn">FromResult</span>(<span class="kw">new</span> <span class="typ">TaskModuleResponse</span>
+        {
+            Task = <span class="kw">new</span> <span class="typ">TaskModuleContinueResponse</span> { Value = taskInfo }
+        });
+    }
+
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+    <span class="cmt">// TASK MODULE — Step 3: Modal card with inputs + validation</span>
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+
+    <span class="kw">private static string</span> <span class="fn">BuildModalCardJson</span>(<span class="kw">string</span> itemId)
+    {
+        <span class="kw">return</span> $<span class="str">@"{{
+          ""$schema"": ""http://adaptivecards.io/schemas/adaptive-card.json"",
+          ""type"": ""AdaptiveCard"", ""version"": ""1.3"",
+          ""body"": [
+            {{ ""type"": ""Input.Text"", ""id"": ""fullName"", ""label"": ""Full Name"",
+               ""placeholder"": ""Enter your full name"",
+               ""isRequired"": true, ""errorMessage"": ""Full name is required."" }},
+            {{ ""type"": ""Input.Number"", ""id"": ""quantity"", ""label"": ""Quantity"",
+               ""placeholder"": ""Must be greater than 0"", ""min"": 1,
+               ""isRequired"": true, ""errorMessage"": ""Quantity must be 1 or greater."" }},
+            {{ ""type"": ""Input.ChoiceSet"", ""id"": ""categories"",
+               ""label"": ""Categories (select at least one)"",
+               ""style"": ""expanded"", ""isMultiSelect"": true,
+               ""isRequired"": true, ""errorMessage"": ""Select at least one category."",
+               ""choices"": [
+                 {{ ""title"": ""Option A"", ""value"": ""a"" }},
+                 {{ ""title"": ""Option B"", ""value"": ""b"" }},
+                 {{ ""title"": ""Option C"", ""value"": ""c"" }}
+               ] }},
+            {{ ""type"": ""Input.Toggle"", ""id"": ""confirmed"", ""label"": ""Acknowledgement"",
+               ""title"": ""I confirm I have reviewed this information"",
+               ""valueOn"": ""true"", ""valueOff"": ""false"",
+               ""isRequired"": true, ""errorMessage"": ""You must confirm before submitting."" }}
+          ],
+          ""actions"": [{{
+            ""type"": ""Action.Submit"", ""title"": ""Submit"",
+            ""data"": {{ ""itemId"": ""{itemId}"" }}
+          }}]
+        }}"</span>;
+    }
+
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+    <span class="cmt">// TASK MODULE — Step 4: task/submit → read user input</span>
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+
+    <span class="kw">protected override async</span> <span class="typ">Task</span>&lt;<span class="typ">TaskModuleResponse</span>&gt; <span class="fn">OnTeamsTaskModuleSubmitAsync</span>(
+        <span class="typ">ITurnContext</span>&lt;<span class="typ">IInvokeActivity</span>&gt; turnContext,
+        <span class="typ">TaskModuleRequest</span> taskModuleRequest,
+        <span class="typ">CancellationToken</span> cancellationToken)
+    {
+        <span class="kw">var</span> data = <span class="typ">JObject</span>.<span class="fn">FromObject</span>(taskModuleRequest.Data);
+
+        <span class="cmt">// ── Read fields (ALL values arrive as strings) ────────────────────</span>
+        <span class="kw">var</span> fullName    = data[<span class="str">"fullName"</span>]?.ToString()   ?? <span class="kw">string</span>.Empty;
+        <span class="kw">var</span> quantityStr = data[<span class="str">"quantity"</span>]?.ToString()   ?? <span class="kw">string</span>.Empty;
+        <span class="kw">var</span> categories  = data[<span class="str">"categories"</span>]?.ToString() ?? <span class="kw">string</span>.Empty;
+        <span class="kw">var</span> confirmed   = data[<span class="str">"confirmed"</span>]?.ToString()  == <span class="str">"true"</span>;
+        <span class="kw">var</span> itemId      = data[<span class="str">"itemId"</span>]?.ToString()     ?? <span class="kw">string</span>.Empty;
+
+        <span class="cmt">// ── Server-side validation (client validation can be bypassed) ────</span>
+        <span class="kw">if</span> (<span class="kw">string</span>.<span class="fn">IsNullOrWhiteSpace</span>(fullName))
+            <span class="kw">return</span> <span class="fn">MessageResponse</span>(<span class="str">"Validation failed: Name is required."</span>);
+
+        <span class="kw">if</span> (!<span class="kw">int</span>.<span class="fn">TryParse</span>(quantityStr, <span class="kw">out var</span> quantity) || quantity &lt; <span class="num">1</span>)
+            <span class="kw">return</span> <span class="fn">MessageResponse</span>(<span class="str">"Validation failed: Quantity must be 1 or greater."</span>);
+
+        <span class="kw">var</span> selectedCategories = categories
+            .<span class="fn">Split</span>(<span class="str">','</span>, <span class="typ">StringSplitOptions</span>.RemoveEmptyEntries)
+            .<span class="fn">Select</span>(s => s.<span class="fn">Trim</span>()).<span class="fn">ToList</span>();
+
+        <span class="kw">if</span> (!selectedCategories.<span class="fn">Any</span>())
+            <span class="kw">return</span> <span class="fn">MessageResponse</span>(<span class="str">"Validation failed: Select at least one category."</span>);
+
+        <span class="cmt">// ── Capture before fire-and-forget (ITurnContext won't exist later) ─</span>
+        <span class="kw">var</span> convRef = turnContext.Activity.<span class="fn">GetConversationReference</span>();
+
+        <span class="cmt">// ── Fire-and-forget: return immediately to close the modal ─────────</span>
+        _ = <span class="typ">Task</span>.<span class="fn">Run</span>(<span class="kw">async</span> () =>
+        {
+            <span class="kw">try</span>
+            {
+                <span class="cmt">// TODO: replace with your business logic</span>
+                <span class="kw">await</span> <span class="fn">ProcessSubmissionAsync</span>(itemId, fullName, quantity, selectedCategories);
+                <span class="cmt">// Step 6: Update the original card with success</span>
+                <span class="kw">await</span> <span class="fn">UpdateTriggerCardAsync</span>(convRef, itemId, success: <span class="bool">true</span>);
+            }
+            <span class="kw">catch</span>
+            {
+                <span class="kw">await</span> <span class="fn">UpdateTriggerCardAsync</span>(convRef, itemId, success: <span class="bool">false</span>);
+            }
+        });
+
+        <span class="cmt">// Return empty response — closes the modal with no popup</span>
+        <span class="kw">return new</span> <span class="typ">TaskModuleResponse</span>();
+    }
+
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+    <span class="cmt">// TASK MODULE — Step 5: Business logic (placeholder)</span>
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+
+    <span class="kw">private</span> <span class="typ">Task</span> <span class="fn">ProcessSubmissionAsync</span>(
+        <span class="kw">string</span> itemId, <span class="kw">string</span> name, <span class="kw">int</span> quantity, <span class="typ">List</span>&lt;<span class="kw">string</span>&gt; categories)
+    {
+        <span class="cmt">// TODO: your business logic — save to DB, call external API, etc.</span>
+        <span class="kw">return</span> <span class="typ">Task</span>.CompletedTask;
+    }
+
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+    <span class="cmt">// TASK MODULE — Step 6: Update original card after processing</span>
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+
+    <span class="kw">private async</span> <span class="typ">Task</span> <span class="fn">UpdateTriggerCardAsync</span>(
+        <span class="typ">ConversationReference</span> convRef, <span class="kw">string</span> activityId, <span class="kw">bool</span> success)
+    {
+        <span class="kw">var</span> resultJson = success
+            ? <span class="fn">BuildResultCardJson</span>(<span class="str">"Done — processed successfully."</span>, <span class="str">"Good"</span>)
+            : <span class="fn">BuildResultCardJson</span>(<span class="str">"Something went wrong. Please try again."</span>, <span class="str">"Attention"</span>);
+
+        <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span>
+        {
+            ContentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+            Content     = <span class="typ">JsonConvert</span>.<span class="fn">DeserializeObject</span>(resultJson)
+        };
+
+        <span class="cmt">// Use the injected BotAdapter (registered in Program.cs)</span>
+        <span class="kw">var</span> adapter = (<span class="typ">BotAdapter</span>)<span class="typ">HttpContext</span>.<span class="fn">RequestServices</span>
+            .<span class="fn">GetRequiredService</span>&lt;<span class="typ">IBotFrameworkHttpAdapter</span>&gt;();
+
+        <span class="kw">await</span> adapter.<span class="fn">ContinueConversationAsync</span>(
+            _config[<span class="str">"MicrosoftAppId"</span>]!,
+            convRef,
+            <span class="kw">async</span> (turnContext, ct) =>
+            {
+                <span class="kw">var</span> update = <span class="typ">MessageFactory</span>.<span class="fn">Attachment</span>(attachment);
+                update.Id  = activityId;
+                <span class="kw">await</span> turnContext.<span class="fn">UpdateActivityAsync</span>(update, ct);
+            },
+            <span class="typ">CancellationToken</span>.None);
+    }
+
+    <span class="kw">private static string</span> <span class="fn">BuildResultCardJson</span>(<span class="kw">string</span> message, <span class="kw">string</span> color)
+    {
+        <span class="kw">return</span> $<span class="str">@"{{
+          ""type"": ""AdaptiveCard"", ""version"": ""1.3"",
+          ""body"": [{{ ""type"": ""TextBlock"", ""text"": ""{message}"",
+                        ""color"": ""{color}"", ""weight"": ""Bolder"", ""wrap"": true }}]
+        }}"</span>;
+    }
+
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+    <span class="cmt">// HELPERS</span>
+    <span class="cmt">// ═══════════════════════════════════════════════════════════════════════</span>
+
+    <span class="kw">private void</span> <span class="fn">CaptureConversationReference</span>(<span class="typ">Activity</span> activity)
+    {
+        <span class="kw">var</span> reference = activity.<span class="fn">GetConversationReference</span>();
+        _refs.<span class="fn">AddOrUpdate</span>(reference.User.Id, reference, (_, _) => reference);
+    }
+
+    <span class="kw">private static</span> <span class="typ">TaskModuleResponse</span> <span class="fn">MessageResponse</span>(<span class="kw">string</span> text) =>
+        <span class="kw">new</span> <span class="typ">TaskModuleResponse</span>
+        {
+            Task = <span class="kw">new</span> <span class="typ">TaskModuleMessageResponse</span> { Value = text }
+        };
+}</code></pre>
+        </div>
+
+        <!-- ── NotifyController.cs ───────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-notify">
+      <pre><code><span class="lang-badge">C# — Controllers/NotifyController.cs</span><span class="kw">using</span> Microsoft.AspNetCore.Mvc;
+<span class="kw">using</span> Microsoft.Bot.Builder;
+<span class="kw">using</span> Microsoft.Bot.Builder.Integration.AspNet.Core;
+<span class="kw">using</span> Microsoft.Bot.Schema;
+<span class="kw">using</span> Newtonsoft.Json;
+<span class="kw">using</span> System.Collections.Concurrent;
+
+<span class="cmt">/// Your own API endpoint — not a Teams endpoint.</span>
+<span class="cmt">/// Your backend (job scheduler, webhook, etc.) calls this to trigger a proactive message.</span>
+[<span class="typ">Route</span>(<span class="str">"api/notify"</span>)]
+[<span class="typ">ApiController</span>]
+<span class="kw">public class</span> <span class="typ">NotifyController</span> : <span class="typ">ControllerBase</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">BotAdapter</span> _adapter;
+    <span class="kw">private readonly</span> <span class="typ">IConfiguration</span> _config;
+    <span class="kw">private readonly</span> <span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationReference</span>&gt; _refs;
+
+    <span class="kw">public</span> <span class="fn">NotifyController</span>(
+        <span class="typ">BotAdapter</span> adapter,
+        <span class="typ">IConfiguration</span> config,
+        <span class="typ">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="typ">ConversationReference</span>&gt; refs)
+    {
+        _adapter = adapter;
+        _config  = config;
+        _refs    = refs;
+    }
+
+    [<span class="typ">HttpPost</span>(<span class="str">"{userId}"</span>)]
+    <span class="kw">public async</span> <span class="typ">Task</span>&lt;<span class="typ">IActionResult</span>&gt; <span class="fn">NotifyUser</span>(<span class="kw">string</span> userId, [<span class="typ">FromBody</span>] <span class="kw">string</span> message)
+    {
+        <span class="kw">if</span> (!_refs.<span class="fn">TryGetValue</span>(userId, <span class="kw">out var</span> reference))
+            <span class="kw">return</span> <span class="fn">NotFound</span>(<span class="str">"User has not interacted with the bot."</span>);
+
+        <span class="kw">var</span> cardJson = $<span class="str">@"{{
+          ""type"": ""AdaptiveCard"", ""version"": ""1.3"",
+          ""body"": [{{ ""type"": ""TextBlock"", ""text"": ""{message}"",
+                        ""wrap"": true, ""weight"": ""Bolder"" }}],
+          ""actions"": [{{
+            ""type"": ""Action.Submit"", ""title"": ""Open Form"",
+            ""data"": {{ ""msteams"": {{ ""type"": ""task/fetch"" }} }}
+          }}]
+        }}"</span>;
+
+        <span class="kw">var</span> attachment = <span class="kw">new</span> <span class="typ">Attachment</span>
+        {
+            ContentType = <span class="str">"application/vnd.microsoft.card.adaptive"</span>,
+            Content     = <span class="typ">JsonConvert</span>.<span class="fn">DeserializeObject</span>(cardJson)
+        };
+
+        <span class="kw">await</span> _adapter.<span class="fn">ContinueConversationAsync</span>(
+            _config[<span class="str">"MicrosoftAppId"</span>]!,
+            reference,
+            <span class="kw">async</span> (turnContext, ct) =>
+            {
+                <span class="kw">await</span> turnContext.<span class="fn">SendActivityAsync</span>(
+                    <span class="typ">MessageFactory</span>.<span class="fn">Attachment</span>(attachment), ct);
+            },
+            <span class="kw">default</span>);
+
+        <span class="kw">return</span> <span class="fn">Ok</span>();
+    }
+}</code></pre>
+        </div>
+
+        <!-- ── manifest.json ─────────────────────────────────────────────────── -->
+        <div class="code-pane" id="cp-manifest">
+      <pre><code><span class="lang-badge">JSON — manifest.json (zip with color.png + outline.png)</span><span class="punct">{</span>
+  <span class="attr">"$schema"</span><span class="punct">:</span> <span class="str">"https://developer.microsoft.com/json-schemas/teams/v1.11/MicrosoftTeams.schema.json"</span><span class="punct">,</span>
+  <span class="attr">"manifestVersion"</span><span class="punct">:</span> <span class="str">"1.11"</span><span class="punct">,</span>
+  <span class="attr">"version"</span><span class="punct">:</span> <span class="str">"1.0.0"</span><span class="punct">,</span>
+  <span class="attr">"id"</span><span class="punct">:</span> <span class="str">"&lt;same-as-MicrosoftAppId&gt;"</span><span class="punct">,</span>
+  <span class="attr">"packageName"</span><span class="punct">:</span> <span class="str">"com.yourcompany.yourbot"</span><span class="punct">,</span>
+  <span class="attr">"developer"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="attr">"name"</span><span class="punct">:</span> <span class="str">"Your Company"</span><span class="punct">,</span>
+    <span class="attr">"websiteUrl"</span><span class="punct">:</span> <span class="str">"https://yourcompany.com"</span><span class="punct">,</span>
+    <span class="attr">"privacyUrl"</span><span class="punct">:</span> <span class="str">"https://yourcompany.com/privacy"</span><span class="punct">,</span>
+    <span class="attr">"termsOfUseUrl"</span><span class="punct">:</span> <span class="str">"https://yourcompany.com/terms"</span>
+  <span class="punct">},</span>
+  <span class="attr">"name"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"short"</span><span class="punct">:</span> <span class="str">"My Bot"</span><span class="punct">,</span> <span class="attr">"full"</span><span class="punct">:</span> <span class="str">"My Teams Bot"</span> <span class="punct">},</span>
+  <span class="attr">"description"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"short"</span><span class="punct">:</span> <span class="str">"Short description"</span><span class="punct">,</span> <span class="attr">"full"</span><span class="punct">:</span> <span class="str">"Full description"</span> <span class="punct">},</span>
+  <span class="attr">"icons"</span><span class="punct">:</span> <span class="punct">{</span> <span class="attr">"color"</span><span class="punct">:</span> <span class="str">"color.png"</span><span class="punct">,</span> <span class="attr">"outline"</span><span class="punct">:</span> <span class="str">"outline.png"</span> <span class="punct">},</span>
+  <span class="attr">"accentColor"</span><span class="punct">:</span> <span class="str">"#FFFFFF"</span><span class="punct">,</span>
+  <span class="attr">"bots"</span><span class="punct">:</span> <span class="punct">[{</span>
+    <span class="attr">"botId"</span><span class="punct">:</span> <span class="str">"&lt;same-as-MicrosoftAppId&gt;"</span><span class="punct">,</span>
+    <span class="attr">"scopes"</span><span class="punct">:</span> <span class="punct">[</span><span class="str">"personal"</span><span class="punct">,</span> <span class="str">"team"</span><span class="punct">,</span> <span class="str">"groupChat"</span><span class="punct">],</span>
+    <span class="attr">"supportsFiles"</span><span class="punct">:</span> <span class="bool">false</span><span class="punct">,</span>
+    <span class="attr">"isNotificationOnly"</span><span class="punct">:</span> <span class="bool">false</span>
+  <span class="punct">}],</span>
+  <span class="attr">"permissions"</span><span class="punct">:</span> <span class="punct">[</span><span class="str">"identity"</span><span class="punct">,</span> <span class="str">"messageTeamMembers"</span><span class="punct">],</span>
+  <span class="attr">"validDomains"</span><span class="punct">:</span> <span class="punct">[</span><span class="str">"*.devtunnels.ms"</span><span class="punct">]</span>
+<span class="punct">}</span></code></pre>
+        </div>
+
+      </div>
+
+      <div class="callout tip">
+        <div class="ci">✅</div>
+        <div class="cb">
+          <strong>This is a complete, runnable project</strong>
+          <p>Create a new ASP.NET Core Web API project (.NET 8), add the NuGet packages (<code>Microsoft.Bot.Builder.Integration.AspNet.Core</code>), copy these files in, fill in your <code>appsettings.json</code> values, and run. The only placeholder is <code>ProcessSubmissionAsync</code> — replace with your own business logic.</p>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="section" id="refs">
+      <div class="eyebrow-tag">Reference</div>
+      <h2>All Reference Links</h2>
+      <table>
+        <tr><th>Topic</th><th>URL</th><th>Note</th></tr>
+        <tr><td>Bot Framework v4 basics</td><td><a href="https://learn.microsoft.com/en-us/azure/bot-service/bot-builder-basics" target="_blank">…/bot-builder-basics</a></td><td>Core concepts, Activity, TurnContext</td></tr>
+        <tr><td>Bot basics (Teams)</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/bot-basics" target="_blank">…/bots/bot-basics</a></td><td>TeamsActivityHandler method reference</td></tr>
+        <tr><td>Task module overview</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/what-are-task-modules" target="_blank">…/what-are-task-modules</a></td><td>TaskInfo object, modal sizing</td></tr>
+        <tr><td>Task module from bot</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots" target="_blank">…/task-modules-bots</a></td><td>task/fetch + task/submit payload reference</td></tr>
+        <tr><td>Proactive messaging (Teams)</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/send-proactive-messages" target="_blank">…/send-proactive-messages</a></td><td>ContinueConversationAsync, ConversationReference</td></tr>
+        <tr><td>Proactive messaging (general)</td><td><a href="https://learn.microsoft.com/en-us/azure/bot-service/bot-builder-howto-proactive-message" target="_blank">…/bot-builder-howto-proactive-message</a></td><td>BotAdapter, callback handler</td></tr>
+        <tr><td>Adaptive Card .NET SDK</td><td><a href="https://learn.microsoft.com/en-us/adaptive-cards/sdk/authoring-cards/net" target="_blank">…/sdk/authoring-cards/net</a></td><td>ToJson(), object model</td></tr>
+        <tr><td>Input validation spec</td><td><a href="https://learn.microsoft.com/en-us/adaptive-cards/authoring-cards/input-validation" target="_blank">…/authoring-cards/input-validation</a></td><td>isRequired, errorMessage, min/max</td></tr>
+        <tr><td>Input.Number schema</td><td><a href="https://adaptivecards.io/explorer/Input.Number.html" target="_blank">adaptivecards.io/explorer/Input.Number</a></td><td>All properties + interactive example</td></tr>
+        <tr><td>Input.ChoiceSet schema</td><td><a href="https://adaptivecards.io/explorer/Input.ChoiceSet.html" target="_blank">adaptivecards.io/explorer/Input.ChoiceSet</a></td><td>isMultiSelect, style: expanded</td></tr>
+        <tr><td>Adaptive Card designer</td><td><a href="https://adaptivecards.io/designer/" target="_blank">adaptivecards.io/designer</a></td><td>Paste JSON and preview live</td></tr>
+        <tr><td>Inputs with validation sample</td><td><a href="https://adaptivecards.io/samples/InputsWithValidation.html" target="_blank">adaptivecards.io/samples/InputsWithValidation</a></td><td>Working example JSON</td></tr>
+        <tr><td>Official C# sample (v4)</td><td><a href="https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/bot-task-module/csharp" target="_blank">github/bot-task-module/csharp</a></td><td>Full task module sample for .NET Core</td></tr>
+        <tr><td>NuGet — Bot.Builder.Integration</td><td><a href="https://www.nuget.org/packages/Microsoft.Bot.Builder.Integration.AspNet.Core" target="_blank">nuget — Bot.Builder.Integration 4.22.x</a></td><td>CloudAdapter, all Bot Framework v4 types</td></tr>
+        <tr><td>NuGet — AdaptiveCards</td><td><a href="https://www.nuget.org/packages/AdaptiveCards/" target="_blank">nuget — AdaptiveCards 3.1.0</a></td><td>Strongly-typed C# card object model</td></tr>
+        <tr><td>Azure Bot registration walkthrough</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/add-authentication" target="_blank">…/bots/how-to/authentication/add-authentication</a></td><td>Azure portal steps, App ID, Client Secret</td></tr>
+        <tr><td>Azure Bot pricing</td><td><a href="https://azure.microsoft.com/en-us/pricing/details/bot-services/" target="_blank">azure.microsoft.com/pricing/details/bot-services</a></td><td>Standard channels (Teams) are free</td></tr>
+        <tr><td>Teams Developer Portal</td><td><a href="https://dev.teams.microsoft.com/home" target="_blank">dev.teams.microsoft.com</a></td><td>Create manifest, configure app, download ZIP</td></tr>
+        <tr><td>Manifest schema v1.11</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema" target="_blank">…/resources/schema/manifest-schema</a></td><td>All manifest.json fields with types</td></tr>
+        <tr><td>Sideloading / custom app policies</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/teams-custom-app-policies-and-settings" target="_blank">learn.microsoft.com/…custom-app-policies</a></td><td>How admins enable sideloading</td></tr>
+        <tr><td>Dev Tunnels CLI download</td><td><a href="https://aka.ms/devtunnel/download" target="_blank">aka.ms/devtunnel/download</a></td><td>Standalone installer (not VS-exclusive)</td></tr>
+        <tr><td>Dev Tunnels CLI reference</td><td><a href="https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/cli-commands" target="_blank">learn.microsoft.com/…dev-tunnels/cli-commands</a></td><td>All devtunnel commands + access control options</td></tr>
+        <tr><td>Bot SSO overview</td><td><a href="https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/bot-sso-overview" target="_blank">…/bots/how-to/authentication/bot-sso-overview</a></td><td>Entra ID SSO for bots</td></tr>
+        <tr><td>Microsoft 365 Agents SDK</td><td><a href="https://github.com/Microsoft/Agents" target="_blank">github/Microsoft/Agents</a></td><td>Successor to Bot Framework SDK</td></tr>
+        <tr><td>Bot Framework → Agents migration</td><td><a href="https://aka.ms/bfmigrationguidance" target="_blank">aka.ms/bfmigrationguidance</a></td><td>Migration guide from Bot Framework v4</td></tr>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  function switchTab(btn, paneId) {
+    const block = btn.closest('.code-block');
+    block.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+    block.querySelectorAll('.code-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(paneId).classList.add('active');
+  }
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.nav-a');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(n => n.classList.remove('active'));
+        const m = document.querySelector(`.nav-a[href="#${e.target.id}"]`);
+        if (m) m.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

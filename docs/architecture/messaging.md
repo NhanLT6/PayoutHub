@@ -63,6 +63,8 @@ while (!stopping)
 
 MSMQ có transactional queue: receive trong một `MessageQueueTransaction`, lỗi thì `Abort()` và message quay lại queue. Trang này nói về receive thường như trên. Với System.Messaging, message hỏng vĩnh viễn sẽ quay vòng mãi nếu bạn không tự đếm số lần thử; Service Bus có sẵn bộ đếm đó (mục 3).
 
+Một hệ thống thật gặp đúng lỗi này (MSMQ express + receive rồi mới xử lý) và cách gia cố từng bước khi chưa đổi được broker: [Hàng đợi không bền](/architecture/legacy-system#queue).
+
 ## 2. Một luật: chỉ xoá khi consumer nói Complete {#peek-lock}
 
 **Ở chế độ PeekLock, Service Bus giao message cho consumer nhưng chỉ khoá nó, không xoá; message chỉ bị xoá khi consumer gọi `Complete`.** PeekLock là receive mode mặc định của SDK .NET (`Azure.Messaging.ServiceBus`). Chế độ còn lại, `ReceiveAndDelete`, xoá ngay khi giao, tức là giống receive thường của MSMQ.
