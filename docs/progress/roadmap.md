@@ -118,17 +118,17 @@ Mỗi buổi gắn với ít nhất một chuyện dưới đây, để điều 
 
 | Chuyện | Dùng cho |
 |---|---|
-| **My Fertility Health**: hai dev khác gọi thẳng plugin Ionic, không bọc wrapper, nên khó xử lý lỗi. Phần logic thuần của Nhân có unit test, QA không tìm ra lỗi | Chiều phụ thuộc, bọc thứ bên ngoài, test |
-| **RTK Query sinh code từ OpenAPI của C#** (Altsource): một nguồn sự thật cho hợp đồng API, không viết lại tay | Một nguồn sự thật, hợp đồng giữa hai phía |
-| **Vuetify ở Websparks**: đưa cả team sang một bộ UI thay cho nhiều thư viện lẻ | Dẫn dắt một quyết định, nhất quán |
-| **Trang Legal ở CF**: dựng một project ASP.NET Core nhỏ trước để thử đường migrate. Kết quả gần như không có vấn đề kỹ thuật, team chủ yếu cần thời gian thích nghi. Chuyện nhỏ, kể đúng cỡ | Migrate dần thay vì viết lại, giảm rủi ro |
-| **MSMQ ở CF**: xử lý nền, lỗi thì chỉ log, không retry | Messaging, at-least-once, dead-letter |
-| **Job nền Quartz ở Jabil**: gom dữ liệu mỗi 15 phút cho dashboard sản xuất | Việc nền, lịch chạy, báo cáo |
-| **Trợ lý AI ở CF**: xếp hạng merchant bằng LLM không ổn nên quay về luật SQL; đề xuất thiết kế tool kiểu semantic layer nhưng lead không chọn | Khi nào không dùng AI, bất đồng kỹ thuật |
-| **Slack/Teams ở CF**: đề xuất v1 chỉ gửi thông báo chính, đo mức dùng rồi mới làm v2; không được chọn | Phạm vi, MVP |
+| **App y tế (mobile)**: hai dev khác gọi thẳng plugin Ionic, không bọc wrapper, nên khó xử lý lỗi. Phần logic thuần của Nhân có unit test, QA không tìm ra lỗi | Chiều phụ thuộc, bọc thứ bên ngoài, test |
+| **RTK Query sinh code từ OpenAPI của C#** (công ty trước): một nguồn sự thật cho hợp đồng API, không viết lại tay | Một nguồn sự thật, hợp đồng giữa hai phía |
+| **Vuetify ở một công ty trước**: đưa cả team sang một bộ UI thay cho nhiều thư viện lẻ | Dẫn dắt một quyết định, nhất quán |
+| **Trang Legal ở công ty hiện tại**: dựng một project ASP.NET Core nhỏ trước để thử đường migrate. Kết quả gần như không có vấn đề kỹ thuật, team chủ yếu cần thời gian thích nghi. Chuyện nhỏ, kể đúng cỡ | Migrate dần thay vì viết lại, giảm rủi ro |
+| **MSMQ ở công ty hiện tại**: xử lý nền, lỗi thì chỉ log, không retry | Messaging, at-least-once, dead-letter |
+| **Job nền Quartz ở công ty sản xuất trước đây**: gom dữ liệu mỗi 15 phút cho dashboard sản xuất | Việc nền, lịch chạy, báo cáo |
+| **Trợ lý AI ở công ty hiện tại**: xếp hạng merchant bằng LLM không ổn nên quay về luật SQL; đề xuất thiết kế tool kiểu semantic layer nhưng lead không chọn | Khi nào không dùng AI, bất đồng kỹ thuật |
+| **Slack/Teams ở công ty hiện tại**: đề xuất v1 chỉ gửi thông báo chính, đo mức dùng rồi mới làm v2; không được chọn | Phạm vi, MVP |
 | **WorkCtx**: bỏ luồng tự động hoàn toàn vì tốn usage, chuyển sang người kiểm từng bước | Mức tự động hoá, chi phí AI |
 | **Talksum: bảng đo token các lần chạy agent** (`docs/wiki/process/how-we-work.md`): cách làm đầy đủ tốn khoảng 4,7 triệu token, cách gọn khoảng 1,15 triệu cho cùng cỡ việc | Đo chi phí AI bằng số thật |
-| **CF**: khoảng 100.000 affiliate, khoảng 200 merchant (CTO nói trong daily, chưa kiểm chứng) | Quy mô, nói rõ nguồn |
+| **Công ty hiện tại**: khoảng 100.000 affiliate, khoảng 200 merchant (CTO nói trong daily, chưa kiểm chứng) | Quy mô, nói rõ nguồn |
 
 ## 6. Các chặng {#stages}
 
@@ -142,7 +142,7 @@ Mỗi buổi ghi: **câu đích** (thứ Nhân phải tự trả lời được 
   - Câu đích: "Mô tả cấu trúc dự án của bạn và đường đi của một thao tác từ UI tới DB." Đây là câu mở đầu rất hay gặp ở vòng kỹ thuật.
   - Khảo sát: Nhân vẽ (bằng chữ hoặc mermaid) đường đi của một câu nói trong Talksum: app → Worker → AI → DB → app. Chưa mở code.
   - Talksum: `api/src/index.ts` (thứ tự middleware: CORS, kiểm tra env, auth, route), `api/src/middleware/`, `api/src/routes/ai.ts`. So hình Nhân vẽ với code thật.
-  - Làm tiếp: vẽ cùng kiểu hình đó cho CF (Web Forms, MSMQ, SQL Server) từ trí nhớ, và cho PayoutHub (`Api → Infrastructure → Core`).
+  - Làm tiếp: vẽ cùng kiểu hình đó cho hệ thống ở công ty hiện tại (Web Forms, MSMQ, SQL Server) từ trí nhớ, và cho PayoutHub (`Api → Infrastructure → Core`).
   - Sản phẩm: ba hình, và ADR đầu tiên: "Vì sao Talksum chỉ có một Worker cho cả API và AI."
   - Trang: [Middleware](/aspnet-core/middleware), [API security](/aspnet-core/api-security). Buổi này không cần trang mới.
 
@@ -154,7 +154,7 @@ Trang còn thiếu, model viết sau buổi 1.1 và bổ sung dần: `architectu
 
 - [ ] **Buổi 1.1. Coupling, cohesion, chiều phụ thuộc.**
   - Câu đích: "Vì sao `Core` của PayoutHub không phụ thuộc project nào? Đổi lại được gì, mất gì? Dự án nào thì không cần làm vậy?"
-  - Khảo sát: ở CF (Web Forms code-behind), khi đổi một rule tính hoa hồng thì phải sửa những chỗ nào? Vì sao?
+  - Khảo sát: ở công ty hiện tại (Web Forms code-behind), khi đổi một rule tính hoa hồng thì phải sửa những chỗ nào? Vì sao?
   - Talksum: so `api/src/routes/` (nhận request), `api/src/lib/` (logic), `api/src/lib/db/` (dữ liệu). Route nào chứa cả logic lẫn truy vấn (`routes/ai.ts` dài 552 dòng)? Đó có phải vấn đề không, với một API cỡ này?
   - Lab: không gõ code mới. Nhân đọc lại `PayoutHub.Core`, `Infrastructure`, `Api` và chỉ ra mỗi reference giữa project đang chặn loại thay đổi nào.
   - Trang: [SOLID và pattern](/dotnet/solid-patterns), [Dependency injection](/aspnet-core/dependency-injection).
@@ -162,7 +162,7 @@ Trang còn thiếu, model viết sau buổi 1.1 và bổ sung dần: `architectu
 - [ ] **Buổi 1.2. Bọc thứ bên ngoài: interface đáng giá khi nào.**
   - Câu đích: "Khi nào đặt interface trước một thứ bên ngoài, khi nào interface chỉ là thủ tục thừa?"
   - Talksum: `api/src/lib/ai/ai-provider.ts` và `api/src/lib/ai/index.ts` (đổi Groq sang Workers AI bằng một biến env), registry `SpeechEngine` trong `lib/features/recording/`, `TransactionRepository` trừu tượng trong `lib/data/repositories/`. Hỏi Nhân: trong ba cái đó, cái nào đã thật sự đổi implementation, cái nào chỉ có một?
-  - Chuyện: My Fertility Health không bọc plugin Ionic.
+  - Chuyện: app y tế (mobile) không bọc plugin Ionic.
   - Lab (M3 trong Plan): `IPayoutMethod` cho Bank, PayPal, Wise (phí và validate). Nhân tự viết. Sau đó thêm một phương thức thứ tư để thấy chỗ nào phải sửa.
   - Trang: [SOLID và pattern](/dotnet/solid-patterns), [Dependency injection](/aspnet-core/dependency-injection).
 
@@ -216,13 +216,13 @@ Trang còn thiếu: `data/transactions.md` (transaction, isolation, ranh giới 
   - Lab (M2 và M7 trong Plan): seed khoảng 100.000 conversion. Đo endpoint danh sách conversion và báo cáo commission. Tìm N+1, thiếu projection, thiếu index bằng log của EF và execution plan. Sửa từng thứ một, đo lại sau mỗi lần. Ghi bảng trước và sau (ms, số dòng, số query).
   - Cùng lúc hỏi lại: sargable, thứ tự cột trong composite index, `AsNoTracking`.
   - Talksum: `PULL_PAGE_SIZE` 500 và `MAX_PUSH_ROWS` 1000 trong `engine.ts`. Vì sao phải có giới hạn, và con số đó từ đâu ra?
-  - Sản phẩm thêm: câu trả lời cho "kể một lần bạn tối ưu hiệu năng", dùng số đo thật này, nói rõ đây là project cá nhân. Kèm thói quen thiết kế cho hiệu năng từ đầu ở CF (không bịa chuyện "sửa cái chậm").
+  - Sản phẩm thêm: câu trả lời cho "kể một lần bạn tối ưu hiệu năng", dùng số đo thật này, nói rõ đây là project cá nhân. Kèm thói quen thiết kế cho hiệu năng từ đầu ở công ty hiện tại (không bịa chuyện "sửa cái chậm").
   - Trang: [SQL chậm và index](/data/sql-performance), [EF Core](/data/ef-core).
 
 - [ ] **Buổi 2.5. Cache và việc nền. Kiểm tra chặng 2.**
   - Câu đích: "Khi nào cache, cache ở đâu, và làm sao biết dữ liệu cache đã cũ? Việc nào nên đẩy ra khỏi request?"
   - Talksum: `api/src/lib/rates.ts` (tỷ giá, có nguồn chính và nguồn dự phòng). Model đọc trước để xem nó lấy và giữ tỷ giá thế nào. Worker không có bộ nhớ sống lâu, vậy cache nằm ở đâu?
-  - Chuyện: job Quartz ở Jabil.
+  - Chuyện: job Quartz ở công ty sản xuất trước đây.
   - Lab (M4 và M5 trong Plan): `Channel` + `BackgroundService` cho việc chuyển tiền, mỗi job tự tạo scope (chỗ yếu cũ); `IMemoryCache` cho tra cứu affiliate có invalidation. Chọn một trong hai nếu thiếu giờ, ưu tiên việc nền.
   - **Kiểm tra chặng (30 phút cuối):** một bài nhỏ: "Thiết kế tính năng xuất báo cáo lớn" (dạng bài hay gặp ở vòng kỹ thuật). Nhân tự dẫn, model chỉ hỏi.
   - Trang: [Async](/runtime/async), [Async flow](/runtime/async-flow); trang mới `data/caching.md`.
@@ -236,7 +236,7 @@ Trang còn thiếu: nhóm `testing/` (một trang về chọn tầng test, một
 - [ ] **Buổi 3.1. Test cái gì, ở tầng nào.**
   - Câu đích: "Với một tính năng, bạn chọn unit test, integration test hay kiểm bằng tay? Dựa vào đâu?"
   - Talksum: `api/test/` (khoảng 32 file): test nào chạm DB thật (`*-db.test.ts`), test nào dùng dữ liệu giả. `FakeSpeechEngine` trong app. Hỏi Nhân: test nào trong số đó đã từng bắt được lỗi thật?
-  - Chuyện: My Fertility Health, phần logic thuần có unit test.
+  - Chuyện: app y tế (mobile), phần logic thuần có unit test.
   - Lab (M6 trong Plan): xUnit cho state machine của `Payout` và phần tính phí. Nhân tự viết, nói to test case trước khi gõ (chỗ yếu khi live coding).
 
 - [ ] **Buổi 3.2. Integration test và một vòng TDD.**
@@ -305,10 +305,10 @@ Về việc Nhân chưa làm microservices: không giấu, không giả. Lập t
 
 - [ ] **Buổi 5.1. Tách hay không tách.**
   - Câu đích: "Khi nào nên tách một monolith thành nhiều service? Dự án bạn đang làm có nên tách không?"
-  - Khảo sát: áp vào CF (monolith Web Forms, team chia theo epic, 2–3 dev mỗi epic). Nếu tách thì tách theo đâu? Cái gì sẽ tệ đi?
+  - Khảo sát: áp vào hệ thống ở công ty hiện tại (monolith Web Forms, team chia theo epic, 2–3 dev mỗi epic). Nếu tách thì tách theo đâu? Cái gì sẽ tệ đi?
   - Talksum: nó **đã** là hệ phân tán: DB trên máy người dùng, Worker, Neon, nhà cung cấp AI. Ranh giới nào là bắt buộc, ranh giới nào là tự chọn?
   - Nói qua DDD ở đúng chỗ nó có ích cho câu này: **bounded context** là cách tìm đường cắt theo nghiệp vụ thay vì theo bảng (chỗ yếu cũ: chia service theo bảng).
-  - Chuyện: trang Legal ở CF (thử trên project nhỏ trước khi migrate).
+  - Chuyện: trang Legal ở công ty hiện tại (thử trên project nhỏ trước khi migrate).
   - Trang: [Microservices](/architecture/microservices), [DDD](/architecture/ddd). Bổ sung mục modular monolith nếu chưa có.
 
 - [ ] **Buổi 5.2. Gọi một thứ có thể lỗi.**
@@ -319,7 +319,7 @@ Về việc Nhân chưa làm microservices: không giấu, không giả. Lập t
 
 - [ ] **Buổi 5.3. Việc không cần trả lời ngay: message.**
   - Câu đích: "Khi nào dùng message thay cho gọi trực tiếp? At-least-once kéo theo những gì?"
-  - Chuyện: MSMQ ở CF chỉ log lỗi. Nhân viết ra: message hỏng hiện đi đâu, mất gì, và sẽ đề xuất gì (retry có giới hạn, dead-letter, consumer idempotent).
+  - Chuyện: MSMQ ở công ty hiện tại chỉ log lỗi. Nhân viết ra: message hỏng hiện đi đâu, mất gì, và sẽ đề xuất gì (retry có giới hạn, dead-letter, consumer idempotent).
   - Talksum: hàng đợi offline phía client là một hàng đợi thật. Nó xử lý gửi lại và trùng thế nào?
   - Lab (M5 trong Plan): `FakeBank` gọi webhook về PayoutHub; verify chữ ký HMAC; lưu id event đã xử lý với unique index. Outbox và saga: học cơ chế và thứ tự bước bằng hình trên trang Messaging; chỉ cài outbox bằng code nếu còn giờ.
   - Trang: [Messaging](/architecture/messaging).
@@ -346,7 +346,7 @@ Chỉ làm sau khi xong hết phần backend ở trên. Nhân đã dùng cả Re
 
 - [ ] **Buổi 7.1. Một màn hình lấy dữ liệu và vẽ lại thế nào.**
   - Câu đích: "Khi dữ liệu đổi, React và Vue biết phải vẽ lại gì bằng cách nào? State nào để ở component, state nào để ở store, dữ liệu từ server để ở đâu?"
-  - Chuyện: RTK Query sinh code từ OpenAPI; Vuetify ở Websparks.
+  - Chuyện: RTK Query sinh code từ OpenAPI; Vuetify ở một công ty trước.
 - [ ] **Buổi 7.2. Frontend nói chuyện với API.**
   - Câu đích: "Token giữ ở đâu trên trình duyệt và vì sao? Form validate ở client hay server? Trang chậm thì xem gì trước?"
   - Nối với backend đã học: [JWT](/aspnet-core/authentication-jwt) (lưu token, CSRF), [REST API](/aspnet-core/rest-api) (mã lỗi, ProblemDetails hiển thị ra sao).

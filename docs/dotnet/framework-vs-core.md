@@ -321,7 +321,7 @@ Hệ quả suy ra từ cơ chế:
 
 ### 3. Đổi DB engine: schema đi qua EF Core model {#db-schema}
 
-Ví dụ thật: ở Jabil, một project chuyển từ SQL Server sang PostgreSQL vì **chi phí license**. Nguyên lý: **EF Core model là bản trung gian không phụ thuộc engine**. Scaffold đọc schema cũ thành model C#, migrations sinh schema mới từ model đó; schema Postgres vì vậy được sinh ra chứ không viết tay, và từ đó trở đi DB đi theo code.
+Ví dụ thật: ở một công ty sản xuất trước đây, một project chuyển từ SQL Server sang PostgreSQL vì **chi phí license**. Nguyên lý: **EF Core model là bản trung gian không phụ thuộc engine**. Scaffold đọc schema cũ thành model C#, migrations sinh schema mới từ model đó; schema Postgres vì vậy được sinh ra chứ không viết tay, và từ đó trở đi DB đi theo code.
 
 ```mermaid
 flowchart LR
@@ -518,8 +518,8 @@ Hợp với hệ thống 24/7 như payout; cái giá là thêm một hạ tầng
 ::: details Ở dự án thật
 Nói thật về phạm vi: cả hai lần đều mới ở giai đoạn đầu, và chưa lần nào đi trọn Framework → .NET.
 
-- **Jabil**: chuyển data layer của một project từ SQL Server sang **PostgreSQL** bằng EF Core, lý do là chi phí license. Scaffold schema có sẵn, chuyển sang snake_case bằng `EFCore.NamingConventions`, sửa nhỏ schema cho hợp Postgres, rồi tạo DB mới bằng migrations ([chặng 3](#db-schema)). SP nhỏ viết lại thành C#/LINQ; SP lớn port sang Postgres, gọi bằng `FromSql` vào class keyless.
-- **Commission Factory**: nghiên cứu kế hoạch strangler với YARP và Vue cho front end, chưa triển khai. Phần làm thật là một app .NET Core nhỏ, mới từ đầu, cho các trang legal notice.
+- **Công ty sản xuất (trước đây)**: chuyển data layer của một project từ SQL Server sang **PostgreSQL** bằng EF Core, lý do là chi phí license. Scaffold schema có sẵn, chuyển sang snake_case bằng `EFCore.NamingConventions`, sửa nhỏ schema cho hợp Postgres, rồi tạo DB mới bằng migrations ([chặng 3](#db-schema)). SP nhỏ viết lại thành C#/LINQ; SP lớn port sang Postgres, gọi bằng `FromSql` vào class keyless.
+- **Công ty hiện tại**: nghiên cứu kế hoạch strangler với YARP và Vue cho front end, chưa triển khai. Phần làm thật là một app .NET Core nhỏ, mới từ đầu, cho các trang legal notice.
 
 Câu trả lời phỏng vấn đầy đủ ở [Walk me through your migration](#migration-walkthrough).
 :::
@@ -543,13 +543,13 @@ Nói chính xác: Postgres hạ tên **không quote** về chữ thường; EF q
 Câu này thường đi thành chuỗi: "kể migration của bạn" → "verify data thế nào" → "nếu DB đang chạy thì cutover ra sao". Bài học nằm ở [Migrate một app .NET Framework](#migration-strategy); ở đây chỉ luyện cách trả lời.
 
 ::: tip Trả lời nhanh
-Nói **ranh giới trước**: chưa làm trọn Framework → .NET; gần nhất là data layer ở Jabil (SQL Server → PostgreSQL, vì chi phí) và nghiên cứu strangler ở một client khác. Rồi đi theo 4 ý: schema qua EF Core ([chặng 3](#db-schema)), [bẫy khi sang Postgres](#postgres-gotchas), verify 3 tầng ([chặng 4](#data-verify)), cutover A hoặc B và giữ DB cũ để lùi ([chặng 5](#cutover)).
+Nói **ranh giới trước**: chưa làm trọn Framework → .NET; gần nhất là data layer ở công ty sản xuất trước đây (SQL Server → PostgreSQL, vì chi phí) và nghiên cứu strangler ở một client khác. Rồi đi theo 4 ý: schema qua EF Core ([chặng 3](#db-schema)), [bẫy khi sang Postgres](#postgres-gotchas), verify 3 tầng ([chặng 4](#data-verify)), cutover A hoặc B và giữ DB cũ để lùi ([chặng 5](#cutover)).
 :::
 
 ::: details Câu trả lời mẫu (English)
-I'll be upfront about scope: I haven't done a full end-to-end Framework to .NET migration. My closest experience is the data layer at Jabil, where we moved one project from SQL Server to PostgreSQL to cut licensing cost, plus strangler-pattern research at another client.
+I'll be upfront about scope: I haven't done a full end-to-end Framework to .NET migration. My closest experience is the data layer at a previous manufacturing company, where we moved one project from SQL Server to PostgreSQL to cut licensing cost, plus strangler-pattern research at another client.
 
-At Jabil I scaffolded the existing schema with `dotnet ef dbcontext scaffold`, cleaned out the SQL Server specific config, switched the provider to Npgsql with snake_case naming, and generated the Postgres schema with code-first migrations. Small stored procedures became C# and LINQ so they are testable; large ones were ported to Postgres functions and called through `FromSql`. The Postgres surprises were the usual ones: unquoted identifiers fold to lowercase, Npgsql requires UTC `DateTime` for `timestamptz`, sequences must be reset with `setval` after importing existing ids, and string comparison is case-sensitive, which silently breaks lookups like email. We used `citext` or a `lower()` expression index for that.
+There I scaffolded the existing schema with `dotnet ef dbcontext scaffold`, cleaned out the SQL Server specific config, switched the provider to Npgsql with snake_case naming, and generated the Postgres schema with code-first migrations. Small stored procedures became C# and LINQ so they are testable; large ones were ported to Postgres functions and called through `FromSql`. The Postgres surprises were the usual ones: unquoted identifiers fold to lowercase, Npgsql requires UTC `DateTime` for `timestamptz`, sequences must be reset with `setval` after importing existing ids, and string comparison is case-sensitive, which silently breaks lookups like email. We used `citext` or a `lower()` expression index for that.
 
 To verify the data I check in three layers: row counts per table, then per-column aggregates like sums of amounts, min and max dates and distinct key counts, and finally the same business query run against both databases and diffed. A trick I like is writing that query once in LINQ and executing it through two DbContexts with different providers, because EF translates it per provider. Random sampling is useful to see what kind of errors exist, but it is not proof.
 

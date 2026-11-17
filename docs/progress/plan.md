@@ -40,13 +40,13 @@ Mỗi milestone kết thúc bằng `/mock Mx` (10–15 phút), rồi `/wrap`.
 
 Nếu bị trễ: M5 bỏ phần outbox; M7 chỉ làm export dạng streaming; M8 bỏ bước Kubernetes, chỉ làm Docker compose và học phần khái niệm microservices. Không cắt M3 và M4, vì đây là phần quan trọng nhất cho phỏng vấn.
 
-## Ôn theo 2 job: PhoenixDX và ASW (từ 28/10/2026) {#job-plan}
+## Ôn theo 2 job: job A và job B (từ 28/10/2026) {#job-plan}
 
 ::: warning Đã thay
-PhoenixDX dừng ngày 13/11/2026. Mục này chỉ còn để tham khảo; thứ tự hiện hành ở [Lộ trình cốt lõi](/progress/roadmap).
+job A dừng ngày 13/11/2026. Mục này chỉ còn để tham khảo; thứ tự hiện hành ở [Lộ trình cốt lõi](/progress/roadmap).
 :::
 
-Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần chắc chắn bị hỏi trước**, sau đó tới microservices (gap của PhoenixDX), Angular để cuối (gap của ASW). Các milestone PayoutHub bên dưới giữ nguyên, giờ dùng làm **nguồn ví dụ code** khi cần, không còn đi theo thứ tự milestone.
+Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần chắc chắn bị hỏi trước**, sau đó tới microservices (gap của job A), Angular để cuối (gap của job B). Các milestone PayoutHub bên dưới giữ nguyên, giờ dùng làm **nguồn ví dụ code** khi cần, không còn đi theo thứ tự milestone.
 
 **Mỗi buổi (~3h):** 10' hỏi lại điểm yếu buổi trước → học bằng sơ đồ (link trang có sẵn) → một bài code nhỏ hoặc tự giải thích thành tiếng → 10' câu phỏng vấn bằng tiếng Anh.
 
@@ -62,22 +62,22 @@ Thay cho lịch nén cũ. Hai job yêu cầu rất rộng, nên ôn **phần ch�
 | A6 | REST API + test | status code, versioning, method idempotent, JWT + policy, unit vs integration test (`WebApplicationFactory`) | [REST](/aspnet-core/rest-api#rest-design) |
 | | **Mock A** | 30' trộn A1–A6 | |
 
-### Tầng B: microservices (PhoenixDX)
+### Tầng B: microservices (job A)
 
 | Buổi | Chủ đề | Nội dung chính | PayoutHub |
 |---|---|---|---|
 | B1 | Monolith → microservices | bounded context (DDD), data ownership, strangler fig, khi nào **không** tách | Api ↔ FakeBank |
 | B2 | Event-driven + Azure Service Bus | queue vs topic/subscription, at-least-once, idempotent consumer, dead-letter, retry, outbox, saga, eventual consistency | `Channel` + worker, outbox (M4/M5) |
 | B3 | Resilience, observability, Azure | retry/timeout/circuit breaker, health check, OpenTelemetry (log/trace/metric); App Service vs Functions vs Azure SQL; CI/CD cơ bản | M4 typed `HttpClient` |
-| | **Mock PhoenixDX** | 30' theo JD PhoenixDX | |
+| | **Mock job A** | 30' theo JD job A | |
 
-### Tầng C: ASW
+### Tầng C: job B
 
 | Buổi | Chủ đề | Nội dung chính |
 |---|---|---|
 | C1 | Angular cơ bản (đối chiếu từ Vue/React) | component, standalone/module, service + DI, RxJS, routing, reactive forms, change detection |
-| C2 | Scrum + domain y tế | IME, claims, HIPAA đọc lướt; câu chuyện My Fertility Health |
-| | **Mock ASW** | 30' theo JD ASW |
+| C2 | Scrum + domain y tế | IME, claims, HIPAA đọc lướt; câu chuyện app y tế (mobile) |
+| | **Mock job B** | 30' theo JD job B |
 
 **Nếu có lịch phỏng vấn:** job nào có lịch trước thì nhảy sang tầng của job đó sau khi xong A4 (A4 dùng cho cả 2 job).
 

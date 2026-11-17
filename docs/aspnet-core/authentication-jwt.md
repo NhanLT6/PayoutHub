@@ -403,7 +403,7 @@ flowchart LR
 
 Chọn theo loại app:
 
-- **App y tế, tài chính** (ASW, PayoutHub): BFF. Không nhất thiết là hệ thống riêng: thường chính app ASP.NET Core phục vụ file Angular kiêm luôn BFF, dùng <T>YARP</T> chuyển request sang API. BFF dùng cookie nên vẫn phải [chống CSRF](#csrf).
+- **App y tế, tài chính** (dự án y tế, PayoutHub): BFF. Không nhất thiết là hệ thống riêng: thường chính app ASP.NET Core phục vụ file Angular kiêm luôn BFF, dùng <T>YARP</T> chuyển request sang API. BFF dùng cookie nên vẫn phải [chống CSRF](#csrf).
 - **SPA bình thường**: access token trong RAM, refresh token trong cookie `HttpOnly` giới hạn `Path=/auth/refresh`.
 - **Mobile**: Keychain (iOS), Keystore (Android).
 - **Service gọi service**: không có refresh token. Dùng client credentials với secret trong <T>Azure Key Vault</T>, hoặc <T>managed identity</T> để khỏi cần secret.

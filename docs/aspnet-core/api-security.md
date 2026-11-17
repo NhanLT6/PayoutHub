@@ -134,7 +134,7 @@ Rule chặn nhầm request hợp lệ gọi là <T>false positive</T>, nên WAF 
 
 Ba khái niệm hay bị dùng lẫn, vì một sản phẩm thường làm cả ba. <T>Reverse proxy</T> đứng trước app và giấu app khỏi internet. <T>Load balancer</T> chia request cho nhiều instance. <T>API gateway</T> là reverse proxy có thêm nghiệp vụ API, ví dụ <T k="apim">Azure API Management</T> (APIM).
 
-Trên Azure (gặp ở PhoenixDX, hệ microservices):
+Trên Azure (gặp ở một JD hệ microservices):
 
 | Dịch vụ | Làm gì |
 |---|---|
@@ -481,7 +481,7 @@ Dữ liệu thẻ phải tuân thủ <T>PCI DSS</T>. Cách dễ nhất là **kh�
 
 PayoutHub giữ PII (thông tin affiliate, số tài khoản nhận tiền), không giữ số thẻ.
 
-### HIPAA (dự án ASW, khách hàng y tế ở Mỹ) {#hipaa}
+### HIPAA (dự án cho khách hàng y tế ở Mỹ) {#hipaa}
 
 Luật <T>HIPAA</T> bảo vệ PHI và áp dụng cả cho công ty outsource phần mềm xử lý PHI thay mặt khách hàng y tế. Vì vậy hai bên phải ký <T>BAA</T>, và chỉ được dùng dịch vụ nằm trong phạm vi BAA cho PHI.
 
