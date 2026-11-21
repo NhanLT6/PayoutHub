@@ -262,6 +262,19 @@ Nói định nghĩa trong 1 câu (Trả lời nhanh), rồi nối ngay sang 1 ca
 - [Thêm function calling cho chatbot: làm sao để an toàn?](/ai/llm-tools#secure-tools)
 - [Model gọi tool với tham số sai. App nên làm gì?](/ai/llm-tools#bad-arguments)
 
+## Azure
+
+### [Azure Functions và Durable Functions](/azure/durable-functions#interview)
+
+- [Isolated worker và in-process khác nhau thế nào?](/azure/durable-functions#isolated-vs-in-process)
+- [Durable Functions sống sót qua restart thế nào?](/azure/durable-functions#how-replay-works)
+- [Vì sao code orchestrator phải deterministic?](/azure/durable-functions#why-deterministic)
+- [Activity có thể chạy hai lần không? Retry thế nào?](/azure/durable-functions#activity-idempotency-retry)
+- [Làm sao để pause, resume, override một agent run đang chạy?](/azure/durable-functions#control-agent-run)
+- [Chờ người duyệt nhưng có hạn chót, viết thế nào?](/azure/durable-functions#human-in-the-loop-timeout)
+- [Durable Functions hay queue + worker tự viết?](/azure/durable-functions#durable-vs-queue-worker)
+- [Deploy code mới khi còn instance đang chạy thì sao?](/azure/durable-functions#orchestration-versioning)
+
 ## Chưa viết
 
 AuthN/AuthZ · Testing · Migration Framework → .NET · Kiến trúc mức senior · Question bank

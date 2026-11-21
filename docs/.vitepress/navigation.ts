@@ -10,6 +10,7 @@ export const nav: DefaultTheme.NavItem[] = [
   { text: 'Lộ trình', link: '/progress/roadmap' },
   { text: 'Plan', link: '/progress/plan' },
   { text: 'Bản đồ dự án', link: '/progress/project-map' },
+  { text: 'Azure', link: '/azure/durable-functions' },
 ]
 
 export const sidebar: DefaultTheme.Sidebar = [
@@ -94,6 +95,11 @@ export const sidebar: DefaultTheme.Sidebar = [
     text: '8 · AI trong app',
     collapsed: false,
     items: [{ text: 'Thiết kế tool cho LLM', link: '/ai/llm-tools' }],
+  },
+  {
+    text: '9 · Azure',
+    collapsed: false,
+    items: [{ text: 'Azure Functions & Durable Functions', link: '/azure/durable-functions' }],
   },
   {
     text: 'Legacy',

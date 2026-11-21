@@ -387,6 +387,22 @@ const groups: Group[] = [
     ],
   },
   {
+    title: 'Azure',
+    hint: 'Serverless và workflow dài',
+    pages: [
+      {
+        text: 'Azure Functions & Durable Functions',
+        desc: 'Trigger, isolated worker, history và replay, orchestrator deterministic, activity idempotent, pause/resume một agent run.',
+        link: '/azure/durable-functions',
+        q: [
+          { text: 'Replay chạy thế nào', link: '/azure/durable-functions#how-replay-works' },
+          { text: 'Vì sao deterministic', link: '/azure/durable-functions#why-deterministic' },
+          { text: 'Pause, override agent', link: '/azure/durable-functions#control-agent-run' },
+        ],
+      },
+    ],
+  },
+  {
     title: 'Hệ thống',
     hint: 'Container, Kubernetes',
     soon: { text: 'Sắp học ở M8', link: '/progress/plan#m8' },
